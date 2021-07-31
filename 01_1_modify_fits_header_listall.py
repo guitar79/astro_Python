@@ -1,7 +1,16 @@
-# -*- coding: utf-8 -*-
 """
+# -*- coding: utf-8 -*-
+
 Created on Thu Nov 22 01:00:19 2018
-@author: user
+@author: guitar79@naver.com
+
+conda env list
+source activate astro_Python
+
+conda install astropy
+
+ModuleNotFoundError: No module named 'ccdproc'
+conda install -c conda-forge ccdproc
 
 """
 
