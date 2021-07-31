@@ -4,11 +4,10 @@ astro_Python.log
 get_new_filename.log
 get_new_foldername.log
 *.pyc
-*.pyc
-*.pyc
+
+
 .spyproject/config/workspace.ini
 *.bak
 *.xml
-*.pyc
-__pycache__/astro_utilities.cpython-38.pyc
-*.pyc
+
+

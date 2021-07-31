@@ -10,7 +10,7 @@ conda install -c condaforge ccdproc
 """
 
 from datetime import datetime
-from astropy.io import fits
+#from astropy.io import fits
  
 def write_log(log_file, log_str):
     import os
@@ -409,8 +409,9 @@ def getFullnameListOfallsubDirs(dirName):
 
                                 
 def connectMariaDB():
-    import pymysql
+    #import pymysql
     import pymysql.cursors
+    #conda install pymysql
     
     #mariaDB info
     db_host = 'parksparks.iptime.org'
@@ -465,6 +466,8 @@ def sub_p_solve_field(fullname, save_dir_name, sub_start_time):
 
 def align_image(im1, im2):
     import cv2
+    #conda install -c conda-forge opencv
+
     #code from https://www.learnopencv.com/image-alignment-ecc-in-opencv-c-python/
     # Convert images to grayscale
     #im1_gray = cv2.cvtColor(im1,cv2.COLOR_BGR2GRAY)
@@ -487,10 +490,10 @@ def align_image(im1, im2):
     else :
         warp_matrix = np.eye(2, 3, dtype=np.float32)
     # Specify the number of iterations.
-    number_of_iterations = 1000;  #5000
+    number_of_iterations = 1000  #5000
     # Specify the threshold of the increment
     # in the correlation coefficient between two iterations
-    termination_eps = 1e-7;   #1e-10
+    termination_eps = 1e-7   #1e-10
     # Define termination criteria
     criteria = (cv2.TERM_CRITERIA_EPS | cv2.TERM_CRITERIA_COUNT, number_of_iterations, termination_eps)
     
@@ -523,7 +526,7 @@ def combine_BiasDark(file_list, c_method,
         
         ##### fits header update
         with fits.open('{0}/{1}{2}_master_{3}_float32.fit'\
-              .format(base_dir_name, master_file_dir_name, current_dir_name, c_method), \
+              .format(base_dir_name, master_file_dir_name, current_dir_name, c_method),
               mode='update') as hdul:
             hdul[0].header.append(('COMMENT', ', '.join(file_list), 'combine file list'))
             hdul[0].header.append('COMMENT', 
@@ -554,7 +557,7 @@ def combine_Flat(file_list, c_method,
         
         ##### fits header update
         with fits.open('{0}/{1}{2}_master_{3}_{4}_float32.fit'\
-              .format(base_dir_name, master_file_dir_name, current_dir_name, c_method, chl), \
+              .format(base_dir_name, master_file_dir_name, current_dir_name, c_method, chl),
               mode='update') as hdul:
             hdul[0].header.append(('COMMENT', ', '.join(file_list), 'combine file list'))
             hdul[0].header.append('COMMENT', 
@@ -586,7 +589,7 @@ def combine_master_file(file_list, c_method,
         
         ##### fits header update
         with fits.open('{0}/{1}{2}_master_{3}_float32.fit'\
-              .format(base_dir_name, master_file_dir_name, current_dir_name, c_method), \
+              .format(base_dir_name, master_file_dir_name, current_dir_name, c_method),
               mode='update') as hdul:
             hdul[0].header.append(('COMMENT', ', '.join(file_list), 'combine file list'))
             hdul[0].header.append('COMMENT', 
@@ -617,7 +620,7 @@ def combine_master_flat_file(file_list, c_method,
         ##### fits header update
         with fits.open('{0}{1}{2}_master_{3}_{4}_float32.fit'\
                   .format(base_dir_name, master_file_dir_name, 
-                  current_dir_name, c_method, chl), \
+                  current_dir_name, c_method, chl),
                   mode='update') as hdul:
             hdul[0].header.append(('COMMENT', ', '.join(file_list), 'combine file list'))
             hdul[0].header.append('COMMENT', 
