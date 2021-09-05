@@ -7,6 +7,7 @@ conda env list
 # activate 가상환경 시작
 mac/linux
 source activate astro_Python_env
+conda activate astro_Python_env
 
 windows
 activate astro_Python_env
