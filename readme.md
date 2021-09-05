@@ -20,7 +20,7 @@ windows
 deactivate
 
 # install module
-conda install astropy pymysql
+conda install astropy pymysql spyder
 conda install -c conda-forge ccdproc opencv
 
 
