@@ -22,10 +22,10 @@ from astropy.io import fits
 import shutil 
 import astro_utilities
 
-add_log = True
-if add_log == True :
-    log_file = 'astro_Python.log'
-    err_log_file = 'astro_Python_err.log'
+log_file = os.path.basename(__file__)[:-3]+".log"
+err_log_file = os.path.basename(__file__)[:-3]+"_err.log"
+print ("log_file: {}".format(log_file))
+print ("err_log_file: {}".format(err_log_file))
 
 master_file_dir_name = 'master_file_Python/'
 processing_dir_name = 'processing_Python/'

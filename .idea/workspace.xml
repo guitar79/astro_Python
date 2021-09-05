@@ -6,7 +6,10 @@
   <component name="ChangeListManager">
     <list default="true" id="772ce306-e99e-4a15-9c49-3fe657847e1e" name="Default Changelist" comment="">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/readme.md" beforeDir="false" afterPath="$PROJECT_DIR$/readme.md" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/01_1_modify_fits_header_listall.py" beforeDir="false" afterPath="$PROJECT_DIR$/01_1_modify_fits_header_listall.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/01_3_move_fit_file_to_one_folder_for_wcs_listall.py" beforeDir="false" afterPath="$PROJECT_DIR$/01_3_move_fit_file_to_one_folder_for_wcs_listall.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/01_4_rename_wcs_fits_files_with_optic_keyword_listall.py" beforeDir="false" afterPath="$PROJECT_DIR$/01_4_rename_wcs_fits_files_with_optic_keyword_listall.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/astro_utilities.py" beforeDir="false" afterPath="$PROJECT_DIR$/astro_utilities.py" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -54,8 +57,8 @@
       <recent name="$PROJECT_DIR$" />
     </key>
   </component>
-  <component name="RunManager" selected="Python.01_1_modify_fits_header_listall">
-    <configuration name="01_1_modify_fits_header_listall" type="PythonConfigurationType" factoryName="Python" temporary="true" nameIsGenerated="true">
+  <component name="RunManager" selected="Python.01_2_modify_fits_header_listall">
+    <configuration name="01_2_modify_fits_header_listall" type="PythonConfigurationType" factoryName="Python" temporary="true" nameIsGenerated="true">
       <option name="INTERPRETER_OPTIONS" value="" />
       <option name="PARENT_ENVS" value="true" />
       <envs>
@@ -68,7 +71,7 @@
       <option name="ADD_SOURCE_ROOTS" value="true" />
       <module name="" />
       <EXTENSION ID="PythonCoverageRunConfigurationExtension" runner="coverage.py" />
-      <option name="SCRIPT_NAME" value="$PROJECT_DIR$/01_1_modify_fits_header_listall.py" />
+      <option name="SCRIPT_NAME" value="$PROJECT_DIR$/01_2_modify_fits_header_listall.py" />
       <option name="PARAMETERS" value="" />
       <option name="SHOW_COMMAND_LINE" value="false" />
       <option name="EMULATE_TERMINAL" value="false" />
@@ -145,7 +148,7 @@
     </configuration>
     <recent_temporary>
       <list>
-        <item itemvalue="Python.01_1_modify_fits_header_listall" />
+        <item itemvalue="Python.01_2_modify_fits_header_listall" />
         <item itemvalue="Python.01_4_rename_wcs_fits_files_with_optic_keyword_listall" />
         <item itemvalue="Python.01_3_move_fit_file_to_one_folder_for_wcs_listall" />
         <item itemvalue="Python.01_2_rename_new_fits_files_with_optic_keyword_listall" />
@@ -180,7 +183,7 @@
       <workItem from="1627732836822" duration="508000" />
       <workItem from="1630760419713" duration="4880000" />
       <workItem from="1630801966078" duration="267000" />
-      <workItem from="1630802292775" duration="1499000" />
+      <workItem from="1630802292775" duration="2414000" />
     </task>
     <task id="LOCAL-00001" summary="a">
       <created>1618066859079</created>
@@ -294,7 +297,14 @@
       <option name="project" value="LOCAL" />
       <updated>1630803013315</updated>
     </task>
-    <option name="localTasksCounter" value="17" />
+    <task id="LOCAL-00017" summary="Pycharm~">
+      <created>1630804379352</created>
+      <option name="number" value="00017" />
+      <option name="presentableId" value="LOCAL-00017" />
+      <option name="project" value="LOCAL" />
+      <updated>1630804379352</updated>
+    </task>
+    <option name="localTasksCounter" value="18" />
     <servers />
   </component>
   <component name="TypeScriptGeneratedFilesManager">
