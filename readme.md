@@ -1,13 +1,14 @@
 # astro_Python
 anaconda environment
 
-conda create -n astro_Python_env python=3.9
+conda create -n astro_Python_win_env python=3.9
+conda create -n astro_Python_ubuntu_env python=3.9
 conda env list
 
 # activate 가상환경 시작
 mac/linux
-source activate astro_Python_env
-conda activate astro_Python_env
+source activate astro_Python_ubuntu_env
+conda activate astro_Python_ubuntu_env
 
 windows
 activate astro_Python_env
@@ -25,10 +26,11 @@ conda install -c conda-forge ccdproc opencv
 
 
 # 가상환경 내보내기 (export)
-conda env export > astro_Python_env.yaml
+conda env export > astro_Python_ubuntu_env.yaml
+conda env export > astro_Python_win_env.yaml
 
 # .yaml 파일로 새로운 가상환경 만들기
-conda env create -f my_python_env.yaml
+conda env create -f astro_Python_ubuntu_env.yaml
 
 # 가상환경 리스트 출력
 conda env list
