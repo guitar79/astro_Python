@@ -28,7 +28,7 @@ print ("err_log_file: {}".format(err_log_file))
 c_method = 'median'    
 
 base_dir = "../CCD_new_files"
-base_dir = "../../../3TB1/CCD_obs"
+#base_dir = "../../../3TB1/CCD_obs"
 
 fullnames = astro_utilities.getFullnameListOfallFiles(base_dir)
 print ("fullnames: {}".format(fullnames))

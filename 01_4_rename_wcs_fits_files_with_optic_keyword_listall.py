@@ -61,7 +61,7 @@ for fullname in fullnames[:]:
             or fullname[-4:].lower() == "xosm" :
             os.remove("{}".format(fullname))
         
-        elif (fullname[-4:].lower() == ".fit" or fullname[-4:].lower() == "fits")\
+        elif (fullname[-4:].lower() == ".fit" or fullname[-4:].lower() == "fits" or fullname[-4:].lower() == ".new")\
               and os.path.isfile('{}'.format(fullname)):
             
             print ("Starting...   fullname: {}".format(fullname))
@@ -97,7 +97,8 @@ for fullname in fullnames[:]:
                     shutil.move(r"{}".format(fullname), r"{}{}".format(target_duplicate_files_dir, new_filename))
                     print ("move {}".format(fullname), "{}{}".format(target_duplicate_files_dir, new_filename))
                 else : 
-                    os.rename(fullname, '{0}{1}'.format(new_foldername, new_filename))
+                    #os.rename(fullname, '{0}{1}'.format(new_foldername, new_filename))
+                    shutil.move(r'{0}'.format(fullname), r'{0}{1}'.format(new_foldername, new_filename))
                     astro_utilities.write_log(log_file, \
                              '{0} is moved to {1}{2}'.format(fullname, new_foldername, new_filename))
                     
@@ -109,7 +110,8 @@ for fullname in fullnames[:]:
                     shutil.move(r'{0}{1}_wcs.fit'.format(new_foldername, new_filename[:-8]), \
                                 r"{0}{1}_wcs.fit".format(target_duplicate_files_dir, new_filename[:-8]))
 
-                os.rename(fullname, '{0}{1}'.format(new_foldername, new_filename))
+                #os.rename(fullname, '{0}{1}'.format(new_foldername, new_filename))
+                shutil.move(r'{0}'.format(fullname), r'{0}{1}'.format(new_foldername, new_filename))
                 astro_utilities.write_log(log_file, \
                     '{0} is moved to {1}{2}'.format(fullname, new_foldername, new_filename))
             

@@ -28,7 +28,7 @@ print ("err_log_file: {}".format(err_log_file))
 c_method = 'median'    
 
 base_dir = "../CCD_new_files"
-base_dir = "../../../3TB1/CCD_obs"
+#base_dir = "../../../3TB1/CCD_obs"
 
 fullnames = astro_utilities.getFullnameListOfallFiles(base_dir)
 print ("fullnames: {}".format(fullnames))
@@ -37,16 +37,16 @@ n = 0
 for fullname in fullnames[:] :
 #fullname = fullnames[0]
     n += 1
-    if fullname[-4:] == ".fit" or fullname[-4:] == ".new" :
-        print("\n{2:.01f}%  ({0}/{1})".format(n, len(fullnames), (n/len(fullnames))*100), '#'*40 )
-        print('Starting......\n{0} ...'.format(fullname))
-        fullname_el = fullname.split('/')
-        foldername_el = fullname_el[-2].split('_')
-        object_name = foldername_el[0]
-        optic_name = foldername_el[5]
-
+    print("\n{2:.01f}%  ({0}/{1})".format(n, len(fullnames), (n/len(fullnames))*100), '#'*40 )
     
-        try :
+    try :
+        if fullname[-4:] == ".fit" or fullname[-4:] == ".new" :
+            print('Starting......\n{0} ...'.format(fullname))
+            fullname_el = fullname.split('/')
+            foldername_el = fullname_el[-2].split('_')
+            object_name = foldername_el[0]
+            optic_name = foldername_el[5]
+
             #with fits.open('{0}'.format(fullname), mode="append") as hdul :
             with fits.open('{0}'.format(fullname), mode="update") as hdul :
                 if not 'OPTIC' in hdul[0].header :
@@ -122,8 +122,8 @@ for fullname in fullnames[:] :
                     '{1} ::: fits header is update with {0} ...'\
                     .format(fullname, datetime.now()))
     
-        except Exception as err :
-            print("X"*60)
-            astro_utilities.write_log(err_log_file, 
-                '{2} ::: \n{1} with {0} ...'\
-                .format(fullname, err, datetime.now()))
+    except Exception as err :
+        print("X"*60)
+        astro_utilities.write_log(err_log_file, 
+            '{2} ::: \n{1} with {0} ...'\
+            .format(fullname, err, datetime.now()))

@@ -32,7 +32,7 @@ integration_dir_name = 'integration_Python/'
 alignment_dir_name = 'alignment_Python/'
 
 base_dir = "../CCD_new_files/"
-base_dir = "../../../3TB1/CCD_obs"
+#base_dir = "../../../3TB1/CCD_obs"
 
 wcs_one_dir_name = "../CCD_wcs_one/"
 target_duplicate_files_dir = "../CCD_duplicate_files/"
@@ -63,7 +63,7 @@ for fullname in fullnames[:]:
             or fullname[-4:].lower() == "xosm" :
             os.remove("{}".format(fullname))
         
-        elif (fullname[-4:].lower() == ".fit" or fullname[-4:].lower() == "fits") \
+        elif (fullname[-4:].lower() == ".fit" or fullname[-4:].lower() == "fits" or fullname[-4:].lower() == ".new") \
             and (os.path.isfile('{}'.format(fullname))):
             
             print ("Starting...   fullname: {}".format(fullname))
