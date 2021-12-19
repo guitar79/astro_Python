@@ -4,12 +4,10 @@
     <option name="autoReloadType" value="SELECTIVE" />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="772ce306-e99e-4a15-9c49-3fe657847e1e" name="Default Changelist" comment="">
-      <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/01_1_modify_fits_header_listall.py" beforeDir="false" afterPath="$PROJECT_DIR$/01_1_modify_fits_header_listall.py" afterDir="false" />
+    <list default="true" id="772ce306-e99e-4a15-9c49-3fe657847e1e" name="Default Changelist" comment="Pycharm~">
+      <change beforePath="$PROJECT_DIR$/01_1_update_object-OPTIC_to_fits_header_listall.py" beforeDir="false" afterPath="$PROJECT_DIR$/01_1_update_object-OPTIC_to_fits_header_listall.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/01_2_modify_fits_header_listall.py" beforeDir="false" afterPath="$PROJECT_DIR$/01_2_modify_fits_header_listall.py" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/01_3_move_fit_file_to_one_folder_for_wcs_listall.py" beforeDir="false" afterPath="$PROJECT_DIR$/01_3_move_fit_file_to_one_folder_for_wcs_listall.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/01_4_rename_wcs_fits_files_with_optic_keyword_listall.py" beforeDir="false" afterPath="$PROJECT_DIR$/01_4_rename_wcs_fits_files_with_optic_keyword_listall.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/astro_utilities.py" beforeDir="false" afterPath="$PROJECT_DIR$/astro_utilities.py" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -184,6 +182,7 @@
       <workItem from="1630760419713" duration="4880000" />
       <workItem from="1630801966078" duration="267000" />
       <workItem from="1630802292775" duration="2414000" />
+      <workItem from="1639871048030" duration="599000" />
     </task>
     <task id="LOCAL-00001" summary="a">
       <created>1618066859079</created>

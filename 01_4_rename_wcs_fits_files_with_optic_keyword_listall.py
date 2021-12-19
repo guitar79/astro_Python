@@ -45,22 +45,25 @@ if not os.path.exists('{0}'.format(destination_base_dir_name)):
 fullnames = astro_utilities.getFullnameListOfallFiles(base_dir)
 print ("fullnames: {}".format(fullnames))
 #fullname = fullnames[10]
-   
+n = 0   
 for fullname in fullnames[:]:
-    if fullname[-4:].lower() == ".txt" \
-        or fullname[-4:].lower() == "xisf" \
-        or fullname[-4:].lower() == ".zip" \
-        or fullname[-4:].lower() == ".png" \
-        or fullname[-4:].lower() == ".log" \
-        or fullname[-4:].lower() == "seal" \
-        or fullname[-4:].lower() == "tiff" \
-        or fullname[-4:].lower() == "xosm" :
-        os.remove("{}".format(fullname))
-    
-    elif (fullname[-4:].lower() == ".fit" or fullname[-4:].lower() == "fits")\
-          and os.path.isfile('{}'.format(fullname)):
+    n += 1
+    print("\n{2:.01f}%  ({0}/{1})".format(n, len(fullnames), (n/len(fullnames))*100), '#'*40 )
+
+    try :
+        if fullname[-4:].lower() == ".txt" \
+            or fullname[-4:].lower() == "xisf" \
+            or fullname[-4:].lower() == ".zip" \
+            or fullname[-4:].lower() == ".png" \
+            or fullname[-4:].lower() == ".log" \
+            or fullname[-4:].lower() == "seal" \
+            or fullname[-4:].lower() == "tiff" \
+            or fullname[-4:].lower() == "xosm" :
+            os.remove("{}".format(fullname))
         
-        try :
+        elif (fullname[-4:].lower() == ".fit" or fullname[-4:].lower() == "fits")\
+              and os.path.isfile('{}'.format(fullname)):
+            
             print ("Starting...   fullname: {}".format(fullname))
             fits.setval('{}'.format(fullname), \
                             'NOTES', value='modified by guitar79@naver.com')
@@ -112,14 +115,15 @@ for fullname in fullnames[:]:
             
             elif fullname[-4:].lower() == ".fit" \
                 or fullname[-4:].lower() == "fits" : 
-                os.rename(fullname, '{0}{1}'.format(new_foldername, new_filename))
+                #os.rename(fullname, '{0}{1}'.format(new_foldername, new_filename))
+                shutil.move(r"{}".format(fullname), r"{}{}".format(new_foldername, new_filename))
                 astro_utilities.write_log(log_file, \
                     '{0} is moved to {1}{2}'.format(fullname, new_foldername, new_filename))
                                  
-        except Exception as err :
-            print("X"*60)
-            astro_utilities.write_log(err_log_file, \
-                     '{2} ::: {0} with move {1} '.format(err, fullname, datetime.now()))
+    except Exception as err :
+        print("X"*60)
+        astro_utilities.write_log(err_log_file, \
+                 '{2} ::: {0} with move {1} '.format(err, fullname, datetime.now()))
     
 #############################################################################
 #############################################################################

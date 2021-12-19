@@ -28,14 +28,17 @@ print ("err_log_file: {}".format(err_log_file))
 c_method = 'median'    
 
 base_dir = "../CCD_new_files"
+base_dir = "../../../3TB1/CCD_obs"
 
 fullnames = astro_utilities.getFullnameListOfallFiles(base_dir)
 print ("fullnames: {}".format(fullnames))
-    
+
+n = 0    
 for fullname in fullnames[:] :
 #fullname = fullnames[0]
+    n += 1
     if fullname[-4:] == ".fit" or fullname[-4:] == ".new" :
-        print('#'*60)
+        print("\n{2:.01f}%  ({0}/{1})".format(n, len(fullnames), (n/len(fullnames))*100), '#'*40 )
         print('Starting......\n{0} ...'.format(fullname))
         fullname_el = fullname.split('/')
         foldername_el = fullname_el[-2].split('_')

@@ -12,7 +12,6 @@ conda install astropy
 ModuleNotFoundError: No module named 'ccdproc'
 conda install -c conda-forge ccdproc
 
-
 2019.09.29  modify - missing 'IMAGETYP' on APT
 """
 
@@ -27,12 +26,14 @@ err_log_file = os.path.basename(__file__)[:-3]+"_err.log"
 print ("log_file: {}".format(log_file))
 print ("err_log_file: {}".format(err_log_file))
 
-master_file_dir_name = 'master_file_Python/'
+master_file_dir_name = 'master_files_Python/'
 processing_dir_name = 'processing_Python/'
 integration_dir_name = 'integration_Python/'
 alignment_dir_name = 'alignment_Python/'
 
 base_dir = "../CCD_new_files/"
+base_dir = "../../../3TB1/CCD_obs"
+
 wcs_one_dir_name = "../CCD_wcs_one/"
 target_duplicate_files_dir = "../CCD_duplicate_files/"
 
@@ -45,21 +46,26 @@ if not os.path.exists('{0}'.format(wcs_one_dir_name)):
 fullnames = astro_utilities.getFullnameListOfallFiles(base_dir)
 print ("fullnames: {}".format(fullnames))
 #fullname = fullnames[0]
-   
+
+n = 0   
 for fullname in fullnames[:]:
-    if fullname[-4:].lower() == ".txt" \
-        or fullname[-4:].lower() == "xisf" \
-        or fullname[-4:].lower() == ".zip" \
-        or fullname[-4:].lower() == ".png" \
-        or fullname[-4:].lower() == ".log" \
-        or fullname[-4:].lower() == "seal" \
-        or fullname[-4:].lower() == "tiff" \
-        or fullname[-4:].lower() == "xosm" :
-        os.remove("{}".format(fullname))
-    
-    elif (fullname[-4:].lower() == ".fit" or fullname[-4:].lower() == "fits") \
-        and (os.path.isfile('{}'.format(fullname))):
-        try :
+    n += 1
+    print("\n{2:.01f}%  ({0}/{1})".format(n, len(fullnames), (n/len(fullnames))*100), '#'*40 )
+
+    try :
+        if fullname[-4:].lower() == ".txt" \
+            or fullname[-4:].lower() == "xisf" \
+            or fullname[-4:].lower() == ".zip" \
+            or fullname[-4:].lower() == ".png" \
+            or fullname[-4:].lower() == ".log" \
+            or fullname[-4:].lower() == "seal" \
+            or fullname[-4:].lower() == "tiff" \
+            or fullname[-4:].lower() == "xosm" :
+            os.remove("{}".format(fullname))
+        
+        elif (fullname[-4:].lower() == ".fit" or fullname[-4:].lower() == "fits") \
+            and (os.path.isfile('{}'.format(fullname))):
+            
             print ("Starting...   fullname: {}".format(fullname))
             fullname_el = fullname.split("/")
             new_filename = fullname_el[-1]
@@ -79,7 +85,8 @@ for fullname in fullnames[:]:
                 print ("move {}".format(fullname), "{}{}".format(target_duplicate_files_dir, new_filename))
                     
             else : 
-                os.rename(fullname, '{0}{1}'.format(new_foldername, new_filename))
+                #os.rename(fullname, '{0}{1}'.format(new_foldername, new_filename))
+                shutil.move(r"{}".format(fullname), r"{}{}".format(new_foldername, new_filename))
                 astro_utilities.write_log(log_file, \
                          '{0} is moved to {1}{2}'.format(fullname, new_foldername, new_filename))
                 fits.setval('{0}{1}'.format(new_foldername, new_filename), \
@@ -98,10 +105,10 @@ for fullname in fullnames[:]:
                 astro_utilities.write_log(log_file, \
                      '{3} ::: {0} is moved to {1}{2} ...'\
                          .format(fullname, new_foldername, new_filename, datetime.now()))
-        except Exception as err :
-            print("X"*60)
-            astro_utilities.write_log(err_log_file, \
-                     '{2} ::: {0} with move {1} '.format(err, fullname, datetime.now()))
+    except Exception as err :
+        print("X"*60)
+        astro_utilities.write_log(err_log_file, \
+                 '{2} ::: {0} with move {1} '.format(err, fullname, datetime.now()))
     
                 
 #############################################################################
