@@ -5,7 +5,9 @@
   </component>
   <component name="ChangeListManager">
     <list default="true" id="772ce306-e99e-4a15-9c49-3fe657847e1e" name="Default Changelist" comment="Pycharm~">
-      <change beforePath="$PROJECT_DIR$/01_3_move_fit_file_to_one_folder_for_wcs_listall.log" beforeDir="false" afterPath="$PROJECT_DIR$/01_3_move_fit_file_to_one_folder_for_wcs_listall.log" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/01_1_modify_fits_header_listall.log" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/01_3_move_fit_file_to_one_folder_for_wcs_listall.log" beforeDir="false" />
       <change beforePath="$PROJECT_DIR$/01_4_rename_wcs_fits_files_with_optic_keyword_listall.log" beforeDir="false" afterPath="$PROJECT_DIR$/01_4_rename_wcs_fits_files_with_optic_keyword_listall.log" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
@@ -183,6 +185,8 @@
       <workItem from="1630802292775" duration="2414000" />
       <workItem from="1639871048030" duration="599000" />
       <workItem from="1639914930631" duration="58000" />
+      <workItem from="1639923054039" duration="41000" />
+      <workItem from="1639923531840" duration="4000" />
     </task>
     <task id="LOCAL-00001" summary="a">
       <created>1618066859079</created>
@@ -310,7 +314,14 @@
       <option name="project" value="LOCAL" />
       <updated>1639914953205</updated>
     </task>
-    <option name="localTasksCounter" value="19" />
+    <task id="LOCAL-00019" summary="Pycharm~">
+      <created>1639923064305</created>
+      <option name="number" value="00019" />
+      <option name="presentableId" value="LOCAL-00019" />
+      <option name="project" value="LOCAL" />
+      <updated>1639923064305</updated>
+    </task>
+    <option name="localTasksCounter" value="20" />
     <servers />
   </component>
   <component name="TypeScriptGeneratedFilesManager">
@@ -326,6 +337,7 @@
         </entry>
       </map>
     </option>
+    <option name="oldMeFiltersMigrated" value="true" />
   </component>
   <component name="VcsManagerConfiguration">
     <option name="ADD_EXTERNAL_FILES_SILENTLY" value="true" />
