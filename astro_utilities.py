@@ -311,9 +311,9 @@ def get_new_foldername_from_filename(filename):
         filename_el[6],
         filename_el[7],
         filename_el[8])
-    write_log(log_file, 
-                '{1} ::: \nNew foldername is {0} ...'\
-                .format(new_foldername, datetime.now()))    
+    #write_log(log_file, 
+    #            '{1} ::: \nNew foldername is {0} ...'\
+    #            .format(new_foldername, datetime.now()))    
     return new_foldername
 
 
@@ -368,9 +368,9 @@ def get_new_foldername(filename):
         filename_el[6],
         filename_el[7],
         filename_el[8])
-    write_log(log_file, 
-                '{1} ::: \nNew foldername is {0} ...'\
-                .format(new_foldername, datetime.now()))    
+    #write_log(log_file, 
+    #            '{1} ::: \nNew foldername is {0} ...'\
+    #            .format(new_foldername, datetime.now()))    
     return new_foldername
 
 def getFullnameListOfallFiles(dirName):

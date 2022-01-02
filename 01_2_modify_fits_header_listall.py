@@ -46,6 +46,7 @@ for fullname in fullnames[:] :
             foldername_el = fullname_el[-2].split('_')
             object_name = foldername_el[0]
             optic_name = foldername_el[5]
+            flipstat = "        "
 
             #with fits.open('{0}'.format(fullname), mode="append") as hdul :
             with fits.open('{0}'.format(fullname), mode="update") as hdul :
@@ -60,41 +61,46 @@ for fullname in fullnames[:] :
                     hdul[0].header.append('OBJECT', 
                                        '{0}'.format(object_name), 
                                        'OBJECT information')
-                    astro_utilities.write_log(log_file, 
-                        '{1} ::: OPTIC information is appended at {0}...'\
-                        .format(fullname, datetime.now()))
                         
                 if not 'FLIPSTAT' in hdul[0].header :
                     hdul[0].header.append('FLIPSTAT', 
-                                       'modified FLIPSTAT from {0}'.format(hdul[0].header['FLIPSTAT']), 
-                                       'modified FLIPSTAT from {0}'.format(hdul[0].header['FLIPSTAT']))
+                                       'FLIPSTAT {}'.format(flipstat), 
+                                       'FLIPSTAT {}'.format(flipstat))
                     hdul[0].header.append('COMMENT', 
-                                        'modified FLIPSTAT from {0}'.format(hdul[0].header['FLIPSTAT']), 
-                                        'modified FLIPSTAT from {0}'.format(hdul[0].header['FLIPSTAT']))
-                    astro_utilities.write_log(log_file, 
-                        '{1} ::: FLIPSTAT information is modified at {0}...'\
-                        .format(fullname, datetime.now()))
+                                        'append FLIPSTAT {}'.format(flipstat), 
+                                        'append FLIPSTAT {}'.format(flipstat))
+                    
+                #hdul.flush()  # changes are written back to original.fits
+                #print('*'*30)
+                #astro_utilities.write_log(log_file, 
+                #    '{1} ::: fits header is append with {0} ...'\
+                #    .format(fullname, datetime.now()))
             
                 # Change something in hdul.
-                hdul[0].header['OBJECT'] = '{0}'.format(object_name)
-                astro_utilities.write_log(log_file, 
-                    '{1} ::: OBJECT information is modified at {0}...'\
-                        .format(fullname, datetime.now()))
-                hdul[0].header.append('COMMENT', 
-                                       'add HEADER OBJECT {0}'.format(object_name), 
-                                       'add HEADER OBJECT {0}'.format(object_name))
+            #with fits.open('{0}'.format(fullname), mode="update") as hdul :
+                #
+                #old_object_name = hdul[0].header['OBJECT']
+                hdul[0].header['OBJECT'] = object_name
+                #hdul[0].header.update('OBJECT', 
+                #                   '{0}'.format(object_name), 
+                #                   'OBJECT information')
                 
-                hdul[0].header['OPTIC'] = '{0}'.format(optic_name)
-                astro_utilities.write_log(log_file, 
-                        '{1} ::: OPTIC information is modified at {0}...'\
-                        .format(fullname, datetime.now()))
-
                 hdul[0].header.append('COMMENT', 
-                                       'add HEADER OPTIC {0}'.format(optic_name), 
-                                       'add HEADER OPTIC {0}'.format(optic_name))
+                                       'change HEADER OBJECT {0}'.format(object_name), 
+                                       'change HEADER OBJECT {0}'.format(object_name))
+                
+                #old_optic_name = hdul[0].header['OPTIC']
+                hdul[0].header['OPTIC'] = optic_name
+                #hdul[0].header.update('OPTIC', 
+                #                   '{0}'.format(optic_name), 
+                #                   'OPTIC information')
+                
+                hdul[0].header.append('COMMENT', 
+                                       'change HEADER OPTIC from {0}'.format(optic_name), 
+                                       'change HEADER OPTIC from {0}'.format(optic_name))
             
                 hdul.flush()  # changes are written back to original.fits
-                print('*'*40)
+                print('*'*60)
                 astro_utilities.write_log(log_file, 
                     '{1} ::: fits header is update with {0} ...'\
                     .format(fullname, datetime.now()))
