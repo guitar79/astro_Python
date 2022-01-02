@@ -218,6 +218,8 @@ def get_new_filename(fullname, **kargs):
     elif hdul[0].header['CTYPE1'] == 'RA---TAN' \
         and hdul[0].header['CTYPE2'] == 'DEC--TAN':
         wcs = "wcs"
+    else :
+        wcs = "-"
     
     object_name = object_name.replace('_', '-')
     object_name = object_name.replace(':', '-')
@@ -253,7 +255,7 @@ def get_new_filename(fullname, **kargs):
 
 
 def get_new_foldername_from_filename(filename):
-    log_file = 'get_new_foldername.log'
+    #log_file = 'get_new_foldername.log'
     print('Starting get_new_foldername ...\n{0}'.format(filename))
     
     filename_el = filename[:-4].split("_")
@@ -318,7 +320,7 @@ def get_new_foldername_from_filename(filename):
 
 
 def get_new_foldername(filename):
-    log_file = 'get_new_foldername.log'
+    #log_file = 'get_new_foldername.log'
     print('Starting get_new_foldername ...\n{0}'.format(filename))
     
     filename_el1 = filename.split("bin")
