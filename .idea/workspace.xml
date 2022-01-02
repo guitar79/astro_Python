@@ -5,10 +5,12 @@
   </component>
   <component name="ChangeListManager">
     <list default="true" id="772ce306-e99e-4a15-9c49-3fe657847e1e" name="Default Changelist" comment="Pycharm~">
-      <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/01_1_modify_fits_header_listall.log" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/01_3_move_fit_file_to_one_folder_for_wcs_listall.log" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/01_4_rename_wcs_fits_files_with_optic_keyword_listall.log" beforeDir="false" afterPath="$PROJECT_DIR$/01_4_rename_wcs_fits_files_with_optic_keyword_listall.log" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/01_1-01-4.sh" beforeDir="false" afterPath="$PROJECT_DIR$/01_1-01-4.sh" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/01_1_update_object-OPTIC_to_fits_header_listall.py" beforeDir="false" afterPath="$PROJECT_DIR$/01_1_update_object-OPTIC_to_fits_header_listall.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/01_2_modify_fits_header_listall.py" beforeDir="false" afterPath="$PROJECT_DIR$/01_2_modify_fits_header_listall.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/01_3_move_fit_file_to_one_folder_for_wcs_listall.py" beforeDir="false" afterPath="$PROJECT_DIR$/01_3_move_fit_file_to_one_folder_for_wcs_listall.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/01_4_rename_wcs_fits_files_with_optic_keyword_listall.log" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/01_4_rename_wcs_fits_files_with_optic_keyword_listall.py" beforeDir="false" afterPath="$PROJECT_DIR$/01_4_rename_wcs_fits_files_with_optic_keyword_listall.py" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -187,6 +189,7 @@
       <workItem from="1639914930631" duration="58000" />
       <workItem from="1639923054039" duration="41000" />
       <workItem from="1639923531840" duration="4000" />
+      <workItem from="1641037942653" duration="638000" />
     </task>
     <task id="LOCAL-00001" summary="a">
       <created>1618066859079</created>
@@ -321,7 +324,14 @@
       <option name="project" value="LOCAL" />
       <updated>1639923064305</updated>
     </task>
-    <option name="localTasksCounter" value="20" />
+    <task id="LOCAL-00020" summary="Pycharm~">
+      <created>1641037970327</created>
+      <option name="number" value="00020" />
+      <option name="presentableId" value="LOCAL-00020" />
+      <option name="project" value="LOCAL" />
+      <updated>1641037970327</updated>
+    </task>
+    <option name="localTasksCounter" value="21" />
     <servers />
   </component>
   <component name="TypeScriptGeneratedFilesManager">

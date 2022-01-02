@@ -19,8 +19,9 @@ from astropy.io import fits
 import shutil 
 import astro_utilities
 
-log_file = os.path.basename(__file__)[:-3]+".log"
-err_log_file = os.path.basename(__file__)[:-3]+"_err.log"
+log_dir = "logs/"
+log_file = "{}{}.log".format(log_dir, os.path.basename(__file__)[:-3])
+err_log_file = "{}{}_err.log".format(log_dir, os.path.basename(__file__)[:-3])
 print ("log_file: {}".format(log_file))
 print ("err_log_file: {}".format(err_log_file))
 
@@ -48,7 +49,9 @@ print ("fullnames: {}".format(fullnames))
 n = 0   
 for fullname in fullnames[:]:
     n += 1
-    print("\n{2:.01f}%  ({0}/{1})".format(n, len(fullnames), (n/len(fullnames))*100), '#'*40 )
+    print('#'*40,
+        "\n{2:.01f}%  ({0}/{1}) {3}".format(n, len(fullnames), (n/len(fullnames))*100, os.path.basename(__file__)))
+    print ("Starting...   fullname: {}".format(fullname))
 
     try :
         if fullname[-4:].lower() == ".txt" \
@@ -63,8 +66,7 @@ for fullname in fullnames[:]:
         
         elif (fullname[-4:].lower() == ".fit" or fullname[-4:].lower() == "fits" or fullname[-4:].lower() == ".new")\
               and os.path.isfile('{}'.format(fullname)):
-            
-            print ("Starting...   fullname: {}".format(fullname))
+
             fits.setval('{}'.format(fullname), \
                             'NOTES', value='modified by guitar79@naver.com')
             hdul = fits.open("{}".format(fullname))
