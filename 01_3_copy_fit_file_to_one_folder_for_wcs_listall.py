@@ -35,7 +35,7 @@ fullnames = astro_utilities.getFullnameListOfallFiles(base_dir)
 print ("fullnames: {}".format(fullnames))
     
 n = 0
-for fullname in fullnames[:] :
+for fullname in fullnames[:2000] :
 #fullname = fullnames[0]
     n += 1
     print('#'*40,

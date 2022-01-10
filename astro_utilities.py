@@ -212,14 +212,11 @@ def get_new_filename(fullname, **kargs):
         ybin = int(ybin)
         ybin = str(ybin)
     
-    if not 'CTYPE1' in hdul[0].header \
-        or not 'CTYPE2' in hdul[0].header : 
+    if not 'CRPIX1' in hdul[0].header \
+        or not 'CRPIX2' in hdul[0].header : 
         wcs = "-"
-    elif hdul[0].header['CTYPE1'] == 'RA---TAN' \
-        and hdul[0].header['CTYPE2'] == 'DEC--TAN':
-        wcs = "wcs"
     else :
-        wcs = "-"
+        wcs = "wcs"
     
     object_name = object_name.replace('_', '-')
     object_name = object_name.replace(':', '-')
