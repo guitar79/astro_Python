@@ -34,7 +34,7 @@ destination_base_dir_name = "../CCD_obs_raw/"
 #solved_base_dir_name = "../CCD_obs_solved/"
 target_duplicate_files_dir = "../CCD_duplicate_files/"
 base_dir = "../CCD_new_files/"
-base_dir = "../CCD_wcs_one/"
+#base_dir = "../CCD_wcs_one/"
 #base_dir = "../CCD_duplicate_temp/"
 
 if not os.path.exists('{0}'.format(target_duplicate_files_dir)):
