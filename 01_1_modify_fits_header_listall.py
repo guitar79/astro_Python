@@ -17,6 +17,7 @@ conda install -c conda-forge ccdproc
 from datetime import datetime
 from astropy.io import fits
 import os
+import Python_utilities
 import astro_utilities
 
 log_dir = "logs/"
@@ -101,12 +102,12 @@ for fullname in fullnames[:] :
             
                 hdul.flush()  # changes are written back to original.fits
                 print('*'*60)
-                astro_utilities.write_log(log_file, 
+                Python_utilities.write_log(log_file,
                     '{1} ::: fits header is update with {0} ...'\
                     .format(fullname, datetime.now()))
     
     except Exception as err :
         print("X"*60)
-        astro_utilities.write_log(err_log_file, 
+        Python_utilities.write_log(err_log_file,
             '{2} ::: \n{1} with {0} ...'\
             .format(fullname, err, datetime.now()))

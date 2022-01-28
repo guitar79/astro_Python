@@ -17,6 +17,7 @@ import os
 from datetime import datetime
 from astropy.io import fits
 import shutil 
+import Python_utilities
 import astro_utilities
 
 log_dir = "logs/"
@@ -76,7 +77,7 @@ for fullname in fullnames[:]:
             fits_info = fits_info1.replace("'", "'\'")
             print("fits_info: {}".format(fits_info))
             print("*"*60)
-            astro_utilities.write_log(log_file, \
+            python_utilities.write_log(log_file, \
                 '{1} ::: {0} fits info modified ...'\
                 .format(fullname, datetime.now()))                
             new_filename = astro_utilities.get_new_filename(fullname)
@@ -87,19 +88,19 @@ for fullname in fullnames[:]:
             
             if not os.path.exists('{0}'.format(new_foldername)):
                 os.makedirs('{0}'.format(new_foldername))
-                astro_utilities.write_log(log_file, \
+                python_utilities.write_log(log_file, \
                      '{1} ::: {0} is created'.format(new_foldername, datetime.now()))    
         
             if new_filename[-6:].lower() == "_-.fit" :
                 if os.path.exists('{0}{1}_wcs.fit'.format(new_foldername, new_filename[:-6])):
-                    astro_utilities.write_log(log_file, 
+                    python_utilities.write_log(log_file, 
                          '{0}{1}_wcs.fit is already exist...'.format(new_foldername, new_filename))
                     shutil.move(r"{}".format(fullname), r"{}{}".format(target_duplicate_files_dir, new_filename))
                     print ("move {}".format(fullname), "{}{}".format(target_duplicate_files_dir, new_filename))
                 else : 
                     #os.rename(fullname, '{0}{1}'.format(new_foldername, new_filename))
                     shutil.move(r'{0}'.format(fullname), r'{0}{1}'.format(new_foldername, new_filename))
-                    astro_utilities.write_log(log_file, \
+                    python_utilities.write_log(log_file, \
                              '{0} is moved to {1}{2}'.format(fullname, new_foldername, new_filename))
                     
             elif new_filename[-8:].lower() == "_wcs.fit" : 
@@ -112,19 +113,19 @@ for fullname in fullnames[:]:
 
                 #os.rename(fullname, '{0}{1}'.format(new_foldername, new_filename))
                 shutil.move(r'{0}'.format(fullname), r'{0}{1}'.format(new_foldername, new_filename))
-                astro_utilities.write_log(log_file, \
+                python_utilities.write_log(log_file, \
                     '{0} is moved to {1}{2}'.format(fullname, new_foldername, new_filename))
             
             elif fullname[-4:].lower() == ".fit" \
                 or fullname[-4:].lower() == "fits" : 
                 #os.rename(fullname, '{0}{1}'.format(new_foldername, new_filename))
                 shutil.move(r"{}".format(fullname), r"{}{}".format(new_foldername, new_filename))
-                astro_utilities.write_log(log_file, \
+                python_utilities.write_log(log_file, \
                     '{0} is moved to {1}{2}'.format(fullname, new_foldername, new_filename))
                                  
     except Exception as err :
         print("X"*60)
-        astro_utilities.write_log(err_log_file, \
+        python_utilities.write_log(err_log_file, \
                  '{2} ::: {0} with move {1} '.format(err, fullname, datetime.now()))
     
 #############################################################################

@@ -19,6 +19,7 @@ import os
 from datetime import datetime
 from astropy.io import fits
 import shutil 
+import Python_utilities
 import astro_utilities
 
 log_dir = "logs/"
@@ -77,11 +78,11 @@ for fullname in fullnames[:]:
             
             if not os.path.exists('{0}'.format(new_foldername)):
                 os.makedirs('{0}'.format(new_foldername))
-                astro_utilities.write_log(log_file, \
+                python_utilities.write_log(log_file, \
                      '{1} ::: {0} is created'.format(new_foldername, datetime.now()))    
         
             if os.path.exists('{0}{1}'.format(new_foldername, new_filename)):
-                astro_utilities.write_log(log_file, 
+                python_utilities.write_log(log_file, 
                      '{0}{1} is already exist...'.format(new_foldername, new_filename))
                 shutil.move(r"{}".format(fullname), r"{}{}".format(target_duplicate_files_dir, new_filename))
                 print ("move {}".format(fullname), "{}{}".format(target_duplicate_files_dir, new_filename))
@@ -89,7 +90,7 @@ for fullname in fullnames[:]:
             else : 
                 #os.rename(fullname, '{0}{1}'.format(new_foldername, new_filename))
                 shutil.move(r"{}".format(fullname), r"{}{}".format(new_foldername, new_filename))
-                astro_utilities.write_log(log_file, \
+                python_utilities.write_log(log_file, \
                          '{0} is moved to {1}{2}'.format(fullname, new_foldername, new_filename))
                 fits.setval('{0}{1}'.format(new_foldername, new_filename), \
                         'NOTES', value='modified by guitar79@naver.com')
@@ -104,12 +105,12 @@ for fullname in fullnames[:]:
                 print("fits_info: {}".format(fits_info))
                 
                 print("*"*60)
-                astro_utilities.write_log(log_file, \
+                python_utilities.write_log(log_file, \
                      '{3} ::: {0} is moved to {1}{2} ...'\
                          .format(fullname, new_foldername, new_filename, datetime.now()))
     except Exception as err :
         print("X"*60)
-        astro_utilities.write_log(err_log_file, \
+        python_utilities.write_log(err_log_file, \
                  '{2} ::: {0} with move {1} '.format(err, fullname, datetime.now()))
     
                 

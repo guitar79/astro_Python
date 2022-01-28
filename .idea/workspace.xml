@@ -4,7 +4,16 @@
     <option name="autoReloadType" value="SELECTIVE" />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="772ce306-e99e-4a15-9c49-3fe657847e1e" name="Default Changelist" comment="Pycharm~" />
+    <list default="true" id="772ce306-e99e-4a15-9c49-3fe657847e1e" name="Default Changelist" comment="Pycharm~">
+      <change afterPath="$PROJECT_DIR$/Python_utilities.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/.gitignore" beforeDir="false" afterPath="$PROJECT_DIR$/.gitignore" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/01_1_modify_fits_header_listall.py" beforeDir="false" afterPath="$PROJECT_DIR$/01_1_modify_fits_header_listall.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/01_2_move_fit_file_to_one_folder_for_wcs_listall.py" beforeDir="false" afterPath="$PROJECT_DIR$/01_2_move_fit_file_to_one_folder_for_wcs_listall.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/01_3_copy_fit_file_to_one_folder_for_wcs_listall.py" beforeDir="false" afterPath="$PROJECT_DIR$/01_3_copy_fit_file_to_one_folder_for_wcs_listall.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/01_4_rename_wcs_fits_files_with_optic_keyword_listall.py" beforeDir="false" afterPath="$PROJECT_DIR$/01_4_rename_wcs_fits_files_with_optic_keyword_listall.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/readme.md" beforeDir="false" afterPath="$PROJECT_DIR$/readme.md" afterDir="false" />
+    </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
     <option name="HIGHLIGHT_NON_ACTIVE_CHANGELIST" value="false" />
@@ -188,6 +197,8 @@
       <workItem from="1641110742765" duration="45000" />
       <workItem from="1641120791271" duration="612000" />
       <workItem from="1641814609591" duration="658000" />
+      <workItem from="1641964919672" duration="32000" />
+      <workItem from="1643369515107" duration="981000" />
     </task>
     <task id="LOCAL-00001" summary="a">
       <created>1618066859079</created>
@@ -392,7 +403,14 @@
       <option name="project" value="LOCAL" />
       <updated>1641815796926</updated>
     </task>
-    <option name="localTasksCounter" value="30" />
+    <task id="LOCAL-00030" summary="Pycharm~">
+      <created>1641964930950</created>
+      <option name="number" value="00030" />
+      <option name="presentableId" value="LOCAL-00030" />
+      <option name="project" value="LOCAL" />
+      <updated>1641964930950</updated>
+    </task>
+    <option name="localTasksCounter" value="31" />
     <servers />
   </component>
   <component name="TypeScriptGeneratedFilesManager">

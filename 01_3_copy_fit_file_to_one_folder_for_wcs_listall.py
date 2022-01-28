@@ -17,6 +17,7 @@ conda install -c conda-forge ccdproc
 from datetime import datetime
 import os
 import shutil 
+import Python_utilities
 import astro_utilities
 
 log_dir = "logs/"
@@ -48,6 +49,6 @@ for fullname in fullnames[:2000] :
     
     except Exception as err :
         print("X"*60)
-        astro_utilities.write_log(err_log_file, 
+        python_utilities.write_log(err_log_file, 
             '{2} ::: \n{1} with {0} ...'\
             .format(fullname, err, datetime.now()))
