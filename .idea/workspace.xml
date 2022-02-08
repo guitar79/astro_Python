@@ -5,18 +5,7 @@
   </component>
   <component name="ChangeListManager">
     <list default="true" id="772ce306-e99e-4a15-9c49-3fe657847e1e" name="Default Changelist" comment="Pycharm~">
-      <change afterPath="$PROJECT_DIR$/01_1.01_2.01_4..sh" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/01_1.01_4.sh" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/Python_utilities.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/.gitignore" beforeDir="false" afterPath="$PROJECT_DIR$/.gitignore" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/01_1_modify_fits_header_listall.py" beforeDir="false" afterPath="$PROJECT_DIR$/01_1_modify_fits_header_listall.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/01_2_move_fit_file_to_one_folder_for_wcs_listall.py" beforeDir="false" afterPath="$PROJECT_DIR$/01_2_move_fit_file_to_one_folder_for_wcs_listall.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/01_3_copy_fit_file_to_one_folder_for_wcs_listall.py" beforeDir="false" afterPath="$PROJECT_DIR$/01_3_copy_fit_file_to_one_folder_for_wcs_listall.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/01_4_rename_wcs_fits_files_with_optic_keyword_listall.py" beforeDir="false" afterPath="$PROJECT_DIR$/01_4_rename_wcs_fits_files_with_optic_keyword_listall.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/readme.md" beforeDir="false" afterPath="$PROJECT_DIR$/readme.md" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/sh_01_1-01_4.sh" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/sh_01_2-01_4.sh" beforeDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -64,7 +53,29 @@
       <recent name="$PROJECT_DIR$" />
     </key>
   </component>
-  <component name="RunManager" selected="Python.01_2_modify_fits_header_listall">
+  <component name="RunManager" selected="Shell Script.01_1.01_4.sh">
+    <configuration name="01-1_modify_fits_header_listall" type="PythonConfigurationType" factoryName="Python" temporary="true" nameIsGenerated="true">
+      <option name="INTERPRETER_OPTIONS" value="" />
+      <option name="PARENT_ENVS" value="true" />
+      <envs>
+        <env name="PYTHONUNBUFFERED" value="1" />
+      </envs>
+      <option name="SDK_HOME" value="" />
+      <option name="WORKING_DIRECTORY" value="$PROJECT_DIR$" />
+      <option name="IS_MODULE_SDK" value="false" />
+      <option name="ADD_CONTENT_ROOTS" value="true" />
+      <option name="ADD_SOURCE_ROOTS" value="true" />
+      <module name="" />
+      <EXTENSION ID="PythonCoverageRunConfigurationExtension" runner="coverage.py" />
+      <option name="SCRIPT_NAME" value="$PROJECT_DIR$/01-1_modify_fits_header_listall.py" />
+      <option name="PARAMETERS" value="" />
+      <option name="SHOW_COMMAND_LINE" value="false" />
+      <option name="EMULATE_TERMINAL" value="false" />
+      <option name="MODULE_MODE" value="false" />
+      <option name="REDIRECT_INPUT" value="false" />
+      <option name="INPUT_FILE" value="" />
+      <method v="2" />
+    </configuration>
     <configuration name="01_2_modify_fits_header_listall" type="PythonConfigurationType" factoryName="Python" temporary="true" nameIsGenerated="true">
       <option name="INTERPRETER_OPTIONS" value="" />
       <option name="PARENT_ENVS" value="true" />
@@ -79,28 +90,6 @@
       <module name="" />
       <EXTENSION ID="PythonCoverageRunConfigurationExtension" runner="coverage.py" />
       <option name="SCRIPT_NAME" value="$PROJECT_DIR$/01_2_modify_fits_header_listall.py" />
-      <option name="PARAMETERS" value="" />
-      <option name="SHOW_COMMAND_LINE" value="false" />
-      <option name="EMULATE_TERMINAL" value="false" />
-      <option name="MODULE_MODE" value="false" />
-      <option name="REDIRECT_INPUT" value="false" />
-      <option name="INPUT_FILE" value="" />
-      <method v="2" />
-    </configuration>
-    <configuration name="01_2_rename_new_fits_files_with_optic_keyword_listall" type="PythonConfigurationType" factoryName="Python" temporary="true" nameIsGenerated="true">
-      <option name="INTERPRETER_OPTIONS" value="" />
-      <option name="PARENT_ENVS" value="true" />
-      <envs>
-        <env name="PYTHONUNBUFFERED" value="1" />
-      </envs>
-      <option name="SDK_HOME" value="$USER_HOME$/anaconda3/bin/python" />
-      <option name="WORKING_DIRECTORY" value="$PROJECT_DIR$" />
-      <option name="IS_MODULE_SDK" value="false" />
-      <option name="ADD_CONTENT_ROOTS" value="true" />
-      <option name="ADD_SOURCE_ROOTS" value="true" />
-      <module name="" />
-      <EXTENSION ID="PythonCoverageRunConfigurationExtension" runner="coverage.py" />
-      <option name="SCRIPT_NAME" value="$PROJECT_DIR$/01_2_rename_new_fits_files_with_optic_keyword_listall.py" />
       <option name="PARAMETERS" value="" />
       <option name="SHOW_COMMAND_LINE" value="false" />
       <option name="EMULATE_TERMINAL" value="false" />
@@ -153,12 +142,28 @@
       <option name="INPUT_FILE" value="" />
       <method v="2" />
     </configuration>
+    <configuration name="01_1.01_4.sh" type="ShConfigurationType" temporary="true">
+      <option name="SCRIPT_TEXT" value="" />
+      <option name="INDEPENDENT_SCRIPT_PATH" value="true" />
+      <option name="SCRIPT_PATH" value="$PROJECT_DIR$/01_1.01_4.sh" />
+      <option name="SCRIPT_OPTIONS" value="" />
+      <option name="INDEPENDENT_SCRIPT_WORKING_DIRECTORY" value="true" />
+      <option name="SCRIPT_WORKING_DIRECTORY" value="$PROJECT_DIR$" />
+      <option name="INDEPENDENT_INTERPRETER_PATH" value="true" />
+      <option name="INTERPRETER_PATH" value="/bin/bash" />
+      <option name="INTERPRETER_OPTIONS" value="" />
+      <option name="EXECUTE_IN_TERMINAL" value="true" />
+      <option name="EXECUTE_SCRIPT_FILE" value="true" />
+      <envs />
+      <method v="2" />
+    </configuration>
     <recent_temporary>
       <list>
+        <item itemvalue="Shell Script.01_1.01_4.sh" />
+        <item itemvalue="Python.01-1_modify_fits_header_listall" />
         <item itemvalue="Python.01_2_modify_fits_header_listall" />
         <item itemvalue="Python.01_4_rename_wcs_fits_files_with_optic_keyword_listall" />
         <item itemvalue="Python.01_3_move_fit_file_to_one_folder_for_wcs_listall" />
-        <item itemvalue="Python.01_2_rename_new_fits_files_with_optic_keyword_listall" />
       </list>
     </recent_temporary>
   </component>
@@ -202,7 +207,9 @@
       <workItem from="1641120791271" duration="612000" />
       <workItem from="1641814609591" duration="658000" />
       <workItem from="1641964919672" duration="32000" />
-      <workItem from="1643369515107" duration="1680000" />
+      <workItem from="1643369515107" duration="1967000" />
+      <workItem from="1643371626901" duration="706000" />
+      <workItem from="1643372372735" duration="58000" />
     </task>
     <task id="LOCAL-00001" summary="a">
       <created>1618066859079</created>
@@ -421,7 +428,14 @@
       <option name="project" value="LOCAL" />
       <updated>1643371192936</updated>
     </task>
-    <option name="localTasksCounter" value="32" />
+    <task id="LOCAL-00032" summary="Pycharm~">
+      <created>1643371473406</created>
+      <option name="number" value="00032" />
+      <option name="presentableId" value="LOCAL-00032" />
+      <option name="project" value="LOCAL" />
+      <updated>1643371473406</updated>
+    </task>
+    <option name="localTasksCounter" value="33" />
     <servers />
   </component>
   <component name="TypeScriptGeneratedFilesManager">
