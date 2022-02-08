@@ -47,6 +47,7 @@ for fullname in fullnames[:] :
             foldername_el = fullname_el[-2].split('_')
             object_name = foldername_el[0]
             optic_name = foldername_el[5]
+            instrument_name = foldername_el[6]
             flipstat = "        "
 
             #with fits.open('{0}'.format(fullname), mode="append") as hdul :
@@ -89,17 +90,27 @@ for fullname in fullnames[:] :
                 hdul[0].header.append('COMMENT', 
                                        'change HEADER OBJECT {0}'.format(object_name), 
                                        'change HEADER OBJECT {0}'.format(object_name))
-                
-                #old_optic_name = hdul[0].header['OPTIC']
+
+                # old_optic_name = hdul[0].header['OPTIC']
                 hdul[0].header['OPTIC'] = optic_name
-                #hdul[0].header.update('OPTIC', 
-                #                   '{0}'.format(optic_name), 
+                # hdul[0].header.update('OPTIC',
+                #                   '{0}'.format(optic_name),
                 #                   'OPTIC information')
-                
-                hdul[0].header.append('COMMENT', 
-                                       'change HEADER OPTIC from {0}'.format(optic_name), 
-                                       'change HEADER OPTIC from {0}'.format(optic_name))
-            
+
+                hdul[0].header.append('COMMENT',
+                                      'change HEADER OPTIC from {0}'.format(optic_name),
+                                      'change HEADER OPTIC from {0}'.format(optic_name))
+
+                # old_optic_name = hdul[0].header['INSTRUME']
+                hdul[0].header['INSTRUME'] = instrument_name
+                # hdul[0].header.update('INSTRUME',
+                #                   '{0}'.format(instrument_name),
+                #                   'INSTRUME information')
+
+                hdul[0].header.append('COMMENT',
+                                      'change HEADER INSTRUME from {0}'.format(instrument_name),
+                                      'change HEADER INSTRUME from {0}'.format(instrument_name))
+
                 hdul.flush()  # changes are written back to original.fits
                 print('*'*60)
                 Python_utilities.write_log(log_file,

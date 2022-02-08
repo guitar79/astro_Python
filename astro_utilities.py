@@ -212,8 +212,8 @@ def get_new_filename(fullname, **kargs):
         ybin = int(ybin)
         ybin = str(ybin)
     
-    if not 'CRPIX1' in hdul[0].header \
-        or not 'CRPIX2' in hdul[0].header : 
+    if not 'CD1_1' in hdul[0].header \
+        or not 'CD1_2' in hdul[0].header :
         wcs = "-"
     else :
         wcs = "wcs"
