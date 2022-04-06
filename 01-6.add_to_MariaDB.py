@@ -1,6 +1,4 @@
-import cv2
 import os
-import numpy as np
 from astropy.io import fits
 import Python_utilities
 
@@ -43,6 +41,7 @@ if table_exist == 0:
     qry = """CREATE TABLE IF NOT EXISTS `{}`.`{}` (
         `id` INT NOT NULL AUTO_INCREMENT ,
         `fullname` VARCHAR(16384) NULL default NULL ,
+        `Frame_TYP` VARCHAR(8) NULL DEFAULT NULL ,
         `OBJCTRA` VARCHAR(10) NULL DEFAULT NULL ,      
         `OBJCTDEC` VARCHAR(10) NULL DEFAULT NULL ,          
         `OBJCTALT` VARCHAR(10) NULL DEFAULT NULL ,             
