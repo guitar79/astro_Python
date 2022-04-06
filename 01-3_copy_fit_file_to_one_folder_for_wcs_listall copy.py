@@ -29,6 +29,7 @@ print ("err_log_file: {}".format(err_log_file))
 base_dir = "../CCD_new_files/"
 #base_dir = "../../../3TB1/CCD_obs"
 base_dir = "../CCD_obs_raw/QSI683ws_1bin/Light_FSQ106ED-x.73"
+base_dir = "../2016/"
 
 target_dir = "../CCD_wcs_one/"
 
