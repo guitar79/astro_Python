@@ -61,18 +61,22 @@ else :
 
 #########################################
 
-qry = "SELECT `fullname` FROM `{}`.`{}` WHERE `Frame_TYP` IS NULL;".format(db_name, tb_name)
+qry = "SELECT `fullname` FROM `{}`.`{}` WHERE `date-time` IS NULL;".format(db_name, tb_name)
 cur.execute(qry)
 fullnames = cur.fetchall()
 
 for fullname in fullnames :
+    #fullname = fullnames[0]
     print(fullname['fullname'])
-    hdul = fits.open(fullname['fullname'])
+    fullname_el = fullname['fullname'].split("/")
+    filename_el = fullname_el[-1].split("_")
+    d_time = filename_el[3]
+    d_time = d_time.replace("-", "")
 
     qry = """UPDATE `{0}`.`{1}` 
-            SET `Frame_TYP`= '{3}'    
+            SET `date-time`= '{3}'    
             WHERE `{1}`.`fullname` = '{2}';""".format(db_name, tb_name,
-                                              fullname['fullname'], hdul[0].header['IMAGETYP'])
+                                              fullname['fullname'], d_time)
     print("qry: {}".format(qry))
     cur.execute(qry)
     conn.commit()
