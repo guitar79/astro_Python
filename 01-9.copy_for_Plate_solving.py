@@ -19,7 +19,7 @@ print ("log_file: {}".format(log_file))
 print ("err_log_file: {}".format(err_log_file))
 
 base_dir = "../CCD_obs_raw/STL-11000M_1bin/"
-save_dir = "../astrometry_solved"
+save_dir = "../CCD_wcs_one/"
 if not os.path.exists(save_dir):
     os.makedirs(save_dir)
 fullnames = Python_utilities.getFullnameListOfallFiles(base_dir)
