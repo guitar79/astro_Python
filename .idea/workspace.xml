@@ -4,11 +4,14 @@
     <option name="autoReloadType" value="SELECTIVE" />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="772ce306-e99e-4a15-9c49-3fe657847e1e" name="Default Changelist" comment="Pycharm~">
+    <list default="true" id="772ce306-e99e-4a15-9c49-3fe657847e1e" name="Default Changelist" comment="Pycharm home~~">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
+<<<<<<< HEAD
       <change beforePath="$PROJECT_DIR$/01-1_modify_fits_header_listall.py" beforeDir="false" afterPath="$PROJECT_DIR$/01-1_modify_fits_header_listall.py" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/01-4_rename_wcs_fits_files_with_optic_keyword_listall.py" beforeDir="false" afterPath="$PROJECT_DIR$/01-4_rename_wcs_fits_files_with_optic_keyword_listall.py" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/astro_Python_ubuntu_env.yaml" beforeDir="false" afterPath="$PROJECT_DIR$/astro_Python_ubuntu_env.yaml" afterDir="false" />
+=======
+>>>>>>> 29cdfbc5175040672d48d33cc7dcdad4d14f525e
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -150,6 +153,38 @@
     </configuration>
     <configuration name="01_8_fits_astrometry_solving-listall" type="PythonConfigurationType" factoryName="Python" temporary="true" nameIsGenerated="true">
       <module name="astro_Python" />
+<<<<<<< HEAD
+=======
+      <option name="INTERPRETER_OPTIONS" value="" />
+      <option name="PARENT_ENVS" value="true" />
+      <envs>
+        <env name="PYTHONUNBUFFERED" value="1" />
+      </envs>
+      <option name="SDK_HOME" value="" />
+      <option name="WORKING_DIRECTORY" value="$PROJECT_DIR$" />
+      <option name="IS_MODULE_SDK" value="true" />
+      <option name="ADD_CONTENT_ROOTS" value="true" />
+      <option name="ADD_SOURCE_ROOTS" value="true" />
+      <EXTENSION ID="PythonCoverageRunConfigurationExtension" runner="coverage.py" />
+      <option name="SCRIPT_NAME" value="$PROJECT_DIR$/01_8_fits_astrometry_solving-listall.py" />
+      <option name="PARAMETERS" value="" />
+      <option name="SHOW_COMMAND_LINE" value="false" />
+      <option name="EMULATE_TERMINAL" value="false" />
+      <option name="MODULE_MODE" value="false" />
+      <option name="REDIRECT_INPUT" value="false" />
+      <option name="INPUT_FILE" value="" />
+      <method v="2" />
+    </configuration>
+    <configuration name="01-1_01-4.sh" type="ShConfigurationType" temporary="true">
+      <option name="SCRIPT_TEXT" value="" />
+      <option name="INDEPENDENT_SCRIPT_PATH" value="true" />
+      <option name="SCRIPT_PATH" value="$PROJECT_DIR$/01-1_01-4.sh" />
+      <option name="SCRIPT_OPTIONS" value="" />
+      <option name="INDEPENDENT_SCRIPT_WORKING_DIRECTORY" value="true" />
+      <option name="SCRIPT_WORKING_DIRECTORY" value="$PROJECT_DIR$" />
+      <option name="INDEPENDENT_INTERPRETER_PATH" value="true" />
+      <option name="INTERPRETER_PATH" value="/bin/bash" />
+>>>>>>> 29cdfbc5175040672d48d33cc7dcdad4d14f525e
       <option name="INTERPRETER_OPTIONS" value="" />
       <option name="PARENT_ENVS" value="true" />
       <envs>
@@ -174,9 +209,15 @@
       <list>
         <item itemvalue="Python.01-4_rename_wcs_fits_files_with_optic_keyword_listall" />
         <item itemvalue="Python.01_8_fits_astrometry_solving-listall" />
+<<<<<<< HEAD
         <item itemvalue="Python.01-1_modify_fits_header_listall" />
         <item itemvalue="Python.01-7.add_TYP_to_MariaDB" />
         <item itemvalue="Python.01-6.add_to_MariaDB" />
+=======
+        <item itemvalue="Python.01-7.add_TYP_to_MariaDB" />
+        <item itemvalue="Python.01-6.add_to_MariaDB" />
+        <item itemvalue="Shell Script.01-1_01-4.sh" />
+>>>>>>> 29cdfbc5175040672d48d33cc7dcdad4d14f525e
       </list>
     </recent_temporary>
   </component>
@@ -496,6 +537,7 @@
       <updated>1649254672639</updated>
     </task>
     <task id="LOCAL-00039" summary="Pycharm~">
+<<<<<<< HEAD
       <created>1649414804190</created>
       <option name="number" value="00039" />
       <option name="presentableId" value="LOCAL-00039" />
@@ -503,6 +545,22 @@
       <updated>1649414804190</updated>
     </task>
     <option name="localTasksCounter" value="40" />
+=======
+      <created>1649566775089</created>
+      <option name="number" value="00039" />
+      <option name="presentableId" value="LOCAL-00039" />
+      <option name="project" value="LOCAL" />
+      <updated>1649566775089</updated>
+    </task>
+    <task id="LOCAL-00040" summary="Pycharm home~~">
+      <created>1650092858591</created>
+      <option name="number" value="00040" />
+      <option name="presentableId" value="LOCAL-00040" />
+      <option name="project" value="LOCAL" />
+      <updated>1650092858592</updated>
+    </task>
+    <option name="localTasksCounter" value="41" />
+>>>>>>> 29cdfbc5175040672d48d33cc7dcdad4d14f525e
     <servers />
   </component>
   <component name="TypeScriptGeneratedFilesManager">
@@ -518,21 +576,31 @@
         </entry>
       </map>
     </option>
-    <option name="oldMeFiltersMigrated" value="true" />
   </component>
   <component name="VcsManagerConfiguration">
     <option name="ADD_EXTERNAL_FILES_SILENTLY" value="true" />
     <MESSAGE value="a" />
     <MESSAGE value="Pycharm~" />
-    <option name="LAST_COMMIT_MESSAGE" value="Pycharm~" />
+    <MESSAGE value="Pycharm home~~" />
+    <option name="LAST_COMMIT_MESSAGE" value="Pycharm home~~" />
   </component>
   <component name="com.intellij.coverage.CoverageDataManagerImpl">
+<<<<<<< HEAD
     <SUITE FILE_PATH="coverage/astro_Python$01_5_add_to_MariaDB.coverage" NAME="01-5.add_to_MariaDB Coverage Results" MODIFIED="1649168918929" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$" />
     <SUITE FILE_PATH="coverage/astro_Python$01_1_modify_fits_header_listall.coverage" NAME="01-1_modify_fits_header_listall Coverage Results" MODIFIED="1649593023145" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$" />
     <SUITE FILE_PATH="coverage/astro_Python$01_6_add_TYP_to_MariaDB.coverage" NAME="01-6.add_TYP_to_MariaDB Coverage Results" MODIFIED="1649253763406" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$" />
     <SUITE FILE_PATH="coverage/astro_Python$01_3_move_fit_file_to_one_folder_for_wcs_listall.coverage" NAME="01_3_move_fit_file_to_one_folder_for_wcs_listall Coverage Results" MODIFIED="1627733252978" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$" />
     <SUITE FILE_PATH="coverage/astro_Python$01_8_fits_astrometry_solving_listall.coverage" NAME="01_8_fits_astrometry_solving-listall Coverage Results" MODIFIED="1649729762090" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$" />
     <SUITE FILE_PATH="coverage/astro_Python$01_4_rename_wcs_fits_files_with_optic_keyword_listall.coverage" NAME="01-4_rename_wcs_fits_files_with_optic_keyword_listall Coverage Results" MODIFIED="1649800619194" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$" />
+=======
+    <SUITE FILE_PATH="coverage/astro_Python$01_4_rename_wcs_fits_files_with_optic_keyword_listall.coverage" NAME="01-4_rename_wcs_fits_files_with_optic_keyword_listall Coverage Results" MODIFIED="1650092780872" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$" />
+    <SUITE FILE_PATH="coverage/astro_Python$01_3_move_fit_file_to_one_folder_for_wcs_listall.coverage" NAME="01_3_move_fit_file_to_one_folder_for_wcs_listall Coverage Results" MODIFIED="1627733252978" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$" />
+    <SUITE FILE_PATH="coverage/astro_Python$01_6_add_TYP_to_MariaDB.coverage" NAME="01-6.add_TYP_to_MariaDB Coverage Results" MODIFIED="1649253763406" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$" />
+    <SUITE FILE_PATH="coverage/astro_Python$01_1_modify_fits_header_listall.coverage" NAME="01_1_modify_fits_header_listall Coverage Results" MODIFIED="1627733176432" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$" />
+    <SUITE FILE_PATH="coverage/astro_Python$01_5_add_to_MariaDB.coverage" NAME="01-5.add_to_MariaDB Coverage Results" MODIFIED="1649168935454" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$" />
+    <SUITE FILE_PATH="coverage/astro_Python$01_8_fits_astrometry_solving_listall.coverage" NAME="01_8_fits_astrometry_solving-listall Coverage Results" MODIFIED="1649582839975" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$" />
+>>>>>>> 29cdfbc5175040672d48d33cc7dcdad4d14f525e
     <SUITE FILE_PATH="coverage/astro_Python$01_2_rename_new_fits_files_with_optic_keyword_listall.coverage" NAME="01_2_rename_new_fits_files_with_optic_keyword_listall Coverage Results" MODIFIED="1627713746305" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$" />
+    <SUITE FILE_PATH="coverage/astro_Python$01_7_add_date_time_to_MariaDB.coverage" NAME="01-7.add_date-time_to_MariaDB Coverage Results" MODIFIED="1649368208266" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$" />
   </component>
 </project>
