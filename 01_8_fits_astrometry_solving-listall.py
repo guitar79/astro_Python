@@ -25,7 +25,7 @@ fullnames = Python_utilities.getFullnameListOfallFiles(base_dir)
 print ("fullnames: {}".format(fullnames))
 
 n = 0
-for fullname in fullnames[:] :
+for fullname in fullnames[20000:] :
 #fullname = fullnames[5]
     n += 1
     print('#'*40,

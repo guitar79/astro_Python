@@ -32,7 +32,7 @@ destination_base_dir_name = "../CCD_obs_raw/"
 target_duplicate_files_dir = "../CCD_duplicate_files/"
 base_dir = "../CCD_new_files/"
 #base_dir = "../CCD_wcs_one/"
-#base_dir = "../CCD_duplicate_temp/"
+#base_dir = "../astrometry_solved/"
 
 if not os.path.exists('{0}'.format(target_duplicate_files_dir)):
     os.makedirs('{0}'.format(target_duplicate_files_dir))
@@ -60,7 +60,8 @@ for fullname in fullnames[:]:
             or fullname[-4:].lower() == "seal" \
             or fullname[-4:].lower() == "tiff" \
             or fullname[-4:].lower() == "xosm" :
-            os.remove("{}".format(fullname))
+            #os.remove("{}".format(fullname))
+            print("{}".format(fullname))
         
         elif (fullname[-4:].lower() == ".fit" or fullname[-4:].lower() == "fits" or fullname[-4:].lower() == ".new")\
               and os.path.isfile('{}'.format(fullname)):
