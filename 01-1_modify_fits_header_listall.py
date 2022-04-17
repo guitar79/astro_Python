@@ -26,7 +26,7 @@ err_log_file = "{}{}_err.log".format(log_dir, os.path.basename(__file__)[:-3])
 print ("log_file: {}".format(log_file))
 print ("err_log_file: {}".format(err_log_file))
 
-base_dir = "../CCD_new_files/"
+base_dir = "../CCD_new_files/new/"
 #base_dir = "../../../3TB1/CCD_obs"
 
 fullnames = astro_utilities.getFullnameListOfallFiles(base_dir)
