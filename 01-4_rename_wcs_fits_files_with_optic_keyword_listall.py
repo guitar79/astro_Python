@@ -65,9 +65,17 @@ for fullname in fullnames[:]:
             or fullname[-4:].lower() == ".log" \
             or fullname[-4:].lower() == "seal" \
             or fullname[-4:].lower() == "tiff" \
+            or fullname[-4:].lower() == ".png" \
+            or fullname[-4:].lower() == ".axy" \
+            or fullname[-5:].lower() == "match" \
+            or fullname[-4:].lower() == ".wcs" \
+            or fullname[-6:].lower() == "solved" \
+            or fullname[-4:].lower() == "rdls" \
+            or fullname[-4:].lower() == "xyls" \
+            or fullname[-4:].lower() == "corr" \
             or fullname[-4:].lower() == "xosm" :
-            #os.remove("{}".format(fullname))
-            print("{}".format(fullname))
+            os.remove("{}".format(fullname))
+            print("{} is removed".format(fullname))
         
         elif (fullname[-4:].lower() == ".fit" or fullname[-4:].lower() == "fits" or fullname[-4:].lower() == ".new")\
               and os.path.isfile('{}'.format(fullname)):

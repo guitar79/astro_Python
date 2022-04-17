@@ -446,11 +446,9 @@ from datetime import datetime
 
 
 def print_subworking_time(sub_start_time):
-
     from datetime import datetime
     working_time = (datetime.now() - cht_start_time) #total days for downloading
     return print('working time ::: %s' % (working_time))
-
 
 
 def sub_p_solve_field(fullname, save_dir_name, sub_start_time): 

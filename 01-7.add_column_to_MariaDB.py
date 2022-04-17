@@ -41,8 +41,12 @@ if table_exist == 0:
     qry = """CREATE TABLE IF NOT EXISTS `{}`.`{}` (
         `id` INT NOT NULL AUTO_INCREMENT ,
         `fullname` VARCHAR(16384) NULL default NULL ,
-        `date-time` VARCHAR(14) NULL default NULL ,
-        `Frame_TYP` VARCHAR(12) NULL DEFAULT NULL ,
+        `DATE-OBS` VARCHAR(14) NULL default NULL ,
+        `IMAGETYP` VARCHAR(8) NULL DEFAULT NULL ,
+        `OBJECT` VARCHAR(20) NULL DEFAULT NULL ,
+        `FOCALLEN` VARCHAR(10) NULL DEFAULT NULL ,
+        `XPIXSZ` VARCHAR(10) NULL DEFAULT NULL ,
+        `PIXSCALE` VARCHAR(10) NULL DEFAULT NULL, 
         `OBJCTRA` VARCHAR(10) NULL DEFAULT NULL ,      
         `OBJCTDEC` VARCHAR(10) NULL DEFAULT NULL ,          
         `OBJCTALT` VARCHAR(10) NULL DEFAULT NULL ,             
@@ -61,23 +65,47 @@ else :
 
 #########################################
 
-qry = "SELECT `fullname` FROM `{}`.`{}` WHERE `date-time` IS NULL;".format(db_name, tb_name)
-cur.execute(qry)
-fullnames = cur.fetchall()
+ins_column = "OBJECT"
+ins_column = "FOCALLEN"
+ins_column = "XPIXSZ"
+ins_column = "PIXSCALE"
 
-for fullname in fullnames :
-    #fullname = fullnames[0]
-    print(fullname['fullname'])
-    fullname_el = fullname['fullname'].split("/")
-    filename_el = fullname_el[-1].split("_")
-    d_time = filename_el[3]
-    d_time = d_time.replace("-", "")
+ins_columns = ['IMAGETYP', 'OBJECT', 'FOCALLEN', 'XPIXSZ', 'PIXSCALE', 
+                'OBJCTRA', 'OBJCTDEC', 'OBJCTALT', 'OBJCTAZ', 'OBJCTHA']    	
+#########################################
 
-    qry = """UPDATE `{0}`.`{1}` 
-            SET `date-time`= '{3}'    
-            WHERE `{1}`.`fullname` = '{2}';""".format(db_name, tb_name,
-                                              fullname['fullname'], d_time)
-    print("qry: {}".format(qry))
+
+for ins_column in ins_columns :
+
+    qry = "SELECT `fullname` FROM `{}`.`{}` WHERE `{}` IS NULL;".format(db_name, tb_name, ins_column)
     cur.execute(qry)
-    conn.commit()
+    fullnames = cur.fetchall()
 
+    n = 0
+
+    for fullname in fullnames :
+        n += 1
+        print('#'*40,
+            "\n{2:.01f}%  ({0}/{1}) {3}".format(n, len(fullnames), (n/len(fullnames))*100, os.path.basename(__file__)))
+        print ("Starting...   fullname: {}".format(fullname))
+
+        #check file exist...
+        if not os.path.exists("{}".format(fullname['fullname'])):
+            qry = """DELETE FROM `{0}`.`{1}`  
+                    WHERE `{1}`.`fullname` = '{2}';""".format(db_name, tb_name,
+                                                        fullname['fullname'])
+                
+            print("qry: {}".format(qry))
+            cur.execute(qry)
+            conn.commit()
+
+        else : 
+            hdul = fits.open(fullname['fullname'])
+            if "{}".format(ins_column) in hdul[0].header :
+                qry = """UPDATE `{0}`.`{1}` 
+                        SET `{3}`= '{4}'    
+                        WHERE `{1}`.`fullname` = '{2}';""".format(db_name, tb_name,
+                                                        fullname['fullname'], ins_column, hdul[0].header['{}'.format(ins_column)])
+                print("qry: {}".format(qry))
+                cur.execute(qry)
+                conn.commit()
