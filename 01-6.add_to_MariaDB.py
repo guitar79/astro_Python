@@ -15,7 +15,7 @@ print ("err_log_file: {}".format(err_log_file))
 #########################################
 import pymysql
 db_host = '192.168.0.20'
-db_host = '10.114.0.120'
+#db_host = '10.114.0.120'
 
 db_user = 'modis'
 db_pass = 'Modis12345!'
@@ -41,7 +41,12 @@ if table_exist == 0:
     qry = """CREATE TABLE IF NOT EXISTS `{}`.`{}` (
         `id` INT NOT NULL AUTO_INCREMENT ,
         `fullname` VARCHAR(16384) NULL default NULL ,
-        `Frame_TYP` VARCHAR(8) NULL DEFAULT NULL ,
+        `DATE-OBS` VARCHAR(28) NULL DEFAULT NULL ,
+        `IMAGETYP` VARCHAR(8) NULL DEFAULT NULL ,
+        `OBJECT` VARCHAR(20) NULL DEFAULT NULL ,
+        `FOCALLEN` VARCHAR(10) NULL DEFAULT NULL ,
+        `XPIXSZ` VARCHAR(10) NULL DEFAULT NULL ,
+        `PIXSCALE` VARCHAR(10) NULL DEFAULT NULL, 
         `OBJCTRA` VARCHAR(10) NULL DEFAULT NULL ,      
         `OBJCTDEC` VARCHAR(10) NULL DEFAULT NULL ,          
         `OBJCTALT` VARCHAR(10) NULL DEFAULT NULL ,             
@@ -64,7 +69,6 @@ base_drs = ['../CCD_obs_raw/']
 
 fullnames = []
 for dirName in base_drs :
-    #dirName = "../Aerosol/MODIS Aqua C6.1 - Aerosol 5-Min L2 Swath 3km/2002/185/"
     try :
         fullnames.extend(Python_utilities.getFullnameListOfallFiles("{}".format(dirName)))
     except Exception as err :
@@ -74,21 +78,22 @@ for dirName in base_drs :
 fullnames = sorted(fullnames)
 #########################################
 
+n = 0
+
 for fullname in fullnames :
+    n += 1
+    print('#'*40,
+        "\n{2:.01f}%  ({0}/{1}) {3}".format(n, len(fullnames), (n/len(fullnames))*100, os.path.basename(__file__)))
+    print ("Starting...   fullname: {}".format(fullname))
+
     #fullname = fullnames[10]
     if fullname[-4:].lower() == ".fit":
-        print("Starting: {}".format(fullname))
         fullname_el = fullname.split("/")
-        filename_el = fullname_el[-1].split("/")
-
+        filename_el = fullname_el[-1].split("_")
         hdul = fits.open(fullname)
 
-        if 'OBJCTRA' in hdul[0].header and \
-            'OBJCTDEC' in hdul[0].header and \
-            'OBJCTALT' in hdul[0].header and \
-            'OBJCTAZ' in hdul[0].header and \
-            'OBJCTHA' in hdul[0].header and \
-            'EXPTIME' in hdul[0].header :
+        if 'DATE-OBS' in hdul[0].header \
+            and 'EXPTIME' in hdul[0].header:
             try:
                 qry = """SELECT `id` FROM `{}`.`{}` WHERE `fullname`= '{}';""".format(db_name, tb_name, fullname)
                 check_row = cur.execute(qry)
@@ -96,25 +101,17 @@ for fullname in fullnames :
 
                 if check_row == 0:
                     qry = """INSERT INTO `{0}`.`{1}`                                         
-                                        (`fullname`, `OBJCTRA`, `OBJCTDEC`, `OBJCTALT`, `OBJCTAZ`, `OBJCTHA`, `EXPTIME`) 
-                                        VALUES ('{2}', '{3}', '{4}', '{5}', '{6}', '{7}', '{8}');""".format(db_name, tb_name,
-                                                fullname, hdul[0].header['OBJCTRA'], hdul[0].header['OBJCTDEC'],
-                                                          hdul[0].header['OBJCTALT'], hdul[0].header['OBJCTAZ'],
-                                                          hdul[0].header['OBJCTHA'], hdul[0].header['EXPTIME'])
+                                        (`fullname`,  `DATE-OBS`, `EXPTIME`) 
+                                        VALUES ('{2}', '{3}', '{4}');""".format(db_name, tb_name,
+                                                fullname, hdul[0].header['DATE-OBS'], hdul[0].header['EXPTIME'])
                     print("qry: {}".format(qry))
 
                 else:
                     qry = """UPDATE `{0}`.`{1}` 
-                            SET `OBJCTRA`= '{3}' ,
-                            `OBJCTDEC`= '{4}' ,
-                            `OBJCTALT`= '{5}' ,
-                            `OBJCTAZ`= '{6}' ,
-                            `OBJCTHA`= '{7}' ,
-                            `EXPTIME`= '{8}'   
-                            WHERE `{1}`.`id` = {2};""".format(db_name, tb_name,
-                                                fullname, hdul[0].header['OBJCTRA'], hdul[0].header['OBJCTDEC'],
-                                                          hdul[0].header['OBJCTALT'], hdul[0].header['OBJCTAZ'],
-                                                          hdul[0].header['OBJCTHA'], hdul[0].header['EXPTIME'])
+                            SET `OBJCTRA`= '{3}' , 
+                            `DATE-OBS`= '{4}' , 
+                            WHERE `{1}`.`fullname` = {2};""".format(db_name, tb_name,
+                                                fullname, hdul[0].header['DATE-OBS'], hdul[0].header['EXPTIME'])
                     print("qry: {}".format(qry))
                 cur.execute(qry)
                 conn.commit()
