@@ -6,10 +6,12 @@ Created on Thu Nov 22 01:00:19 2018
 No module named 'ccdproc'
 conda install -c conda-forge ccdproc
 """
+from glob import glob
 import os
 import subprocess
 import Python_utilities
 import astro_utilities
+
 
 log_dir = "logs/"
 log_file = "{}{}.log".format(log_dir, os.path.basename(__file__)[:-3])
@@ -17,12 +19,49 @@ err_log_file = "{}{}_err.log".format(log_dir, os.path.basename(__file__)[:-3])
 print ("log_file: {}".format(log_file))
 print ("err_log_file: {}".format(err_log_file))
 
-base_dir = "../CCD_obs_raw/STL-11000M_1bin/"
+base_dir = "../CCD_obs_raw/QSI683ws_2bin/"
 save_dir = "../astrometry_solved"
 if not os.path.exists(save_dir):
     os.makedirs(save_dir)
+
+#########################################
+#single  class
+#########################################
+class AstrometrySolver():
+    def __init__(self, fullname):
+        self.fullname = fullname
+
+    #@def fetch(self):
+        if self.fullname[-4:].lower() == ".fit" \
+            and self.fullname[-7:].lower() != "wcs.fit":
+            self.fullname_el = self.fullname.split("/")
+            self.filename_el = self.fullname_el[-1].split("_")
+
+            if self.filename_el[1].lower() == "light" :
+                print("Starting...   self.fullname: {}".format(self.fullname))
+                self.fullname_el = self.fullname.split("/")
+                self.filename_el = self.fullname_el[-1].split(".")
+                self.save_dr = self.fullname[:-len(self.fullname_el[-1])]
+
+                try:
+                    with subprocess.Popen(['solve-field', 
+                                #'-O', #--overwrite: overwrite output files if they already exist
+                                #'--scale-units', 'arcsecperpix', #pixel scale
+                                #'--scale-low', '0.1', '--scale-high', '0.40', #pixel scale
+                                '-g', #--guess-scale: try to guess the image scale from the FITS headers
+                                #'-p', # --no-plots: don't create any plots of the results
+                                '-D', '{0}'.format(save_dir), 
+                                '{0}'.format(self.fullname)], 
+                                stdout=subprocess.PIPE) as proc :
+                        print(proc.stdout.read())
+                except Exception as err:
+                    Python_utilities.write_log(err_log_file,
+                                "{}, error: {}".format(self.fullname_el[-1], err))
+
+
 fullnames = Python_utilities.getFullnameListOfallFiles(base_dir)
 print ("fullnames: {}".format(fullnames))
+
 
 n = 0
 for fullname in fullnames[:] :
@@ -31,24 +70,9 @@ for fullname in fullnames[:] :
     print('#'*40,
         "\n{2:.01f}%  ({0}/{1}) {3}".format(n, len(fullnames), (n/len(fullnames))*100, os.path.basename(__file__)))
     print ("Starting...   fullname: {}".format(fullname))
+    AstrometrySolver(fullname)
 
-    if fullname[-4:].lower() == ".fit" \
-        and fullname[-7:].lower() != "wcs.fit":
-        fullname_el = fullname.split("/")
-        filename_el = fullname_el[-1].split("_")
-
-        if filename_el[1].lower() == "light" :
-
-            with subprocess.Popen(['solve-field',
-                    # '-O', #--overwrite: overwrite output files if they already exist
-                    # '--scale-units', 'arcsecperpix', #pixel scale
-                    # '--scale-low', '0.1', '--scale-high', '0.40', #pixel scale
-                    '-g',  # --guess-scale: try to guess the image scale from the FITS headers
-                    # '-p', # --no-plots: don't create any plots of the results
-                    '-D', '{0}'.format(save_dir),
-                    '{0}'.format(fullname)],
-                    stdout=subprocess.PIPE) as proc:
-                print(proc.stdout.read())
+    
 
 '''
 SIMPLE  =                    T                                                  
