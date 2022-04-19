@@ -26,7 +26,7 @@ err_log_file = "{}{}_err.log".format(log_dir, os.path.basename(__file__)[:-3])
 print ("log_file: {}".format(log_file))
 print ("err_log_file: {}".format(err_log_file))
 
-base_dir = "../CCD_new_files/new/"
+base_dir = "../CCD_new_files/"
 #base_dir = "../../../3TB1/CCD_obs"
 
 fullnames = astro_utilities.getFullnameListOfallFiles(base_dir)
@@ -50,8 +50,8 @@ for fullname in fullnames[:] :
             instrument_name = foldername_el[6]
             flipstat = "        "
 
-            #with fits.open('{0}'.format(fullname), mode="append") as hdul :
-            with fits.open('{0}'.format(fullname), mode="update") as hdul :
+            with fits.open('{0}'.format(fullname), mode="append") as hdul :
+            #with fits.open('{0}'.format(fullname), mode="update") as hdul :
                 if not 'OPTIC' in hdul[0].header :
                     hdul[0].header.append('OPTIC', 
                                        '{0}'.format(optic_name), 
@@ -72,14 +72,14 @@ for fullname in fullnames[:] :
                                         'append FLIPSTAT {}'.format(flipstat), 
                                         'append FLIPSTAT {}'.format(flipstat))
                     
-                #hdul.flush()  # changes are written back to original.fits
+                hdul.flush()  # changes are written back to original.fits
                 #print('*'*30)
                 #astro_utilities.write_log(log_file, 
                 #    '{1} ::: fits header is append with {0} ...'\
                 #    .format(fullname, datetime.now()))
             
                 # Change something in hdul.
-            #with fits.open('{0}'.format(fullname), mode="update") as hdul :
+            with fits.open('{0}'.format(fullname), mode="update") as hdul :
                 #
                 #old_object_name = hdul[0].header['OBJECT']
                 hdul[0].header['OBJECT'] = object_name
