@@ -15,7 +15,7 @@ print ("err_log_file: {}".format(err_log_file))
 #########################################
 import pymysql
 db_host = '192.168.0.20'
-db_host = '10.114.0.120'
+#db_host = '10.114.0.120'
 
 db_user = 'modis'
 db_pass = 'Modis12345!'
@@ -101,6 +101,7 @@ for ins_column in ins_columns[4:5] :
     n = 0
 
     for fullname in fullnames :
+        #fullname = fullnames[1000]
         n += 1
         print('#'*40,
             "\n{2:.01f}%  ({0}/{1}) {3}".format(n, len(fullnames), (n/len(fullnames))*100, os.path.basename(__file__)))

@@ -28,14 +28,12 @@ integration_dir_name = 'integration_Python/'
 alignment_dir_name = 'alignment_Python/'
 
 destination_base_dir_name = "../CCD_obs_raw/"
-#solved_base_dir_name = "../CCD_obs_solved/"
 target_duplicate_files_dir = "../CCD_duplicate_files/"
 
 base_dir = "../CCD_new_files/"
 #base_dir = "../CCD_new_files/new/"
-#base_dir = "../CCD_duplicate_temp/"
 base_dir = "../CCD_wcs_one/"
-base_dir = "../astrometry_solved/"
+#base_dir = "../astrometry_solved/"
 
 if not os.path.exists('{0}'.format(target_duplicate_files_dir)):
     os.makedirs('{0}'.format(target_duplicate_files_dir))
