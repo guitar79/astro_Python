@@ -8,43 +8,9 @@ conda install -c conda-forge ccdproc
 """
 from glob import glob
 import os
-import subprocess
+from astropy.io import fits
 import Python_utilities
 import astro_utilities
-
-#########################################
-from multiprocessing import Process, Queue
-
-class Multiprocessor():
-    def __init__(self):
-        self.processes = []
-        self.queue = Queue()
-
-    @staticmethod
-    def _wrapper(func, queue, args, kwargs):
-        ret = func(*args, **kwargs)
-        queue.put(ret)
-
-    def restart(self):
-        self.processes = []
-        self.queue = Queue()
-
-    def run(self, func, *args, **kwargs):
-        args2 = [func, self.queue, args, kwargs]
-        p = Process(target=self._wrapper, args=args2)
-        self.processes.append(p)
-        p.start()
-
-    def wait(self):
-        rets = []
-        for p in self.processes:
-            ret = self.queue.get()
-            rets.append(ret)
-        for p in self.processes:
-            p.join()
-        return rets
-
-#########################################
 
 log_dir = "logs/"
 log_file = "{}{}.log".format(log_dir, os.path.basename(__file__)[:-3])
@@ -52,68 +18,30 @@ err_log_file = "{}{}_err.log".format(log_dir, os.path.basename(__file__)[:-3])
 print ("log_file: {}".format(log_file))
 print ("err_log_file: {}".format(err_log_file))
 
-base_dir = "../CCD_obs_raw/QSI683ws_2bin/"
-save_dir = "../astrometry_solved"
-if not os.path.exists(save_dir):
-    os.makedirs(save_dir)
-
-#########################################
-#single  class
-#########################################
-class AstrometrySolver():
-    def __init__(self, fullname):
-        self.fullname = fullname
-
-    #@def fetch(self):
-        if self.fullname[-4:].lower() == ".fit" \
-            and self.fullname[-7:].lower() != "wcs.fit":
-            self.fullname_el = self.fullname.split("/")
-            self.filename_el = self.fullname_el[-1].split("_")
-
-            if self.filename_el[1].lower() == "light" :
-                print("Starting...   self.fullname: {}".format(self.fullname))
-                self.fullname_el = self.fullname.split("/")
-                self.filename_el = self.fullname_el[-1].split(".")
-                self.save_dir = self.fullname[:-len(self.fullname_el[-1])]
-
-                try:
-                    with subprocess.Popen(['solve-field', 
-                                #'-O', #--overwrite: overwrite output files if they already exist
-                                #'--scale-units', 'arcsecperpix', #pixel scale
-                                #'--scale-low', '0.1', '--scale-high', '0.40', #pixel scale
-                                '-g', #--guess-scale: try to guess the image scale from the FITS headers
-                                #'-p', # --no-plots: don't create any plots of the results
-                                '-D', '{0}'.format(save_dir), 
-                                '{0}'.format(self.fullname)], 
-                                stdout=subprocess.PIPE) as proc :
-                        print(proc.stdout.read())
-                except Exception as err:
-                    Python_utilities.write_log(err_log_file,
-                                "{}, error: {}".format(self.fullname_el[-1], err))
+base_dir = "../CCD_new_files/"
+#base_dir = "../CCD_new_files/new/"
+#base_dir = "../CCD_duplicate_temp/"
+base_dir = "../CCD_wcs_one/"
+#base_dir = "../astrometry_solved/"
 
 
 fullnames = Python_utilities.getFullnameListOfallFiles(base_dir)
 print ("fullnames: {}".format(fullnames))
 
+n = 0
+for fullname in fullnames[:] :
+#fullname = fullnames[5]
+    n += 1
+    print('#'*40,
+        "\n{2:.01f}%  ({0}/{1}) {3}".format(n, len(fullnames), (n/len(fullnames))*100, os.path.basename(__file__)))
+    print ("Starting...   fullname: {}".format(fullname))
+    try : 
+        astro_utilities.ASTAPSolver(fullname)
 
-#########################################
-myMP = Multiprocessor()
-num_cpu = 3
-values = []
-num_batches = len(fullnames) // num_cpu + 1
+    except Exception as err:
+        Python_utilities.write_log(err_log_file,
+                    "{}, error: {}".format(fullname, err))
 
-for batch in range(num_batches):
-    myMP.restart()
-    for fullname in fullnames[batch*num_batches:(batch+1)*num_batches]:
-        myMP.run(AstrometrySolver, fullname)
-
-    print("Batch " + str(batch))
-    myMP.wait()
-    values.append(myMP.wait())
-    print("OK batch" + str(batch))
-
-
-    
 
 '''
 SIMPLE  =                    T                                                  

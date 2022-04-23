@@ -9,6 +9,75 @@ ModuleNotFoundError: No module named 'ccdproc'
 conda install -c condaforge ccdproc
 """
 
+
+
+#########################################
+#single  ASTAPSolver
+#########################################
+class ASTAPSolver():
+    def __init__(self, fullname):
+        self.fullname = fullname
+
+    #@def fetch(self):
+        #print("Starting...   self.fullname: {}".format(self.fullname))
+        if self.fullname[-4:].lower() == ".fit" :
+            self.fullname_el = self.fullname.split("/")
+            self.filename_el = self.fullname_el[-1].split("_")
+
+            if self.filename_el[1].lower() == "light" :
+
+                hdul = fits.open(fullname)
+                if 'CD1_1' in hdul[0].header :
+                    print("{} is already solved...".format(self.filename_el))
+            
+                else : 
+                    import subprocess
+                    with subprocess.Popen(['astap', 
+                                '-f', 
+                                '{0}'.format(self.fullname), 
+                                '-update'],
+                                stdout=subprocess.PIPE) as proc :
+                        print(proc.stdout.read())
+
+#########################################
+
+
+#########################################
+#single  class
+#########################################
+class AstrometrySolver():
+    def __init__(self, fullname, save_dir):
+        self.fullname = fullname
+        self.save_dir = save_dir
+
+    #@def fetch(self):
+        if self.fullname[-4:].lower() == ".fit" \
+            and self.fullname[-7:].lower() != "wcs.fit":
+            self.fullname_el = self.fullname.split("/")
+            self.filename_el = self.fullname_el[-1].split("_")
+
+            if self.filename_el[1].lower() == "light" :
+                print("Starting...   self.fullname: {}".format(self.fullname))
+                self.fullname_el = self.fullname.split("/")
+                self.filename_el = self.fullname_el[-1].split(".")
+                self.save_dir = self.fullname[:-len(self.fullname_el[-1])]
+
+                import subprocess
+                with subprocess.Popen(['solve-field', 
+                            #'-O', #--overwrite: overwrite output files if they already exist
+                            #'--scale-units', 'arcsecperpix', #pixel scale
+                            #'--scale-low', '0.1', '--scale-high', '0.40', #pixel scale
+                            '-g', #--guess-scale: try to guess the image scale from the FITS headers
+                            #'-p', # --no-plots: don't create any plots of the results
+                            '-D', '{0}'.format(self.save_dir), 
+                            '{0}'.format(self.fullname)], 
+                            stdout=subprocess.PIPE) as proc :
+                    print(proc.stdout.read())
+               
+
+#########################################
+
+
 from datetime import datetime
 #from astropy.io import fits
 

@@ -57,14 +57,9 @@ for fullname in fullnames[:]:
     print ("Starting...   fullname: {}".format(fullname))
 
     try :
-        if fullname[-4:].lower() == ".txt" \
-            or fullname[-4:].lower() == "xisf" \
-            or fullname[-4:].lower() == ".zip" \
-            or fullname[-4:].lower() == ".png" \
-            or fullname[-4:].lower() == ".log" \
-            or fullname[-4:].lower() == "seal" \
-            or fullname[-4:].lower() == "tiff" \
-            or fullname[-4:].lower() == "xosm" :
+        if fullname[-4:].lower() in [".txt", "xisf", ".zip", ".png",
+                                    ".log", "seal", "tiff", "xosm"] :
+            #print("{}".format(fullname))
             os.remove("{}".format(fullname))
         
         elif (fullname[-4:].lower() == ".fit" or fullname[-4:].lower() == "fits" or fullname[-4:].lower() == ".new") \

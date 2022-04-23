@@ -34,47 +34,35 @@ target_duplicate_files_dir = "../CCD_duplicate_files/"
 base_dir = "../CCD_new_files/"
 #base_dir = "../CCD_new_files/new/"
 #base_dir = "../CCD_duplicate_temp/"
-#base_dir = "../CCD_wcs_one/"
-#base_dir = "../astrometry_solved/"
+base_dir = "../CCD_wcs_one/"
+base_dir = "../astrometry_solved/"
 
 if not os.path.exists('{0}'.format(target_duplicate_files_dir)):
     os.makedirs('{0}'.format(target_duplicate_files_dir))
-#if not os.path.exists('{0}'.format(solved_base_dir_name)):
-    #os.makedirs('{0}'.format(solved_base_dir_name))
+
 if not os.path.exists('{0}'.format(destination_base_dir_name)):
     os.makedirs('{0}'.format(destination_base_dir_name))
                 
 fullnames = astro_utilities.getFullnameListOfallFiles(base_dir)
 print ("fullnames: {}".format(fullnames))
-#fullname = fullnames[10]
+
 n = 0   
 for fullname in fullnames[:]:
+    #fullname = fullnames[10]
     n += 1
     print('#'*40,
         "\n{2:.01f}%  ({0}/{1}) {3}".format(n, len(fullnames), (n/len(fullnames))*100, os.path.basename(__file__)))
     print ("Starting...   fullname: {}".format(fullname))
 
     try :
-        if fullname[-4:].lower() == ".txt" \
-            or fullname[-4:].lower() == "xisf" \
-            or fullname[-4:].lower() == ".zip" \
-            or fullname[-4:].lower() == ".png" \
-            or fullname[-4:].lower() == ".log" \
-            or fullname[-4:].lower() == "seal" \
-            or fullname[-4:].lower() == "tiff" \
-            or fullname[-4:].lower() == ".png" \
-            or fullname[-4:].lower() == ".axy" \
-            or fullname[-5:].lower() == "match" \
-            or fullname[-4:].lower() == ".wcs" \
-            or fullname[-6:].lower() == "solved" \
-            or fullname[-4:].lower() == "rdls" \
-            or fullname[-4:].lower() == "xyls" \
-            or fullname[-4:].lower() == "corr" \
-            or fullname[-4:].lower() == "xosm" :
+        if fullname[-4:].lower() in [".txt", "xisf", ".zip", ".png", ".log",
+                                      "seal", "tiff", ".png", ".axy", "atch",
+                                      ".wcs", "lved", "rdls", "xyls", "corr", 
+                                      "xosm", ".ini"] :
             os.remove("{}".format(fullname))
             print("{} is removed".format(fullname))
-        
-        elif (fullname[-4:].lower() == ".fit" or fullname[-4:].lower() == "fits" or fullname[-4:].lower() == ".new")\
+
+        elif fullname[-4:].lower() in [".fit", "fits", ".new", ".tmp"]\
               and os.path.isfile('{}'.format(fullname)):
 
             fits.setval('{}'.format(fullname), \

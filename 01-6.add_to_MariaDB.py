@@ -80,10 +80,10 @@ else :
 
 #########################################
 
-base_drs = ['../CCD_obs_raw/']
+base_dirs = ['../CCD_obs_raw/']
 
 fullnames = []
-for dirName in base_drs :
+for dirName in base_dirs :
     try :
         fullnames.extend(Python_utilities.getFullnameListOfallFiles("{}".format(dirName)))
     except Exception as err :
@@ -116,17 +116,15 @@ for fullname in fullnames :
 
                 if check_row == 0:
                     qry = """INSERT INTO `{0}`.`{1}`                                         
-                                        (`fullname`,  `DATE-OBS`, `EXPTIME`) 
-                                        VALUES ('{2}', '{3}', '{4}');""".format(db_name, tb_name,
-                                                fullname, hdul[0].header['DATE-OBS'], hdul[0].header['EXPTIME'])
+                            (`fullname`,  `DATE-OBS`, `EXPTIME`) 
+                            VALUES ('{2}', '{3}', '{4}');""".format(db_name, tb_name,
+                                    fullname, hdul[0].header['DATE-OBS'], hdul[0].header['EXPTIME'])
                     print("qry: {}".format(qry))
 
                 else:
-                    qry = """UPDATE `{0}`.`{1}` 
-                            SET `OBJCTRA`= '{3}' , 
-                            `DATE-OBS`= '{4}' , 
-                            WHERE `{1}`.`fullname` = {2};""".format(db_name, tb_name,
-                                                fullname, hdul[0].header['DATE-OBS'], hdul[0].header['EXPTIME'])
+                    qry = """SELECT * 
+                            FROM `{0}`.`{1}` 
+                            WHERE `{1}`.`fullname` = {2};""".format(db_name, tb_name, fullname)
                     print("qry: {}".format(qry))
                 cur.execute(qry)
                 conn.commit()
