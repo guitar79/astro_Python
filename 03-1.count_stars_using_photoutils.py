@@ -44,7 +44,8 @@ for fullname in fullnames[:] :
     fullname_el = fullname.split("/")
     filename_el = fullname_el[-1].split("_")
 
-    if fullname[-4:].lower() in [".fit"] and filename_el[1].lower() == "light" : 
+    if fullname[-4:].lower() in [".fit"] and filename_el[1].lower() == "light" \
+        and not os.path.exists("{}{}_DAOStarFinder.csv".format(fullname[:-len(fullname_el[-1])], fullname_el[-1][:-4])): 
         hdu = fits.open("{}".format(fullname))
         img = np.array(hdu[0].data/65535.0, dtype=np.float32)
 

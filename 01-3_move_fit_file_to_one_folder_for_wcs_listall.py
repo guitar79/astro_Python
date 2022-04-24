@@ -28,13 +28,8 @@ err_log_file = "{}{}_err.log".format(log_dir, os.path.basename(__file__)[:-3])
 print ("log_file: {}".format(log_file))
 print ("err_log_file: {}".format(err_log_file))
 
-master_file_dir_name = 'master_files_Python/'
-processing_dir_name = 'processing_Python/'
-integration_dir_name = 'integration_Python/'
-alignment_dir_name = 'alignment_Python/'
-
 base_dir = "../CCD_new_files/"
-#base_dir = "../../../3TB1/CCD_obs"
+#base_dir = "../CCD_obs_raw/"
 
 wcs_one_dir_name = "../CCD_wcs_one/"
 target_duplicate_files_dir = "../CCD_duplicate_files/"

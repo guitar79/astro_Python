@@ -20,15 +20,18 @@ class ASTAPSolver():
 
     #@def fetch(self):
         #print("Starting...   self.fullname: {}".format(self.fullname))
+        self.fullname_el = self.fullname.split("/")
+        self.filename_el = self.fullname_el[-1].split("_")
         if self.fullname[-4:].lower() == ".fit" :
-            self.fullname_el = self.fullname.split("/")
-            self.filename_el = self.fullname_el[-1].split("_")
+            
+            hdul = fits.open(fullname)
 
-            if self.filename_el[1].lower() == "light" :
+            if "light" in hdul[0].header["IMAGETYP"].lower() :
+                print("{} is light frame".format(self.fullname_el[-1]))
 
-                hdul = fits.open(fullname)
-                if 'CD1_1' in hdul[0].header :
-                    print("{} is already solved...".format(self.filename_el))
+                #if 'CD1_1' in hdul[0].header :
+                if 'PIXELSCALE' in hdul[0].header :
+                    print("{} is already solved...".format(self.fullname_el[-1]))
             
                 else : 
                     import subprocess
@@ -38,6 +41,18 @@ class ASTAPSolver():
                                 '-update'],
                                 stdout=subprocess.PIPE) as proc :
                         print(proc.stdout.read())
+
+                    import shutil, os 
+                    if os.path.exist(r'{0}.tmp'.format(self.fullname[:-4])) :
+                        if self.filename_el[-1].lower() == "wcs.tmp":
+                            shutil.move(r'{0}.tmp'.format(self.fullname[:-4]), r'{0}.fit'.format(self.fullname[:-4]))
+                        elif self.filename_el[-1].lower() == "-.tmp":
+                            shutil.move(r'{0}-.tmp'.format(self.fullname[:-5]), r'{0}wcs.fit'.format(self.fullname[:-5]))
+                            shutil.move(r'{0}-.ini'.format(self.fullname[:-5]), r'{0}wcs.ini'.format(self.fullname[:-5]))
+                            shutil.move(r'{0}-.wcs'.format(self.fullname[:-5]), r'{0}wcs.wcs'.format(self.fullname[:-5]))
+
+            else :
+                print("{} is not light frame".format(self.fullname_el[-1]))
 
 #########################################
 

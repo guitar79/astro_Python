@@ -4,9 +4,6 @@
 Created on Thu Nov 22 01:00:19 2018
 @author: guitar79@naver.com
 
-conda install astropy
-ModuleNotFoundError: No module named 'ccdproc'
-conda install -c conda-forge ccdproc
 """
 
 import os
@@ -22,38 +19,33 @@ err_log_file = "{}{}_err.log".format(log_dir, os.path.basename(__file__)[:-3])
 print ("log_file: {}".format(log_file))
 print ("err_log_file: {}".format(err_log_file))
 
+base_dir = "../CCD_new_files/"
+#base_dir = "../CCD_obs_raw/"
+
 destination_base_dir_name = "../CCD_obs_raw/"
 target_duplicate_files_dir = "../CCD_duplicate_files/"
 
-base_dir = "../CCD_new_files/"
-#base_dir = "../CCD_new_files/new/"
-base_dir = "../CCD_wcs_one/"
-#base_dir = "../astrometry_solved/"
-
 if not os.path.exists('{0}'.format(target_duplicate_files_dir)):
     os.makedirs('{0}'.format(target_duplicate_files_dir))
-
-if not os.path.exists('{0}'.format(destination_base_dir_name)):
-    os.makedirs('{0}'.format(destination_base_dir_name))
                 
 fullnames = astro_utilities.getFullnameListOfallFiles(base_dir)
 print ("fullnames: {}".format(fullnames))
 
 n = 0   
 for fullname in fullnames[:]:
-    #fullname = fullnames[10]
+    #fullname = fullnames[0]
+
     n += 1
     print('#'*40,
         "\n{2:.01f}%  ({0}/{1}) {3}".format(n, len(fullnames), (n/len(fullnames))*100, os.path.basename(__file__)))
     print ("Starting...   fullname: {}".format(fullname))
 
     try :
-        if fullname[-4:].lower() in [".txt", "xisf", ".zip", ".png", ".log",
-                                      "seal", "tiff", ".png", ".axy", "atch",
-                                      "lved", "rdls", "xyls", "corr", "xosm"] :
+        if fullname[-4:].lower() in [".txt", "xisf", ".zip", ".png",
+                                    ".log", "seal", "tiff", "xosm"] :
+            #print("{}".format(fullname))
             os.remove("{}".format(fullname))
-            print("{} is removed".format(fullname))
-
+        
         elif fullname[-4:].lower() in [".fit", "fits", ".new", ".tmp"]\
                             and os.path.isfile('{}'.format(fullname)):
 
@@ -78,8 +70,7 @@ for fullname in fullnames[:]:
             
             if not os.path.exists('{0}'.format(new_foldername)):
                 os.makedirs('{0}'.format(new_foldername))
-                Python_utilities.write_log(log_file, \
-                     '{1} ::: {0} is created'.format(new_foldername, datetime.now()))    
+                print("{0} is created".format(new_foldername))
         
             if new_filename[-6:].lower() == "_-.fit" :
                 if os.path.exists('{0}{1}_wcs.fit'.format(new_foldername, new_filename[:-6])):
@@ -103,6 +94,10 @@ for fullname in fullnames[:]:
 
                 #os.rename(fullname, '{0}{1}'.format(new_foldername, new_filename))
                 shutil.move(r'{0}'.format(fullname), r'{0}{1}'.format(new_foldername, new_filename))
+                if fullname[-4:].lower() == ".tmp" :
+                    shutil.move(r'{0}.ini'.format(fullname[-4:]), r'{0}{1}.ini'.format(new_foldername, new_filename[-4:]))
+                    shutil.move(r'{0}.wcs'.format(fullname[-4:]), r'{0}{1}.wcs'.format(new_foldername, new_filename[-4:]))
+                
                 Python_utilities.write_log(log_file, \
                     '{0} is moved to {1}{2}'.format(fullname, new_foldername, new_filename))
             
@@ -117,7 +112,8 @@ for fullname in fullnames[:]:
         print("X"*60)
         Python_utilities.write_log(err_log_file, \
                  '{2} ::: {0} with move {1} '.format(err, fullname, datetime.now()))
-    
+
+                
 #############################################################################
 #############################################################################
 #############################################################################
@@ -127,8 +123,9 @@ processing_dir_name = 'processing_Python/'
 integration_dir_name = 'integration_Python/'
 alignment_dir_name = 'alignment_Python/'
 
+import shutil 
 for i in range(4) : 
-    fullnames = Python_utilities.getFullnameListOfallsubDirs(base_dir)
+    fullnames = astro_utilities.getFullnameListOfallsubDirs(base_dir)
     print ("fullnames: {}".format(fullnames))
     
     for fullname in fullnames[:] :

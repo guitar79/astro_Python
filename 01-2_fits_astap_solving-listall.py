@@ -8,6 +8,7 @@ conda install -c conda-forge ccdproc
 """
 from glob import glob
 import os
+from datetime import datetime
 from astropy.io import fits
 import Python_utilities
 import astro_utilities
@@ -19,10 +20,8 @@ print ("log_file: {}".format(log_file))
 print ("err_log_file: {}".format(err_log_file))
 
 base_dir = "../CCD_new_files/"
-#base_dir = "../CCD_new_files/new/"
-#base_dir = "../CCD_duplicate_temp/"
-base_dir = "../CCD_wcs_one/"
-#base_dir = "../astrometry_solved/"
+#base_dir = "../CCD_wcs_one/"
+base_dir = "../CCD_obs_raw/"
 
 
 fullnames = Python_utilities.getFullnameListOfallFiles(base_dir)
@@ -40,7 +39,7 @@ for fullname in fullnames[:] :
 
     except Exception as err:
         Python_utilities.write_log(err_log_file,
-                    "{}, error: {}".format(fullname, err))
+                 '{2} ::: {0} with ASTAPSolver {1} '.format(err, fullname, datetime.now()))
 
 
 '''
