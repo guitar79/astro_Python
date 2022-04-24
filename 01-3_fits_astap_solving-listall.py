@@ -20,12 +20,7 @@ print ("err_log_file: {}".format(err_log_file))
 
 base_dir = "../CCD_new_files/"
 #base_dir = "../CCD_wcs_one/"
-<<<<<<< HEAD
-base_dir = "../CCD_obs_raw/"
-
-=======
 #base_dir = "../CCD_obs_raw/"
->>>>>>> 38f95face95296fb1cbadbcf437a550b070c6a85
 
 fullnames = Python_utilities.getFullnameListOfallFiles(base_dir)
 print ("fullnames: {}".format(fullnames))
