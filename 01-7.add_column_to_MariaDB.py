@@ -92,7 +92,7 @@ ins_columns = ['IMAGETYP', 'OBJECT', 'FOCALLEN', 'XPIXSZ', 'PIXSCALE',
                 'CUNIT2', 'CD1_1', 'CD1_2', 'CD2_1', 'CD2_2']
 #########################################
 
-for ins_column in ins_columns :
+for ins_column in ins_columns[13:] :
 
     qry = "SELECT `fullname` FROM `{}`.`{}` WHERE `{}` IS NULL;".format(db_name, tb_name, ins_column)
     cur.execute(qry)
