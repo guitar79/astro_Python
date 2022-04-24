@@ -20,13 +20,14 @@ print ("err_log_file: {}".format(err_log_file))
 
 base_dir = "../CCD_obs_raw/"
 save_dir = "../CCD_wcs_one/"
+
 if not os.path.exists(save_dir):
     os.makedirs(save_dir)
 fullnames = Python_utilities.getFullnameListOfallFiles(base_dir)
 print ("fullnames: {}".format(fullnames))
 
 n = 0
-for fullname in fullnames[10000:14000] :
+for fullname in fullnames[:] :
 #fullname = fullnames[5]
     n += 1
     print('#'*40,

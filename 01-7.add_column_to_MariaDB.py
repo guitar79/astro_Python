@@ -15,7 +15,7 @@ print ("err_log_file: {}".format(err_log_file))
 #########################################
 import pymysql
 db_host = '192.168.0.20'
-db_host = '10.114.0.120'
+#db_host = '10.114.0.120'
 
 db_user = 'modis'
 db_pass = 'Modis12345!'
@@ -92,7 +92,7 @@ ins_columns = ['IMAGETYP', 'OBJECT', 'FOCALLEN', 'XPIXSZ', 'PIXSCALE',
                 'CUNIT2', 'CD1_1', 'CD1_2', 'CD2_1', 'CD2_2']
 #########################################
 
-for ins_column in ins_columns[13:] :
+for ins_column in ins_columns[4:5] :
 
     qry = "SELECT `fullname` FROM `{}`.`{}` WHERE `{}` IS NULL;".format(db_name, tb_name, ins_column)
     cur.execute(qry)
@@ -101,28 +101,28 @@ for ins_column in ins_columns[13:] :
     n = 0
 
     for fullname in fullnames :
+        #fullname = fullnames[1000]
         n += 1
         print('#'*40,
             "\n{2:.01f}%  ({0}/{1}) {3}".format(n, len(fullnames), (n/len(fullnames))*100, os.path.basename(__file__)))
-        print ("Starting...   fullname: {}".format(fullname))
+        print ("Starting... {}  fullname: {}".format(ins_column, fullname))
 
         #check file exist...
         if not os.path.exists("{}".format(fullname['fullname'])):
             qry = """DELETE FROM `{0}`.`{1}`  
                     WHERE `{1}`.`fullname` = '{2}';""".format(db_name, tb_name,
                                                         fullname['fullname'])
-                
             print("qry: {}".format(qry))
-            cur.execute(qry)
-            conn.commit()
 
         else : 
             hdul = fits.open(fullname['fullname'])
-            if "{}".format(ins_column) in hdul[0].header :
+            if not "{}".format(ins_column) in hdul[0].header :
+                print("{} is not exist in {}".format(ins_column, fullname['fullname']))
+            else : 
                 qry = """UPDATE `{0}`.`{1}` 
                         SET `{3}`= '{4}'    
                         WHERE `{1}`.`fullname` = '{2}';""".format(db_name, tb_name,
-                                                        fullname['fullname'], ins_column, hdul[0].header['{}'.format(ins_column)])
+                                    fullname['fullname'], ins_column, hdul[0].header['{}'.format(ins_column)])
                 print("qry: {}".format(qry))
-                cur.execute(qry)
-                conn.commit()
+        cur.execute(qry)
+        conn.commit()

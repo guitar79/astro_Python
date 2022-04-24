@@ -15,7 +15,6 @@ import astro_utilities
 #########################################
 from multiprocessing import Process, Queue
 
-
 class Multiprocessor():
     def __init__(self):
         self.processes = []
@@ -75,7 +74,7 @@ class AstrometrySolver():
                 print("Starting...   self.fullname: {}".format(self.fullname))
                 self.fullname_el = self.fullname.split("/")
                 self.filename_el = self.fullname_el[-1].split(".")
-                self.save_dr = self.fullname[:-len(self.fullname_el[-1])]
+                self.save_dir = self.fullname[:-len(self.fullname_el[-1])]
 
                 try:
                     with subprocess.Popen(['solve-field', 
