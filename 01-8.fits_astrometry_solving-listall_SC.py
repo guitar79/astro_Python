@@ -19,7 +19,7 @@ err_log_file = "{}{}_err.log".format(log_dir, os.path.basename(__file__)[:-3])
 print ("log_file: {}".format(log_file))
 print ("err_log_file: {}".format(err_log_file))
 
-base_dir = "../CCD_obs_raw/QSI683ws_1bin/"
+base_dir = "../CCD_obs_raw/"
 save_dir = "../astrometry_solved"
 if not os.path.exists(save_dir):
     os.makedirs(save_dir)
@@ -30,7 +30,7 @@ print ("fullnames: {}".format(fullnames))
 
 
 n = 0
-for fullname in fullnames[:] :
+for fullname in fullnames[100000:] :
 #fullname = fullnames[5]
     n += 1
     print('#'*40,
