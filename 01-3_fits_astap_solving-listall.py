@@ -22,7 +22,7 @@ print ("err_log_file: {}".format(err_log_file))
 
 base_dir = "../CCD_new_files/"
 #base_dir = "../CCD_wcs_one/"
-base_dir = "../CCD_obs_raw/QSI683ws_1bin/Light_FSQ106ED-x73/"
+base_dir = "../CCD_obs_raw/"
 
 
 fullnames = Python_utilities.getFullnameListOfallFiles(base_dir)
