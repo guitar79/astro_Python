@@ -50,8 +50,9 @@ for fullname in fullnames[:]:
     try :
         if fullname[-4:].lower() in [".txt", "xisf", ".zip", ".png", ".log",
                                       "seal", "tiff", ".png", ".axy", "atch",
-                                      "lved", "rdls", "xyls", "corr", "xosm"] :
-            os.remove("{}".format(fullname))
+                                      "lved", "rdls", "xyls", "corr", "xosm"] \
+                                and os.path.isfile('{}'.format(fullname)):
+            #os.remove("{}".format(fullname))
             print("{} is removed".format(fullname))
 
         elif fullname[-4:].lower() in [".fit", "fits", ".new", ".tmp"]\

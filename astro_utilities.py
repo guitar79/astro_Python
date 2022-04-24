@@ -30,27 +30,22 @@ class ASTAPSolver():
                 print("{} is light frame".format(self.fullname_el[-1]))
 
                 #if 'CD1_1' in hdul[0].header :
-                if 'PIXELSCALE' in hdul[0].header :
-                    print("{} is already solved...".format(self.fullname_el[-1]))
-            
-                else : 
+                #if 'PIXELSCALE' in hdul[0].header :
+                import os
+                if not os.path.isfile(r'{0}.wcs'.format(self.fullname[:-4])):
                     import subprocess
                     with subprocess.Popen(['astap', 
                                 '-f', 
                                 '{0}'.format(self.fullname), 
-                                '-update'],
+                                #'-update'
+                                '-analyse2'
+                                ],
                                 stdout=subprocess.PIPE) as proc :
                         print(proc.stdout.read())
-
-                    import shutil, os 
-                    if os.path.exist(r'{0}.tmp'.format(self.fullname[:-4])) :
-                        if self.filename_el[-1].lower() == "wcs.tmp":
-                            shutil.move(r'{0}.tmp'.format(self.fullname[:-4]), r'{0}.fit'.format(self.fullname[:-4]))
-                        elif self.filename_el[-1].lower() == "-.tmp":
-                            shutil.move(r'{0}-.tmp'.format(self.fullname[:-5]), r'{0}wcs.fit'.format(self.fullname[:-5]))
-                            shutil.move(r'{0}-.ini'.format(self.fullname[:-5]), r'{0}wcs.ini'.format(self.fullname[:-5]))
-                            shutil.move(r'{0}-.wcs'.format(self.fullname[:-5]), r'{0}wcs.wcs'.format(self.fullname[:-5]))
-
+            
+                else : 
+                    print("{} is already solved...".format(self.fullname_el[-1]))
+                    
             else :
                 print("{} is not light frame".format(self.fullname_el[-1]))
 

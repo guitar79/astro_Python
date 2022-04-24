@@ -4,14 +4,6 @@
 Created on Thu Nov 22 01:00:19 2018
 @author: guitar79@naver.com
 
-conda env list
-source activate astro_Python
-
-conda install astropy
-
-ModuleNotFoundError: No module named 'ccdproc'
-conda install -c conda-forge ccdproc
-
 """
 
 from datetime import datetime
@@ -27,6 +19,7 @@ print ("log_file: {}".format(log_file))
 print ("err_log_file: {}".format(err_log_file))
 
 base_dir = "../CCD_new_files/"
+#base_dir = "../CCD_obs_raw/"
 #base_dir = "../../../3TB1/CCD_obs"
 
 fullnames = astro_utilities.getFullnameListOfallFiles(base_dir)
@@ -47,7 +40,7 @@ for fullname in fullnames[:] :
             foldername_el = fullname_el[-2].split('_')
             object_name = foldername_el[0]
             optic_name = foldername_el[5]
-            instrument_name = foldername_el[6]
+            ccd_name = foldername_el[6]
             flipstat = "        "
 
             with fits.open('{0}'.format(fullname), mode="append") as hdul :
@@ -71,6 +64,14 @@ for fullname in fullnames[:] :
                     hdul[0].header.append('COMMENT', 
                                         'append FLIPSTAT {}'.format(flipstat), 
                                         'append FLIPSTAT {}'.format(flipstat))
+                
+                if not 'CCDNAME' in hdul[0].header :
+                    hdul[0].header.append('CCDNAME', 
+                                       'CCDNAME {}'.format(ccd_name), 
+                                       'CCDNAME {}'.format(ccd_name))
+                    hdul[0].header.append('CCDNAME', 
+                                        'append CCDNAME {}'.format(ccd_name), 
+                                        'append CCDNAME {}'.format(ccd_name))
                     
                 hdul.flush()  # changes are written back to original.fits
                 #print('*'*30)
@@ -102,14 +103,14 @@ for fullname in fullnames[:] :
                                       'change HEADER OPTIC from {0}'.format(optic_name))
 
                 # old_optic_name = hdul[0].header['INSTRUME']
-                hdul[0].header['INSTRUME'] = instrument_name
+                hdul[0].header['CCDNAME'] = ccd_name
                 # hdul[0].header.update('INSTRUME',
                 #                   '{0}'.format(instrument_name),
                 #                   'INSTRUME information')
 
                 hdul[0].header.append('COMMENT',
-                                      'change HEADER INSTRUME from {0}'.format(instrument_name),
-                                      'change HEADER INSTRUME from {0}'.format(instrument_name))
+                                      'change HEADER CCDNAME from {0}'.format(ccd_name),
+                                      'change HEADER CCDNAME from {0}'.format(ccd_name))
 
                 hdul.flush()  # changes are written back to original.fits
                 print('*'*60)
