@@ -37,10 +37,31 @@ for fullname in fullnames_fit[:] :
 
     fullname_el = fullname.split("/")
     filename_el = fullname_el[-1].split("_")
+    
+    hdul = fits.open(fullname)
+    print("fits file is opened".format(fullname_el[-1]))
+
+    if "light" in hdul[0].header["IMAGETYP"].lower() :
+        print("{} is light frame".format(fullname_el[-1]))
+
+    
+        with subprocess.Popen(['astap', 
+                    '-f', 
+                    '{0}'.format(fullname), 
+                    '-analyse2',
+                    '-update'],
+                    stdout=subprocess.PIPE) as proc :
+            print(proc.stdout.read())
+            
+    else :
+        print("{} is not light frame".format(fullname_el[-1]))
+
+
+    '''
     if fullname[-4:].lower() == ".fit" :
         try : 
 
-            if not os.path.isfile(r'{0}.wcs'.format(fullname[:-4])):
+            if (not os.path.isfile(r'{0}.wcs'.format(fullname[:-4]))) or False :
                 print("Trying image sovser using ASTAP...")
 
             else : 
@@ -72,7 +93,7 @@ for fullname in fullnames_fit[:] :
         except Exception as err:
             Python_utilities.write_log(err_log_file,
                     '{2} ::: {0} with solve {1} '.format(err, fullname, datetime.now()))
-
+        '''
 #####################################################################
 fullnames = Python_utilities.getFullnameListOfallFiles(base_dir)
 print ("fullnames: {}".format(fullnames))
