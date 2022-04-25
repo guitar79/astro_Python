@@ -29,6 +29,7 @@ base_dir = "../CCD_new_files/"
 #base_dir = "../CCD_new_files/new/"
 base_dir = "../CCD_wcs_one/"
 #base_dir = "../astrometry_solved/"
+base_dir = "../CCD_obs_process/"
 
 if not os.path.exists('{0}'.format(target_duplicate_files_dir)):
     os.makedirs('{0}'.format(target_duplicate_files_dir))
@@ -52,7 +53,7 @@ for fullname in fullnames[:]:
                                       "seal", "tiff", ".png", ".axy", "atch",
                                       "lved", "rdls", "xyls", "corr", "xosm"] \
                                 and os.path.isfile('{}'.format(fullname)):
-            #os.remove("{}".format(fullname))
+            os.remove("{}".format(fullname))
             print("{} is removed".format(fullname))
 
         elif fullname[-4:].lower() in [".fit", "fits", ".new", ".tmp"]\

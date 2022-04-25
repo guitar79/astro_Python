@@ -44,7 +44,6 @@ for fullname in fullnames_fit[:] :
     if "light" in hdul[0].header["IMAGETYP"].lower() :
         print("{} is light frame".format(fullname_el[-1]))
 
-    
         with subprocess.Popen(['astap', 
                     '-f', 
                     '{0}'.format(fullname), 
