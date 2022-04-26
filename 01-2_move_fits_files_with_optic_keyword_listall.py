@@ -27,9 +27,9 @@ target_duplicate_files_dir = "../CCD_duplicate_files/"
 
 base_dir = "../CCD_new_files/"
 #base_dir = "../CCD_new_files/new/"
-base_dir = "../CCD_wcs_one/"
+#base_dir = "../CCD_wcs_one/"
 #base_dir = "../astrometry_solved/"
-base_dir = "../CCD_obs_process/"
+#base_dir = "../CCD_obs_process/"
 
 if not os.path.exists('{0}'.format(target_duplicate_files_dir)):
     os.makedirs('{0}'.format(target_duplicate_files_dir))
