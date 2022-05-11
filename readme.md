@@ -9,7 +9,7 @@ conda env list
 conda create -n astro_Python_win_env
 
 ## activate 가상환경 시작
-activate astro_Python_win_env
+conda activate astro_Python_win_env
 
 ## deactivate 가상환경 종료
 deactivate
