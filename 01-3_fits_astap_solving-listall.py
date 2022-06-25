@@ -20,7 +20,8 @@ print ("err_log_file: {}".format(err_log_file))
 
 base_dir = "../CCD_new_files/"
 #base_dir = "../CCD_wcs_one/"
-base_dir = "../CCD_obs_raw/STL-11000M_1bin/"
+base_dir = "../CCD_obs_raw/STL-11000M_2bin/"
+#base_dir = "../CCD_obs_raw/ST-8300M_1bin/"
 
 fullnames = Python_utilities.getFullnameListOfallFiles(base_dir)
 print ("fullnames: {}".format(fullnames))
@@ -32,28 +33,38 @@ for fullname in fullnames_fit[:] :
 #fullname = fullnames[5]
     n += 1
     print('#'*40,
-        "\n{2:.01f}%  ({0}/{1}) {3}".format(n, len(fullnames), (n/len(fullnames_fit))*100, os.path.basename(__file__)))
+        "\n{2:.01f}%  ({0}/{1}) {3}".format(n, len(fullnames_fit), (n/len(fullnames_fit))*100, os.path.basename(__file__)))
     print ("Starting...\nfullname: {}".format(fullname))
 
     fullname_el = fullname.split("/")
     filename_el = fullname_el[-1].split("_")
-    
-    hdul = fits.open(fullname)
-    print("fits file is opened".format(fullname_el[-1]))
 
-    if "light" in hdul[0].header["IMAGETYP"].lower() :
-        print("{} is light frame".format(fullname_el[-1]))
+    if os.path.exists('{0}.wcs'.format(fullname[-4:])) :
+        print("{0}.wcs is already exist...".format(fullname[-4:]))
 
-        with subprocess.Popen(['astap', 
-                    '-f', 
-                    '{0}'.format(fullname), 
-                    '-analyse2',
-                    '-update'],
-                    stdout=subprocess.PIPE) as proc :
-            print(proc.stdout.read())
-            
     else :
-        print("{} is not light frame".format(fullname_el[-1]))
+
+        hdul = fits.open(fullname)
+        print("fits file is opened".format(fullname_el[-1]))
+
+        if "light" in hdul[0].header["IMAGETYP"].lower() :
+            print("{} is light frame".format(fullname_el[-1]))
+
+            with subprocess.Popen(['astap', 
+                        '-f', 
+                        '{0}'.format(fullname), 
+                        '-analyse2',
+                        '-update'],
+                        stdout=subprocess.PIPE) as proc :
+                print(proc.stdout.read())
+            
+            if os.path.exists("{}.tmp".format(fullname[:-4])):
+                shutil.move(r"{}.tmp".format(fullname[:-4]), \
+                            r"{}.fit".format(fullname[:-4]))
+                print(r"{}.fit is created...".format(fullname[:-4]))
+
+        else :
+            print("{} is not light frame".format(fullname_el[-1]))
 
 
     '''
