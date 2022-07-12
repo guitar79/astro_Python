@@ -1,9 +1,9 @@
 # -*- coding: utf-8 -*-
 """
 Created on Thu Nov 22 01:00:19 2018
-@author: user
-
+@author: guitar79@naver.com
 """
+
 from glob import glob
 import os
 import subprocess
@@ -19,8 +19,9 @@ print ("log_file: {}".format(log_file))
 print ("err_log_file: {}".format(err_log_file))
 
 base_dir = "../CCD_new_files/"
+base_dir = "../CCD_obs_raw/"
 #base_dir = "../CCD_wcs_one/"
-base_dir = "../CCD_obs_raw/STL-11000M_2bin/"
+#base_dir = "../CCD_obs_raw/STL-11000M_2bin/"
 #base_dir = "../CCD_obs_raw/ST-8300M_1bin/"
 
 fullnames = Python_utilities.getFullnameListOfallFiles(base_dir)
@@ -39,7 +40,8 @@ for fullname in fullnames_fit[:] :
     fullname_el = fullname.split("/")
     filename_el = fullname_el[-1].split("_")
 
-    if os.path.exists('{0}.wcs'.format(fullname[-4:])) :
+    if os.path.exists('{0}.wcs'.format(fullname[-4:])) \
+        or os.path.exists('{0}.ini'.format(fullname[-4:])):
         print("{0}.wcs is already exist...".format(fullname[-4:]))
 
     else :
@@ -67,43 +69,6 @@ for fullname in fullnames_fit[:] :
             print("{} is not light frame".format(fullname_el[-1]))
 
 
-    '''
-    if fullname[-4:].lower() == ".fit" :
-        try : 
-
-            if (not os.path.isfile(r'{0}.wcs'.format(fullname[:-4]))) or False :
-                print("Trying image sovser using ASTAP...")
-
-            else : 
-                
-                hdul = fits.open(fullname)
-                print("fits file is opened".format(fullname_el[-1]))
-
-                if "light" in hdul[0].header["IMAGETYP"].lower() :
-                    print("{} is light frame".format(fullname_el[-1]))
-
-                    if not os.path.isfile(r'{0}.wcs'.format(fullname[:-4])):
-                        with subprocess.Popen(['astap', 
-                                    '-f', 
-                                    '{0}'.format(fullname), 
-                                    '-update'
-                                    '-analyse2'
-                                    ],
-                                    stdout=subprocess.PIPE) as proc :
-                            print(proc.stdout.read())
-                
-                    else : 
-                        print("{} is already solved...".format(fullname_el[-1]))
-                        
-                else :
-                    print("{} is not light frame".format(fullname_el[-1]))
-        
-            #astro_utilities.ASTAPSolver(fullname)
-
-        except Exception as err:
-            Python_utilities.write_log(err_log_file,
-                    '{2} ::: {0} with solve {1} '.format(err, fullname, datetime.now()))
-        '''
 #####################################################################
 fullnames = Python_utilities.getFullnameListOfallFiles(base_dir)
 print ("fullnames: {}".format(fullnames))
