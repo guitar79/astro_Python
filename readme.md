@@ -18,6 +18,7 @@ deactivate
 conda install astropy pymysql spyder
 conda install -c conda-forge ccdproc
 pip install opencv-python
+conda install photoutils
 
 
 ## 가상환경 내보내기 (export)

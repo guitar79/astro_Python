@@ -125,9 +125,11 @@ for chl in['L', 'R', 'G', 'B', 'H', 'S', 'O'] :
             'flat0.data.max()', flat0.data.max(), 
             'flat0.data.min()', flat0.data.min(), 
             'flat0', flat0)
-        flat0.write('{}{}Master_Flat0_{}_{}_f32.fit'.format(base_dr, master_dr, chl, c_method), 
+        flat0.write('{}{}Master_Flat0_{}_{}_f32.fit'.\
+                format(base_dr, master_dr, chl, c_method), 
                 overwrite =True)
-        print('{}{}Master_Flat0_{}_{}_f32.fit is created'.format(base_dr, master_dr, chl, c_method))
+        print('{}{}Master_Flat0_{}_{}_f32.fit is created'.\
+                format(base_dr, master_dr, chl, c_method))
     except Exception as err: 
         print ('Error messgae .......')
         print (err)
