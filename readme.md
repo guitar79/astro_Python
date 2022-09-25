@@ -18,7 +18,7 @@ deactivate
 conda install astropy pymysql spyder
 conda install -c conda-forge ccdproc
 pip install opencv-python
-conda install photoutils
+pip install photutils
 
 
 ## 가상환경 내보내기 (export)
@@ -49,6 +49,7 @@ conda deactivate
 conda install astropy pymysql spyder
 conda install -c conda-forge ccdproc
 pip install opencv-python
+pip install photutils
 
 # 가상환경 내보내기 (export)
 conda env export > astro_Python_ubuntu_env.yaml

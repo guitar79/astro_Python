@@ -224,4 +224,5 @@ dependencies:
   - zstd=1.4.9=h6255e5f_0
   - pip:
     - opencv-python==4.5.5.62
+    - photutils==1.5.0
 prefix: C:\Users\Kiehyun\anaconda3\envs\astro_Python_win_env

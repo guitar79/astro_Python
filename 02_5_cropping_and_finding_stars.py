@@ -53,7 +53,6 @@ fullname_el = fullname.split("/")
 hdu = fits.open("{}".format(fullname))
 
 img = hdu[0].data
-
 print("img: {}".format(img))
 
 #%%
