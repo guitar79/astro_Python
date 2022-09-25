@@ -19,15 +19,17 @@ print ("log_file: {}".format(log_file))
 print ("err_log_file: {}".format(err_log_file))
 
 base_dir = "../CCD_new_files/"
-base_dir = "../CCD_obs_raw/"
+#base_dir = "../CCD_obs_raw/"
 #base_dir = "../CCD_wcs_one/"
 #base_dir = "../CCD_obs_raw/STL-11000M_2bin/"
 #base_dir = "../CCD_obs_raw/ST-8300M_1bin/"
 
+### make all fits file list...
 fullnames = Python_utilities.getFullnameListOfallFiles(base_dir)
-print ("fullnames: {}".format(fullnames))
-
 fullnames_fit = [w for w in fullnames if ".fit" in w]
+#print ("fullnames: {}".format(fullnames))
+print ("len(fullnames): {}".format(len(fullnames)))
+
 
 n = 0
 for fullname in fullnames_fit[:] :
@@ -44,8 +46,7 @@ for fullname in fullnames_fit[:] :
         or os.path.exists('{0}.ini'.format(fullname[-4:])):
         print("{0}.wcs is already exist...".format(fullname[-4:]))
 
-    else :
-
+    else :  
         hdul = fits.open(fullname)
         print("fits file is opened".format(fullname_el[-1]))
 
