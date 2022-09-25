@@ -41,9 +41,9 @@ bias = combine(bias_list,       # ccdproc does not accept numpy.ndarray, but onl
                method=c_method,         # default is average so I specified median.
                unit='adu')              # unit is required: it's ADU in our case.
 
-bias.data = np.array(bias.data, 
-                dtype=np.float32)
-                
+#bias.data = np.array(bias.data, 
+                #dtype=np.float32)
+                #dtype = np.uint32)
 print('type(bias.data)', type(bias.data),
       'bias.data.mean()', bias.data.mean(), 
       'bias.data.std()', bias.data.std(), 
@@ -52,11 +52,10 @@ print('type(bias.data)', type(bias.data),
       'bias', bias)
 
 # Save file
-bias.write('{}{}Master_Bias_{}_f32.fit'.\
-            format(base_dr, master_dr, c_method), 
-            overwrite =True)
-print('{}{}Master_Bias_{}_f32.fit is created'.\
-            format(base_dr, master_dr, c_method))
+bias.write('{}{}Master_Bias_{}_f64.fit'.\
+        format(base_dr, master_dr, c_method), overwrite =True)
+print('{}{}Master_Bias_{}_f64.fit is created'.\
+        format(base_dr, master_dr, c_method))
 
 
 
@@ -69,25 +68,24 @@ dark_list = fullnames_dark
 dark0 = combine(dark_list,       # ccdproc does not accept numpy.ndarray, but only python list.
                method=c_method,         # default is average so I specified median.
                unit='adu')
-dark0.data = np.array(dark0.data, 
-                dtype=np.float32)
-                
+#dark0.data = np.array(dark0.data, 
+                #dtype=np.float32)
+                #dtype = np.uint32)
 print('type(dark0.data)', type(dark0.data),
       'dark0.data.mean()', dark0.data.mean(), 
       'dark0.data.std()', dark0.data.std(), 
       'dark0.data.max()', dark0.data.max(), 
       'dark0.data.min()', dark0.data.min(), 
       'dark0', dark0)
-dark0.write('{}{}Master_Dark0_{}_f32.fit'.\
-        format(base_dr, master_dr, c_method), 
-        overwrite =True)
-print('{}{}Master_Dark0_{}_f32.fit is created'.\
+dark0.write('{}{}Master_Dark0_{}_f64.fit'.\
+        format(base_dr, master_dr, c_method), overwrite =True)
+print('{}{}Master_Dark0_{}_f64.fit is created'.\
         format(base_dr, master_dr, c_method))
 
 dark = ccd_process(dark0, master_bias=bias) 
-dark.data = np.array(dark.data, 
-                dtype=np.float32)
-                
+#dark.data = np.array(dark.data, 
+                #dtype=np.float32)
+                #dtype = np.uint32)
 print('type(dark.data)', type(dark.data),
       'dark.data.mean()', dark.data.mean(), 
       'dark.data.std()', dark.data.std(), 
@@ -96,10 +94,9 @@ print('type(dark.data)', type(dark.data),
       'dark', dark)
 
 # Save file
-dark.write('{}{}Master_Dark_{}_f32.fit'.\
-        format(base_dr, master_dr, c_method), 
-        overwrite =True)
-print('{}{}Master_Dark_{}_f32.fit is created'.\
+dark.write('{}{}Master_Dark_{}_f64.fit'.\
+        format(base_dr, master_dr, c_method), overwrite =True)
+print('{}{}Master_Dark_{}_f64.fit is created'.\
         format(base_dr, master_dr, c_method))
 
 
@@ -116,18 +113,20 @@ for chl in['L', 'R', 'G', 'B', 'H', 'S', 'O'] :
         flat0 = combine(flat_list,       # ccdproc does not accept numpy.ndarray, but only python list.
         method=c_method,         # default is average so I specified median.
         unit='adu')
-        flat0.data = np.array(flat0.data, 
-                dtype=np.float32)
-                
+        #flat0.data = np.array(flat0.data, 
+                #dtype=np.float32)
+                #dtype = np.uint32)
         print('type(flat0.data)', type(flat0.data), 
             'flat0.data.mean()', flat0.data.mean(), 
             'flat0.data.std()', flat0.data.std(), 
             'flat0.data.max()', flat0.data.max(), 
             'flat0.data.min()', flat0.data.min(), 
             'flat0', flat0)
-        flat0.write('{}{}Master_Flat0_{}_{}_f32.fit'.format(base_dr, master_dr, chl, c_method), 
+        flat0.write('{}{}Master_Flat0_{}_{}_f64.fit'\
+                .format(base_dr, master_dr, chl, c_method), 
                 overwrite =True)
-        print('{}{}Master_Flat0_{}_{}_f32.fit is created'.format(base_dr, master_dr, chl, c_method))
+        print('{}{}Master_Flat0_{}_{}_f64.fit is created'.\
+                format(base_dr, master_dr, chl, c_method))
     except Exception as err: 
         print ('Error messgae .......')
         print (err)
@@ -143,15 +142,11 @@ flat = ccd_process(flat0,                  # The input image (median combined fl
                    exposure_key='exptime', # the header keyword for exposure time
                    exposure_unit=u.s,      # the unit of exposure time
                    dark_scale=True)        # whether to scale dark frame
-
 print('flat', flat.data.dtype, flat.data.min(), flat.data.max(), flat)
 
-flat.data = np.array(flat.data, 
-                dtype=np.float32)
-        
 # Save file
-flat.write('{}{}Master_Flat_{}_{}_f32.fit'.\
+flat.write('{}{}Master_Flat_{}_{}_f64.fit'.\
             format(base_dr, master_dr, chl, c_method), 
             overwrite =True)
-print('{}{}Master_Flat_{}_{}_f32.fit is created'.\
+print('{}{}Master_Flat_{}_{}_f64.fit is created'.
             format(base_dr, master_dr, chl, c_method))

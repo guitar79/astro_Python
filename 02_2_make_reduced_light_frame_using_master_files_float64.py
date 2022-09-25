@@ -30,22 +30,26 @@ reduced_dr = "readuced_files/"
 
 if not os.path.exists('{0}'.format("{}{}".format(base_dr, reduced_dr))):
     os.makedirs("{}{}".format(base_dr, reduced_dr))
+    print("{}{}is created".format(base_dr, reduced_dr))
 
 # Open master bias, dark, and flat
-bias = CCDData.read('{}{}Master_Bias_{}_f32.fit'.\
+bias = CCDData.read('{}{}Master_Bias_{}_f64.fit'.\
             format(base_dr, master_dr, c_method),
             unit='adu')
-dark0 = CCDData.read('{}{}Master_Dark0_{}_f32.fit'.\
+dark0 = CCDData.read('{}{}Master_Dark0_{}_f64.fit'.\
             format(base_dr, master_dr, c_method),
             unit='adu')
-dark = CCDData.read('{}{}Master_Dark_{}_f32.fit'.\
+dark = CCDData.read('{}{}Master_Dark_{}_f64.fit'.\
             format(base_dr, master_dr, c_method),
             unit='adu')
 
 
 #%%
 n = 0
-fullnames_light = [w for w in fullnames if ("_bias_" not in w.lower()) and ("_dark_" not in w.lower()) and ("_flat_" not in w.lower())]
+fullnames_light = [w for w in fullnames \
+            if ("_bias_" not in w.lower()) \
+                and ("_dark_" not in w.lower()) \
+                    and ("_flat_" not in w.lower())]
 print ("len(fullnames_light): {}".format(len(fullnames_light)))
 
 object_list = fullnames_light
@@ -53,10 +57,10 @@ object_list = fullnames_light
 for chl in['L', 'R', 'G', 'B', 'H', 'S', 'O'] :
     
 
-    flat0 = CCDData.read('{}{}Master_Flat0_{}_{}_f32.fit'.\
+    flat0 = CCDData.read('{}{}Master_Flat0_{}_{}_f64.fit'.\
             format(base_dr, master_dr, chl, c_method),
             unit='adu')
-    flat = CCDData.read('{}{}Master_Flat0_{}_{}_f32.fit'.\
+    flat = CCDData.read('{}{}Master_Flat0_{}_{}_f64.fit'.\
             format(base_dr, master_dr, chl, c_method),
             unit='adu')
 
@@ -70,7 +74,8 @@ for chl in['L', 'R', 'G', 'B', 'H', 'S', 'O'] :
             
             n += 1
             print('#'*40,
-                "\n{2:.01f}%  ({0}/{1}) {3}".format(n, len(fullnames_light), (n/len(fullnames_light))*100, os.path.basename(__file__)))
+                "\n{2:.01f}%  ({0}/{1}) {3}".format(n, len(fullnames_light), 
+                (n/len(fullnames_light))*100, os.path.basename(__file__)))
             print ("Starting...\nfullname: {}".format(fullname))
 
             fullname_el = fullname.split("/")
@@ -83,12 +88,12 @@ for chl in['L', 'R', 'G', 'B', 'H', 'S', 'O'] :
                                 exposure_key = 'exptime', # exposure time keyword
                                 exposure_unit = u.s,      # exposure time unit
                                 dark_scale = True)        # whether to scale dark frame
-            reduced.data = np.array(reduced.data, 
-                    dtype=np.float32)
-            reduced.write("{}{}{}_reduced_f32.fit".\
-                        format(base_dr, reduced_dr, fullname_el[-1][:-4]), overwrite =True)
-            print("{}{}{}_reduced_f32.fit is created...".\
-                        format(base_dr, reduced_dr, fullname_el[-1][:-4]))
+            #reduced.data = np.array(reduced.data, dtype=np.float32)
+            reduced.write("{}{}{}_reduced_f64.fit".\
+                        format(base_dr, reduced_dr, fullname_el[-1][:-4]), 
+                        overwrite =True)
+            print("{}{}{}_reduced_f64.fit is created..."\
+                        .format(base_dr, reduced_dr, fullname_el[-1][:-4]))
 
     except Exception as err: 
         print ('Error messgae .......')
