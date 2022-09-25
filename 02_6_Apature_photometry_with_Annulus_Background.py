@@ -171,32 +171,47 @@ for fullname in fullnames_light[10:11]:
     # The DAOStarFinder object ("DAOfind") gets at least one input: the image.
     # Then it returns the astropy table which contains the aperture photometry results:
     DAOfound = DAOfind(img)
-    print('{} stars founded by DAOStarFinder...'.format(len(DAOfound)))
+    print('{} star(s) founded by DAOStarFinder...'.format(len(DAOfound)))
     
     if len(DAOfound)==0 :
-        print ('No star was founded using DAOStarFinder\n'*3)
+        print ('No star was founded by DAOStarFinder...\n'*3)
     else : 
         # Use the object "found" for aperture photometry:
         N_stars = len(DAOfound)
-        print(N_stars, 'star(s) is(are) founded')
-        #print('DAOfound \n', DAOfound)
-        #DAOfound.pprint(max_width=1800)
+        print('{} star(s) founded by DAOStarFinder...'.format(N_stars))
+        DAOfound.pprint(max_width=1800)
+        
         # save XY coordinates:
         DAOfound.write("{}{}{}_DAOStarfinder.csv".\
                         format(base_dr, result_dr, fullname_el[-1][:-4]), 
                         overwrite = True,
                         format='ascii.fast_csv')
-    
-        #DAOcoord = (DAOfound['xcentroid'], DAOfound['ycentroid']) 
-        DAOcoord = zip(DAOfound['xcentroid'], DAOfound['ycentroid'])  
-        DAOannul = CircAn(positions=DAOcoord, r_in=4*FWHM, r_out=6*FWHM) 
+        
+        print('type(DAOfound): {}'.format(type(DAOfound)))
+        print('DAOfound: {}'.format(DAOfound))
+
+        DAOcoord = (DAOfound['xcentroid'], DAOfound['ycentroid']) 
+        print('type(DAOcoord): {}'.format(type(DAOcoord)))
+        print('DAOcoord: {}'.format(DAOcoord))
+
+        DAOcoord_zip = zip(DAOfound['xcentroid'], DAOfound['ycentroid'])  
+        print('type(DAOcoord_zip): {}'.format(type(DAOcoord_zip)))
+        print('DAOcoord_zip: {}'.format(DAOcoord_zip))
+        print('DAOcoord_zip[0]: {}'.format(DAOcoord_zip[0]))
+        print('DAOcoord_zip[1]: {}'.format(DAOcoord_zip[1]))
 
         # Save apertures as circular, 4 pixel radius, at each (X, Y)
-        DAOapert = CircAp(DAOcoord, r=4.)  
-        print('DAOapert\n ', DAOapert)
+        DAOapert = CircAp(DAOcoord_zip, r=4.)  
+        print('type(DAOapert): {}'.format(type(DAOapert)))
+        print('DAOapert: {}'.format(DAOapert))
         
         DAOimgXY = np.array(DAOcoord)
-        print('DAOimgXY \n', DAOimgXY)
+        print('type(DAOimgXY): {}'.format(type(DAOimgXY)))
+        print('DAOimgXY: {}'.format(DAOimgXY))
+
+        DAOannul = CircAn(DAOcoord_zip, r_in = 4*FWHM, r_out = 6*FWHM) 
+        print('type(DAOannul): {}'.format(type(DAOannul)))
+        print('DAOannul: {}'.format(DAOannul))
         
         plt.figure(figsize=(16,12))
         ax = plt.gca()
