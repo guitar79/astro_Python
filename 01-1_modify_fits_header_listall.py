@@ -74,12 +74,12 @@ for fullname in fullnames[:] :
                                         'append CCDNAME {}'.format(ccd_name))
                     
                 hdul.flush()  # changes are written back to original.fits
-                #print('*'*30)
-                #astro_utilities.write_log(log_file, 
-                #    '{1} ::: fits header is append with {0} ...'\
-                #    .format(fullname, datetime.now()))
+                print('*'*30)
+                astro_utilities.write_log(log_file, 
+                    '{1} ::: fits header is append with {0} ...'\
+                    .format(fullname, datetime.now()))
             
-                # Change something in hdul.
+            # Change something in hdul.
             with fits.open('{0}'.format(fullname), mode="update") as hdul :
                 #
                 #old_object_name = hdul[0].header['OBJECT']

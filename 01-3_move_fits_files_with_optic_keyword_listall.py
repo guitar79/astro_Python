@@ -131,13 +131,10 @@ for fullname in fullnames[:]:
                  '{2} ::: {0} with move {1} '.format(err, fullname, datetime.now()))
     
 #############################################################################
-#############################################################################
+#Check and delete empty folder....
 #############################################################################
 
 master_file_dir_name = 'master_file_Python/'
-processing_dir_name = 'processing_Python/'
-integration_dir_name = 'integration_Python/'
-alignment_dir_name = 'alignment_Python/'
 
 for i in range(4) : 
     fullnames = Python_utilities.getFullnameListOfallsubDirs(base_dir)

@@ -61,16 +61,18 @@ for fullname in fullnames_fit[:] :
                         stdout=subprocess.PIPE) as proc :
                 print(proc.stdout.read())
             
-            if os.path.exists("{}.tmp".format(fullname[:-4])):
-                shutil.move(r"{}.tmp".format(fullname[:-4]), \
-                            r"{}.fit".format(fullname[:-4]))
-                print(r"{}.fit is created...".format(fullname[:-4]))
+            #if os.path.exists("{}.tmp".format(fullname[:-4])):
+            #    shutil.copy(r"{}.tmp".format(fullname[:-4]), \
+            #                r"{}.fit".format(fullname[:-4]))
+            #    print(r"{}.fit is created...".format(fullname[:-4]))
 
         else :
             print("{} is not light frame".format(fullname_el[-1]))
 
+#############################################################################
+#Check existence tmp file and rename ...
+#############################################################################
 
-#####################################################################
 fullnames = Python_utilities.getFullnameListOfallFiles(base_dir)
 print ("fullnames: {}".format(fullnames))
 
@@ -90,5 +92,4 @@ for fullname in fullnames_tmp[:] :
 
     except Exception as err:
         Python_utilities.write_log(err_log_file,
-                    '{2} ::: {0} with solve {1} '.format(err, fullname, datetime.now()))
-        
+                    '{2} ::: {0} There is no {1} '.format(err, fullname, datetime.now()))      
