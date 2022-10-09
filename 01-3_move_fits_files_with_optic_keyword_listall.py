@@ -8,7 +8,7 @@ conda install astropy
 ModuleNotFoundError: No module named 'ccdproc'
 conda install -c conda-forge ccdproc
 """
-
+#%%
 import os
 from datetime import datetime
 from astropy.io import fits
@@ -42,6 +42,7 @@ fullnames = astro_utilities.getFullnameListOfallFiles(base_dir)
 #print ("fullnames: {}".format(fullnames))
 print ("len(fullnames): {}".format(len(fullnames)))
 
+#%%
 n = 0   
 for fullname in fullnames[:]:
     #fullname = fullnames[10]
@@ -129,7 +130,8 @@ for fullname in fullnames[:]:
         print("X"*60)
         Python_utilities.write_log(err_log_file, \
                  '{2} ::: {0} with move {1} '.format(err, fullname, datetime.now()))
-    
+
+ #%%   
 #############################################################################
 #Check and delete empty folder....
 #############################################################################

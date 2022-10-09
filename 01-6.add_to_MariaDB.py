@@ -1,3 +1,9 @@
+# -*- coding: utf-8 -*-
+"""
+Created on Thu Nov 22 01:00:19 2018
+@author: guitar79@naver.com
+"""
+#%%
 import os
 from astropy.io import fits
 import Python_utilities
@@ -10,6 +16,7 @@ print ("log_file: {}".format(log_file))
 print ("err_log_file: {}".format(err_log_file))
 #########################################
 
+#%%
 #########################################
 # mariaDB info
 #########################################
@@ -66,8 +73,9 @@ else :
     #ALTER TABLE `FITS_file_info` ADD `CTYPE1` VARCHAR(16) NULL DEFAULT NULL AFTER `OBJCTHA`, ADD `CTYPE2` VARCHAR(16) NULL DEFAULT NULL AFTER `CTYPE1`, ADD `EQUINOX` VARCHAR(10) NULL DEFAULT NULL AFTER `CTYPE2`, ADD `LONPOLE` VARCHAR(10) NULL DEFAULT NULL AFTER `EQUINOX`, ADD `LATPLOE` VARCHAR(16) NULL DEFAULT NULL AFTER `LONPOLE`, ADD `CRVAL1` VARCHAR(16) NULL DEFAULT NULL AFTER `LATPLOE`, ADD `CRVAL2` VARCHAR(16) NULL DEFAULT NULL AFTER `CRVAL1`, ADD `CRPIX1` VARCHAR(16) NULL DEFAULT NULL AFTER `CRVAL2`, ADD `CRPIX2` VARCHAR(16) NULL DEFAULT NULL AFTER `CRPIX1`, ADD `CUNIT1` VARCHAR(16) NULL DEFAULT NULL AFTER `CRPIX2`, ADD `CUNIT2` VARCHAR(16) NULL DEFAULT NULL AFTER `CUNIT1`, ADD `CD1_1` VARCHAR(16) NULL DEFAULT NULL AFTER `CUNIT2`, ADD `CD1_2` VARCHAR(16) NULL DEFAULT NULL AFTER `CD1_1`, ADD `CD2_1` VARCHAR(16) NULL DEFAULT NULL AFTER `CD1_2`, ADD `CD2_2` VARCHAR(16) NULL DEFAULT NULL AFTER `CD2_1`;
 
 
-#########################################
 
+#%%
+#########################################
 base_dirs = ['../CCD_obs_raw/']
 
 fullnames = []
@@ -79,8 +87,9 @@ for dirName in base_dirs :
         print(err)
         continue
 fullnames = sorted(fullnames)
-#########################################
+print("fullnames: {}".format(fullnames))
 
+#%%
 n = 0
 
 for fullname in fullnames :

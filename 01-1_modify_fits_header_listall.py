@@ -5,7 +5,7 @@ Created on Thu Nov 22 01:00:19 2018
 @author: guitar79@naver.com
 
 """
-
+#%%
 from datetime import datetime
 from astropy.io import fits
 import os
@@ -25,6 +25,7 @@ base_dir = "../CCD_new_files/"
 fullnames = astro_utilities.getFullnameListOfallFiles(base_dir)
 print ("fullnames: {}".format(fullnames))
 
+#%%
 n = 0    
 for fullname in fullnames[:] :
 #fullname = fullnames[0]

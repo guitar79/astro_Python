@@ -3,7 +3,7 @@
 Created on Thu Nov 22 01:00:19 2018
 @author: guitar79@naver.com
 """
-
+#%%
 from glob import glob
 import os
 import subprocess
@@ -30,7 +30,7 @@ fullnames_fit = [w for w in fullnames if ".fit" in w]
 #print ("fullnames: {}".format(fullnames))
 print ("len(fullnames): {}".format(len(fullnames)))
 
-
+#%%
 n = 0
 for fullname in fullnames_fit[:] :
 #fullname = fullnames[5]
@@ -69,15 +69,16 @@ for fullname in fullnames_fit[:] :
         else :
             print("{} is not light frame".format(fullname_el[-1]))
 
+#%%
 #############################################################################
 #Check existence tmp file and rename ...
 #############################################################################
-
 fullnames = Python_utilities.getFullnameListOfallFiles(base_dir)
 print ("fullnames: {}".format(fullnames))
 
 fullnames_tmp = [w for w in fullnames if ".tmp" in w]
 
+#%%
 n = 0
 for fullname in fullnames_tmp[:] :
 #fullname = fullnames[5]
