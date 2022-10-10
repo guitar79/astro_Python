@@ -26,7 +26,6 @@ fullnames = sorted(astro_utilities.getFullnameListOfallFiles(base_dir))
 print ("fullnames: {}".format(fullnames))
 
 #%%
-focal_length = 388
 n = 0    
 for fullname in fullnames[:] :
 #fullname = fullnames[0]
@@ -40,34 +39,14 @@ for fullname in fullnames[:] :
             print('Starting......\n{0} ...'.format(fullname))
             fullname_el = fullname.split('/')
             foldername_el = fullname_el[-2].split('_')
-            object_name = foldername_el[0]
-            optic_name = foldername_el[5]
-            ccd_name = foldername_el[6]
-            flipstat = "        "
-
-
-            with fits.open('{0}'.format(fullname), mode="append") as hdul :
-            #with fits.open('{0}'.format(fullname), mode="update") as hdul :
-                if not 'FOCALLEN' in hdul[0].header :
-                    hdul[0].header.append('FOCALLEN', 
-                                       '{0}'.format(focal_length), 
-                                       'Focal length (mm)')
-                    astro_utilities.write_log(log_file, 
-                        '{1} ::: FOCALLEN is appended at {0}...'\
-                        .format(fullname, datetime.now()))
-                    
-                hdul.flush()  # changes are written back to original.fits
-                print('*'*30)
-                astro_utilities.write_log(log_file, 
-                    '{1} ::: fits header is append with {0} ...'\
-                    .format(fullname, datetime.now()))
             
             # Change something in hdul.
             with fits.open('{0}'.format(fullname), mode="update") as hdul :
                 #
                 #old_object_name = hdul[0].header['OBJECT']
-                if hdul[0].header['FOCALLEN'] == 0 :
-                    hdul[0].header['FOCALLEN'] = focal_length
+                if 'DATE-OBS' in hdul[0].header and 'TIME-OBS' in hdul[0].header : 
+                    if len(hdul[0].header['DATE-OBS']) == 10 :
+                        hdul[0].header['DATE-OBS'] += 'T{}'.format(hdul[0].header['TIME-OBS'])
 
                 hdul.flush()  # changes are written back to original.fits
                 print('*'*60)
