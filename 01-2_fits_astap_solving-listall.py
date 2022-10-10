@@ -42,17 +42,23 @@ for fullname in fullnames_fit[:] :
     fullname_el = fullname.split("/")
     filename_el = fullname_el[-1].split("_")
 
-    if os.path.exists('{0}.wcs'.format(fullname[-4:])) \
-        or os.path.exists('{0}.ini'.format(fullname[-4:])):
-        print("{0}.wcs is already exist...".format(fullname[-4:]))
+    hdul = fits.open(fullname)
+    print("fits file is opened...".format(fullname_el[-1]))
 
-    else :  
-        hdul = fits.open(fullname)
-        print("fits file is opened".format(fullname_el[-1]))
+    # check Light frame
+    if "light" in hdul[0].header["IMAGETYP"].lower() :
+        print("{} is light frame...".format(fullname_el[-1]))
+        
+        # check HFD data in fits header
+        if "HFD" in hdul[0].header :
+            print("{0} is already solved by ASTAP...".format(fullname_el[-1]))
 
-        if "light" in hdul[0].header["IMAGETYP"].lower() :
-            print("{} is light frame".format(fullname_el[-1]))
+    #if os.path.exists('{0}.wcs'.format(fullname[-4:])) \
+    #    or os.path.exists('{0}.ini'.format(fullname[-4:])):
+    #    print("{0}.wcs is already exist...".format(fullname[-4:]))
 
+        else : 
+            print("{0} is being solved by ASTAP...".format(fullname_el[-1]))
             with subprocess.Popen(['astap', 
                         '-f', 
                         '{0}'.format(fullname), 
@@ -66,8 +72,8 @@ for fullname in fullnames_fit[:] :
             #                r"{}.fit".format(fullname[:-4]))
             #    print(r"{}.fit is created...".format(fullname[:-4]))
 
-        else :
-            print("{} is not light frame".format(fullname_el[-1]))
+    else :
+        print("{} is not light frame...".format(fullname_el[-1]))
 
 #%%
 #############################################################################
@@ -94,3 +100,4 @@ for fullname in fullnames_tmp[:] :
     except Exception as err:
         Python_utilities.write_log(err_log_file,
                     '{2} ::: {0} There is no {1} '.format(err, fullname, datetime.now()))      
+# %%
