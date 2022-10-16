@@ -253,6 +253,9 @@ dependencies:
   - zstd=1.4.9=haebb681_0
   - pip:
     - astropy==5.0.4
+    - astroquery==0.4.6
+    - html5lib==1.1
     - opencv-python==4.5.4.60
     - photutils==1.4.0
+    - pyvo==1.4
 prefix: /home/guitar79/anaconda3/envs/astro_Python_ubuntu_env

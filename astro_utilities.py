@@ -181,6 +181,12 @@ def get_new_filename(fullname, **kargs):
     else : 
         ccd_temp_el = 'NAN'
     
+    if 'DATE-OBS' in hdul[0].header and 'TIME-OBS' in hdul[0].header : 
+        if len(hdul[0].header['DATE-OBS']) == 10 :
+            with fits.open('{0}'.format(fullname), mode="append") as hdul1 :        
+                hdul[0].header['DATE-OBS'] += 'T{}'.format(hdul[0].header['TIME-OBS'])
+                hdul1.flush()
+                
     if 'TIME-OBS' in hdul[0].header : 
         obs_date  = hdul[0].header['DATE-OBS'][:10]+'-'+hdul[0].header['TIME-OBS']
     elif 'DATE-OBS' in hdul[0].header :

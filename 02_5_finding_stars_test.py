@@ -12,6 +12,10 @@ import astropy.units as u
 from ccdproc import CCDData, ccd_process
 import Python_utilities
 
+from photutils import DAOStarFinder
+from photutils import CircularAperture as CircAp
+from photutils import CircularAnnulus as CircAn
+
 import matplotlib.pyplot as plt
 from mpl_toolkits.axes_grid1 import make_axes_locatable
 from astropy.io import fits
@@ -83,11 +87,6 @@ thresh = thresh[0][0]
 print('detect_threshold', thresh)
 
 #%%
-import numpy as np
-import matplotlib.pyplot as plt
-from photutils import DAOStarFinder
-from photutils import CircularAperture as CircAp
-
 FWHM   = 2.5
 
 DAOfind = DAOStarFinder(threshold=thresh, 
@@ -126,10 +125,18 @@ else :
     DAOimgXY = np.array(DAOcoord)
     print('DAOimgXY \n', DAOimgXY)
     
-    plt.figure(figsize=(12,12))
+    print('type(DAOimgXY): {}'.format(type(DAOimgXY)))
+    print('DAOimgXY: {}'.format(DAOimgXY))
+
+    DAOannul = CircAn(positions = (DAOcoord_zip), r_in = 4*FWHM, r_out = 6*FWHM) 
+    print('type(DAOannul): {}'.format(type(DAOannul)))
+    print('DAOannul: {}'.format(DAOannul))
+    
+    plt.figure(figsize=(24, 18))
     ax = plt.gca()
-    im = plt.imshow(img, vmax=65536, origin='lower')
-    DAOapert.plot(color='red', lw=2., alpha=0.7)
+    im = plt.imshow(img, vmax=thresh*4, origin='lower')
+
+    DAOapert.plot(color='red', lw=2., alpha=0.3)
     divider = make_axes_locatable(ax)
     cax = divider.append_axes("right", size="3%", pad=0.05)
     plt.colorbar(im, cax=cax)
@@ -156,7 +163,6 @@ IRAFfound = IRAFfind(img)
 print('{} stars founded by IRAFStarFinder...'.format(len(IRAFfound)))
 
 #%%
-
 if len(IRAFfound)==0 :
     print ('No star founded using IRAFStarFinder')
 else : 
@@ -189,5 +195,3 @@ else :
     plt.colorbar(im, cax=cax)
     
     plt.show()
-
-# %%

@@ -49,16 +49,16 @@ for fullname in fullnames[:] :
                 #hdul =  fits.open('{0}'.format(fullname))
                 if not 'RA' in hdul[0].header :
                     hdul[0].header.append('RA', 
-                                       '{0}'.format(object_RA),
-                                       'Object Right Ascension in degrees')
+                                       'RA {}'.format(object_RA), 
+                                       'RA {}'.format(object_RA))
                     print('{0} is added at RA...'.format(object_RA))
                     astro_utilities.write_log(log_file, 
                         '{1} ::: RA is appended at {0}...'\
                         .format(fullname, datetime.now()))
                 if not 'DEC' in hdul[0].header :
                     hdul[0].header.append('DEC', 
-                                       '{0}'.format(object_DEC), 
-                                       'Object Declination in degrees')
+                                       'DEC {}'.format(object_DEC), 
+                                       'DEC {}'.format(object_DEC))
                     print('{0} is added at DEC...'.format(object_DEC))
                     astro_utilities.write_log(log_file, 
                         '{1} ::: DEC is appended at {0}...'\
