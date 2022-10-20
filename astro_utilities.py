@@ -246,15 +246,15 @@ def get_new_filename(fullname, **kargs):
         filter_name = '-'
         object_name = '-'
         optic = '-'
-    elif hdul[0].header['IMAGETYP'][0:1] == 'D' or hdul[0].header['IMAGETYP'][0:1] == 'd':
+    elif hdul[0].header['IMAGETYP'][0:1].lower() == 'd':
         image_type = 'Dark'
         filter_name = '-'
         object_name = '-'
         optic = '-'
-    elif hdul[0].header['IMAGETYP'][0:1] == 'F' or hdul[0].header['IMAGETYP'][0:1] == 'f':
+    elif hdul[0].header['IMAGETYP'][0:1].lower() == 'f':
         image_type = 'Flat'
         object_name = '-'
-    elif hdul[0].header['IMAGETYP'][0:1] == 'L' :
+    elif hdul[0].header['IMAGETYP'][0:1].lower() == 'l' :
         image_type = 'Light'
         #filter_name = hdul[0].header['FILTER'] 
         object_name = hdul[0].header['OBJECT']   
@@ -352,7 +352,7 @@ def get_new_foldername_from_filename(filename):
         obs_LST = obs_LST - timedelta(days = 1)
     filename_el[3] = obs_LST.strftime('%Y-%m-%d-%H-%M-%S')
     if filename_el[1] == 'Bias':
-        new_foldername = '{6}_{8}/Cal/-_{3}_-_{1}_-_{4}_-_{6}_-_{8}/'\
+        new_foldername = '{6}_{8}/Cal/-_{1}_-_{3}_-_{5}_{6}_-_{8}/'\
         .format(filename_el[0],
         filename_el[1],
         filename_el[2],
@@ -363,7 +363,7 @@ def get_new_foldername_from_filename(filename):
         filename_el[7],
         filename_el[8])
     elif filename_el[1] == 'Dark' :
-        new_foldername = '{6}_{8}/Cal/-_{3}_-_{1}_-_{4}_-_{6}_-_{8}/'\
+        new_foldername = '{6}_{8}/Cal/-_{1}_-_{3}_{4}_{5}_{6}_-_{8}/'\
         .format(filename_el[0],
         filename_el[1],
         filename_el[2],
@@ -374,7 +374,7 @@ def get_new_foldername_from_filename(filename):
         filename_el[7],
         filename_el[8])
     elif filename_el[1] == 'Flat' :
-        new_foldername = '{6}_{8}/Cal_{5}/-_{3}_-_{1}_-_{5}_{6}_-_{8}/'\
+        new_foldername = '{6}_{8}/Cal_{5}/-_{1}_-_{3}_-_{5}_{6}_-_{8}/'\
         .format(filename_el[0],
         filename_el[1],
         filename_el[2],

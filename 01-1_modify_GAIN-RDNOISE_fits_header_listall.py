@@ -26,11 +26,8 @@ fullnames = sorted(astro_utilities.getFullnameListOfallFiles(base_dir))
 print ("fullnames: {}".format(fullnames))
 
 #%%
-#
-object_RA = 5.2
-object_DEC = 34.2
-#OBJCTRA_OBJCTDEC
-
+gain_stf8300m = 0.37
+rdnoise_stf8300m = 9.3
 n = 0    
 for fullname in fullnames[:] :
 #fullname = fullnames[0]
@@ -46,41 +43,34 @@ for fullname in fullnames[:] :
             foldername_el = fullname_el[-2].split('_')
 
             with fits.open('{0}'.format(fullname), mode="append") as hdul :
-                #hdul =  fits.open('{0}'.format(fullname))
-                if not 'RA' in hdul[0].header :
-                    hdul[0].header.append('RA', 
-                                       '{}'.format(object_RA), 
-                                       'RA')
-                    print('{0} is added at RA...'.format(object_RA))
+            #with fits.open('{0}'.format(fullname), mode="update") as hdul :
+                if not 'GAIN' in hdul[0].header and "-8300" in hdul[0].header['INSTRUME'] :
+                    hdul[0].header.append('GAIN', 
+                                       '{0}'.format(gain_stf8300m), 
+                                       'GAIN')
                     astro_utilities.write_log(log_file, 
-                        '{1} ::: RA is appended at {0}...'\
+                        '{1} ::: GAIN is appended at {0}...'\
                         .format(fullname, datetime.now()))
-                if not 'DEC' in hdul[0].header :
-                    hdul[0].header.append('DEC', 
-                                       '{}'.format(object_DEC), 
-                                       'DEC')
-                    print('{0} is added at DEC...'.format(object_DEC))
+
+                if not 'RDNOISE' in hdul[0].header and "-8300" in hdul[0].header['INSTRUME'] :
+                    hdul[0].header.append('RDNOISE', 
+                                       '{0}'.format(rdnoise_stf8300m), 
+                                       'RDNOISE')
                     astro_utilities.write_log(log_file, 
-                        '{1} ::: DEC is appended at {0}...'\
+                        '{1} ::: RDNOISE is appended at {0}...'\
                         .format(fullname, datetime.now()))
-                    
                 hdul.flush()  # changes are written back to original.fits
                 print('*'*30)
                 astro_utilities.write_log(log_file, 
-                    '{1} ::: fits header is appended with {0} ...'\
+                    '{1} ::: fits header is append with {0} ...'\
                     .format(fullname, datetime.now()))
             
             # Change something in hdul.
             with fits.open('{0}'.format(fullname), mode="update") as hdul :
-                
-                if 'RA' in hdul[0].header and 'DEC' in hdul[0].header :
-                    hdul[0].header['RA'] = object_RA
-                    hdul[0].header['DEC'] = object_DEC
-                    print('{0} is added at RA...'.format(object_RA))
-                    print('{0} is added at DEC...'.format(object_DEC))
-                    astro_utilities.write_log(log_file, 
-                        '{1} ::: RA, DEC is appended at {0}...'\
-                        .format(fullname, datetime.now()))
+                #
+                #old_object_name = hdul[0].header['OBJECT']
+                hdul[0].header['GAIN'] = gain_stf8300m
+                hdul[0].header['RDNOISE'] = rdnoise_stf8300m
                 hdul.flush()  # changes are written back to original.fits
                 print('*'*60)
                 Python_utilities.write_log(log_file,

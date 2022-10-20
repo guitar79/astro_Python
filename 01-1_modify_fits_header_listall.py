@@ -25,6 +25,8 @@ base_dir = "../CCD_new_files/"
 fullnames = astro_utilities.getFullnameListOfallFiles(base_dir)
 print ("fullnames: {}".format(fullnames))
 
+gain_stf8300m = 0.37
+rdnoise_stf8300m = 9.3
 #%%
 n = 0    
 for fullname in fullnames[:] :
@@ -73,6 +75,23 @@ for fullname in fullnames[:] :
                     hdul[0].header.append('CCDNAME', 
                                         'append CCDNAME {}'.format(ccd_name), 
                                         'append CCDNAME {}'.format(ccd_name))
+
+                if not 'GAIN' in hdul[0].header and "-8300" in hdul[0].header['INSTRUME'] :
+                    hdul[0].header.append('GAIN', 
+                                       '{0}'.format(gain_stf8300m), 
+                                       'GAIN')
+                    astro_utilities.write_log(log_file, 
+                        '{1} ::: GAIN is appended at {0}...'\
+                        .format(fullname, datetime.now()))
+
+                if not 'RDNOISE' in hdul[0].header and "-8300" in hdul[0].header['INSTRUME'] :
+                    hdul[0].header.append('RDNOISE', 
+                                       '{0}'.format(rdnoise_stf8300m), 
+                                       'RDNOISE')
+                    astro_utilities.write_log(log_file, 
+                        '{1} ::: RDNOISE is appended at {0}...'\
+                        .format(fullname, datetime.now()))
+
                     
                 hdul.flush()  # changes are written back to original.fits
                 print('*'*30)
@@ -100,8 +119,8 @@ for fullname in fullnames[:] :
                 #                   'OPTIC information')
 
                 hdul[0].header.append('COMMENT',
-                                      'change HEADER OPTIC from {0}'.format(optic_name),
-                                      'change HEADER OPTIC from {0}'.format(optic_name))
+                                      'change HEADER OPTIC {0}'.format(optic_name),
+                                      'change HEADER OPTIC {0}'.format(optic_name))
 
                 # old_optic_name = hdul[0].header['INSTRUME']
                 hdul[0].header['CCDNAME'] = ccd_name
@@ -110,8 +129,25 @@ for fullname in fullnames[:] :
                 #                   'INSTRUME information')
 
                 hdul[0].header.append('COMMENT',
-                                      'change HEADER CCDNAME from {0}'.format(ccd_name),
-                                      'change HEADER CCDNAME from {0}'.format(ccd_name))
+                                      'change HEADER CCDNAME {0}'.format(ccd_name),
+                                      'change HEADER CCDNAME {0}'.format(ccd_name))
+
+                if "-8300" in hdul[0].header['INSTRUME'] :
+                    hdul[0].header['GAIN'] = gain_stf8300m
+                    hdul[0].header.append('COMMENT',
+                                      'change HEADER GAIN {0}'.format(gain_stf8300m),
+                                      'change HEADER GAIN {0}'.format(gain_stf8300m))
+                    hdul[0].header['RDNOISE'] = rdnoise_stf8300m
+                    hdul[0].header.append('COMMENT',
+                                      'change HEADER GAIN {0}'.format(rdnoise_stf8300m),
+                                      'change HEADER GAIN {0}'.format(rdnoise_stf8300m))
+                    
+                hdul.flush()  # changes are written back to original.fits
+                print('*'*30)
+                astro_utilities.write_log(log_file, 
+                    '{1} ::: fits header is append with {0} ...'\
+                    .format(fullname, datetime.now()))
+
 
                 hdul.flush()  # changes are written back to original.fits
                 print('*'*60)

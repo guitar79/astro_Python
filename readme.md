@@ -16,7 +16,7 @@ deactivate
 
 ## install module
 conda install astropy pymysql spyder
-conda install -c conda-forge ccdproc
+conda install -c conda-forge ccdproc xarray
 pip install opencv-python
 pip install photutils astroquery
 
@@ -47,7 +47,7 @@ conda deactivate
 
 # install module
 conda install astropy pymysql spyder
-conda install -c conda-forge ccdproc
+conda install -c conda-forge ccdproc xarray
 pip install opencv-python
 pip install photutils astroquery
 
