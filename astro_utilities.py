@@ -127,6 +127,21 @@ def get_new_filename(fullname, **kargs):
     print('Starting get_new_filename ...\n{0}'.format(fullname))
     from astropy.io import fits
     hdul = fits.open(fullname)
+    if hdul[0].header['NAXIS1'] == 4096 \
+        and hdul[0].header['NAXIS2'] == 4096 :
+        for binning in ['XBINNING', 'YBINNING'] :
+            if not binning in hdul[0].header :
+                with fits.open('{0}'.format(fullname), mode="append") as hdul1 :
+                    hdul1[0].header.append(binning, '1', 'Binning factor in ')
+                    hdul1.flush()
+            elif hdul[0].header[binning]  is None :
+                with fits.open('{0}'.format(fullname), mode="update") as hdul1 :
+                    hdul1[0].header[binning] = '1'
+                    hdul1.flush()
+            hdul[0].header[binning] = '1'
+        hdul[0].header['INSTRUME'] = 'STX-16803' 
+        hdul[0].header['TELESCOPE'] = 'RiLA600' 
+        hdul[0].header['OPTIC'] = 'RiLA600' 
     
     if hdul[0].header['NAXIS1'] == 2048 \
         and hdul[0].header['NAXIS2'] == 2048 :
@@ -140,28 +155,28 @@ def get_new_filename(fullname, **kargs):
                     hdul1[0].header[binning] = '2'
                     hdul1.flush()
             hdul[0].header[binning] = '2'
-
-        hdul[0].header['INSTRUME'] = 'STX-16803' 
-        hdul[0].header['TELESCOPE'] = 'RiLA600' 
-        hdul[0].header['OPTIC'] = 'RiLA600' 
-        
-    if hdul[0].header['NAXIS1'] == 4096 \
-        and hdul[0].header['NAXIS2'] == 4096 :
-        for binning in ['XBINNING', 'YBINNING'] :
-            if not binning in hdul[0].header :
-                with fits.open('{0}'.format(fullname), mode="append") as hdul1 :
-                    hdul1[0].header.append(binning, '1', 'Binning factor in ')
-                    hdul1.flush()
-            elif hdul[0].header[binning]  is None :
-                with fits.open('{0}'.format(fullname), mode="update") as hdul1 :
-                    hdul1[0].header[binning] = '1'
-                    hdul1.flush()
-            hdul[0].header[binning] = '1'
-                
         hdul[0].header['INSTRUME'] = 'STX-16803' 
         hdul[0].header['TELESCOPE'] = 'RiLA600' 
         hdul[0].header['OPTIC'] = 'RiLA600' 
     
+
+    if hdul[0].header['NAXIS1'] == 1024 \
+        and hdul[0].header['NAXIS2'] == 1024 :
+        for binning in ['XBINNING', 'YBINNING'] :
+            if not binning in hdul[0].header :
+                with fits.open('{0}'.format(fullname), mode="append") as hdul1 :
+                    hdul1[0].header.append(binning, '3', 'Binning factor in ')
+                    hdul1.flush()
+            elif hdul[0].header[binning] is None :
+                with fits.open('{0}'.format(fullname), mode="update") as hdul1 :
+                    hdul1[0].header[binning] = '3'
+                    hdul1.flush()
+            hdul[0].header[binning] = '3'
+        hdul[0].header['INSTRUME'] = 'STX-16803' 
+        hdul[0].header['TELESCOPE'] = 'RiLA600' 
+        hdul[0].header['OPTIC'] = 'RiLA600' 
+
+
     if not 'INSTRUME' in hdul[0].header : 
         instrument = 'UNKNOWN'
     elif  'qsi' in hdul[0].header['INSTRUME'].lower() :     
