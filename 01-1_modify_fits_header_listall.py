@@ -25,8 +25,12 @@ base_dir = "../CCD_new_files/"
 fullnames = astro_utilities.getFullnameListOfallFiles(base_dir)
 print ("fullnames: {}".format(fullnames))
 
-gain_stf8300m = 0.37
-rdnoise_stf8300m = 9.3
+gain = 0
+rdnoise = 0
+gains = {"STF-8300M": 0.37, "STX-16803": 1.27, "STL-11000": 0.8, "QSI683ws": 0.13 } 
+rdnoises = {"STF-8300M": 9.3, "STX-16803": 9.0, "STL-11000": 9.6, "QSI683ws": 8.0 } 
+
+
 #%%
 n = 0    
 for fullname in fullnames[:] :
@@ -76,17 +80,17 @@ for fullname in fullnames[:] :
                                         'append CCDNAME {}'.format(ccd_name), 
                                         'append CCDNAME {}'.format(ccd_name))
 
-                if not 'GAIN' in hdul[0].header and "-8300" in hdul[0].header['INSTRUME'] :
+                if not 'GAIN' in hdul[0].header :
                     hdul[0].header.append('GAIN', 
-                                       '{0}'.format(gain_stf8300m), 
+                                       '{0}'.format(gain), 
                                        'GAIN')
                     astro_utilities.write_log(log_file, 
                         '{1} ::: GAIN is appended at {0}...'\
                         .format(fullname, datetime.now()))
 
-                if not 'RDNOISE' in hdul[0].header and "-8300" in hdul[0].header['INSTRUME'] :
+                if not 'RDNOISE' in hdul[0].header :
                     hdul[0].header.append('RDNOISE', 
-                                       '{0}'.format(rdnoise_stf8300m), 
+                                       '{0}'.format(rdnoise), 
                                        'RDNOISE')
                     astro_utilities.write_log(log_file, 
                         '{1} ::: RDNOISE is appended at {0}...'\
@@ -133,14 +137,41 @@ for fullname in fullnames[:] :
                                       'change HEADER CCDNAME {0}'.format(ccd_name))
 
                 if "-8300" in hdul[0].header['INSTRUME'] :
-                    hdul[0].header['GAIN'] = gain_stf8300m
+                    hdul[0].header['GAIN'] = gains["STF-8300M"]
                     hdul[0].header.append('COMMENT',
-                                      'change HEADER GAIN {0}'.format(gain_stf8300m),
-                                      'change HEADER GAIN {0}'.format(gain_stf8300m))
-                    hdul[0].header['RDNOISE'] = rdnoise_stf8300m
+                                      'change HEADER GAIN {0}'.format(gains["STF-8300M"]),
+                                      'change HEADER GAIN {0}'.format(gains["STF-8300M"]))
+                    hdul[0].header['RDNOISE'] = rdnoises["STF-8300M"]
                     hdul[0].header.append('COMMENT',
-                                      'change HEADER GAIN {0}'.format(rdnoise_stf8300m),
-                                      'change HEADER GAIN {0}'.format(rdnoise_stf8300m))
+                                      'change HEADER GAIN {0}'.format(rdnoises["STF-8300M"]),
+                                      'change HEADER GAIN {0}'.format(rdnoises["STF-8300M"]))
+                elif "16803" in hdul[0].header['INSTRUME'] :
+                    hdul[0].header['GAIN'] = gains["STX-16803"]
+                    hdul[0].header.append('COMMENT',
+                                      'change HEADER GAIN {0}'.format(gains["STX-16803"]),
+                                      'change HEADER GAIN {0}'.format(gains["STX-16803"]))
+                    hdul[0].header['RDNOISE'] = rdnoises["STX-16803"]
+                    hdul[0].header.append('COMMENT',
+                                      'change HEADER GAIN {0}'.format(rdnoises["STX-16803"]),
+                                      'change HEADER GAIN {0}'.format(rdnoises["STX-16803"]))
+                elif "11000" in hdul[0].header['INSTRUME'] :
+                    hdul[0].header['GAIN'] = gains["STL-11000"]
+                    hdul[0].header.append('COMMENT',
+                                      'change HEADER GAIN {0}'.format(gains["STL-11000"]),
+                                      'change HEADER GAIN {0}'.format(gains["STL-11000"]))
+                    hdul[0].header['RDNOISE'] = rdnoises["STX-16803"]
+                    hdul[0].header.append('COMMENT',
+                                      'change HEADER GAIN {0}'.format(rdnoises["STL-11000"]),
+                                      'change HEADER GAIN {0}'.format(rdnoises["STL-11000"]))
+                elif "16803" in hdul[0].header['INSTRUME'] :
+                    hdul[0].header['GAIN'] = gains["QSI683ws"]
+                    hdul[0].header.append('COMMENT',
+                                      'change HEADER GAIN {0}'.format(gains["QSI683ws"]),
+                                      'change HEADER GAIN {0}'.format(gains["QSI683ws"]))
+                    hdul[0].header['RDNOISE'] = rdnoises["STX-16803"]
+                    hdul[0].header.append('COMMENT',
+                                      'change HEADER GAIN {0}'.format(rdnoises["QSI683ws"]),
+                                      'change HEADER GAIN {0}'.format(rdnoises["QSI683ws"]))
                     
                 hdul.flush()  # changes are written back to original.fits
                 print('*'*30)
