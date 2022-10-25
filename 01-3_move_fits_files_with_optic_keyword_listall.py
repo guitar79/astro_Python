@@ -20,6 +20,9 @@ err_log_file = "{}{}_err.log".format(log_dir, os.path.basename(__file__)[:-3])
 print ("log_file: {}".format(log_file))
 print ("err_log_file: {}".format(err_log_file))
 
+if not os.path.exists('{0}'.format(log_dir)):
+    os.makedirs('{0}'.format(log_dir))
+
 destination_base_dir_name = "../CCD_obs_raw/"
 target_duplicate_files_dir = "../CCD_duplicate_files/"
 

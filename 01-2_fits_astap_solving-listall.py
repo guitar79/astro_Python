@@ -17,7 +17,9 @@ log_file = "{}{}.log".format(log_dir, os.path.basename(__file__)[:-3])
 err_log_file = "{}{}_err.log".format(log_dir, os.path.basename(__file__)[:-3])
 print ("log_file: {}".format(log_file))
 print ("err_log_file: {}".format(err_log_file))
-
+if not os.path.exists('{0}'.format(log_dir)):
+    os.makedirs('{0}'.format(log_dir))
+    
 base_dir = "../CCD_new_files/"
 #base_dir = "../CCD_obs_raw/"
 #base_dir = "../CCD_wcs_one/"
