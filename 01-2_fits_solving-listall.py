@@ -54,11 +54,7 @@ for fullname in fullnames_fit[:] :
         # check HFD data in fits header
         if "HFD" in hdul[0].header :
         #if "CD1_1" in hdul[0].header :
-            print("{0} is already solved...".format(fullname_el[-1]))
-
-    #if os.path.exists('{0}.wcs'.format(fullname[-4:])) \
-    #    or os.path.exists('{0}.ini'.format(fullname[-4:])):
-    #    print("{0}.wcs is already exist...".format(fullname[-4:]))
+            print("{0} is already solved by ASTAP...".format(fullname_el[-1]))
 
         else : 
             print("{0} is being solved by ASTAP...".format(fullname_el[-1]))
@@ -70,10 +66,6 @@ for fullname in fullnames_fit[:] :
                         stdout=subprocess.PIPE) as proc :
                 print(proc.stdout.read())
             
-            #if os.path.exists("{}.tmp".format(fullname[:-4])):
-            #    shutil.copy(r"{}.tmp".format(fullname[:-4]), \
-            #                r"{}.fit".format(fullname[:-4]))
-            #    print(r"{}.fit is created...".format(fullname[:-4]))
 
             if os.path.exists("{}".format(fullname)):
                 hdul = fits.open(fullname)
