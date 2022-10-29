@@ -77,10 +77,11 @@ for fullname in fullnames_fit[:] :
                     print("{0} is being solved by local Astrometry...".format(fullname_el[-1]))
                     try :
                         with subprocess.Popen(['solve-field', 
-                                                #'-O', #--overwrite: overwrite output files if they already exist
+                                                '-O', #--overwrite: overwrite output files if they already exist
                                                 #'--scale-units', 'arcsecperpix', #pixel scale
                                                 #'--scale-low', '0.1', '--scale-high', '0.40', #pixel scale
                                                 '-g', #--guess-scale: try to guess the image scale from the FITS headers
+                                                '--cpulimit 30',  #will make it give up after 30 seconds.
                                                 #'-p', # --no-plots: don't create any plots of the results
                                                 #'-D', '{0}'.format(save_dir_name), 
                                                 '{0}'.format(fullname)], 
