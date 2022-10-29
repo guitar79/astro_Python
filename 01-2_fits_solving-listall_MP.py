@@ -57,7 +57,7 @@ if not os.path.exists('{0}'.format(log_dir)):
 base_dir = "../CCD_new_files/"
 
 fullnames = Python_utilities.getFullnameListOfallFiles(base_dir)
-fullnames = [w for w in fullnames if "fit" in w]
+fullnames = [w for w in fullnames if ".fit" in w]
 print ("fullnames: {}".format(fullnames))
 
 #########################################
