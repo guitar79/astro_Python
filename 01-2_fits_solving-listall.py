@@ -53,11 +53,8 @@ for fullname in fullnames_fit[:] :
         
         # check HFD data in fits header
         if "HFD" in hdul[0].header :
+        #if "CD1_1" in hdul[0].header :
             print("{0} is already solved by ASTAP...".format(fullname_el[-1]))
-
-    #if os.path.exists('{0}.wcs'.format(fullname[-4:])) \
-    #    or os.path.exists('{0}.ini'.format(fullname[-4:])):
-    #    print("{0}.wcs is already exist...".format(fullname[-4:]))
 
         else : 
             print("{0} is being solved by ASTAP...".format(fullname_el[-1]))
@@ -69,10 +66,31 @@ for fullname in fullnames_fit[:] :
                         stdout=subprocess.PIPE) as proc :
                 print(proc.stdout.read())
             
-            #if os.path.exists("{}.tmp".format(fullname[:-4])):
-            #    shutil.copy(r"{}.tmp".format(fullname[:-4]), \
-            #                r"{}.fit".format(fullname[:-4]))
-            #    print(r"{}.fit is created...".format(fullname[:-4]))
+
+            if os.path.exists("{}".format(fullname)):
+                hdul = fits.open(fullname)
+                print("fits file is opened...".format(fullname_el[-1]))
+                if "CD1_1" in hdul[0].header :
+                    print("{0} is already solved...".format(fullname_el[-1]))
+                
+                else : 
+                    print("{0} is being solved by local Astrometry...".format(fullname_el[-1]))
+                    try :
+                        with subprocess.Popen(['solve-field', 
+                                                #'-O', #--overwrite: overwrite output files if they already exist
+                                                #'--scale-units', 'arcsecperpix', #pixel scale
+                                                #'--scale-low', '0.1', '--scale-high', '0.40', #pixel scale
+                                                '-g', #--guess-scale: try to guess the image scale from the FITS headers
+                                                #'-p', # --no-plots: don't create any plots of the results
+                                                #'-D', '{0}'.format(save_dir_name), 
+                                                '{0}'.format(fullname)], 
+                                                stdout=subprocess.PIPE) as proc :
+                            print(proc.stdout.read())
+                    
+                    except Exception as err :
+                        Python_utilities.write_log(log_file,
+                            '{1} ::: {2} with {0} ...'\
+                            .format(fullname, datetime.now(), err))
 
     else :
         print("{} is not light frame...".format(fullname_el[-1]))
@@ -102,4 +120,3 @@ for fullname in fullnames_tmp[:] :
     except Exception as err:
         Python_utilities.write_log(err_log_file,
                     '{2} ::: {0} There is no {1} '.format(err, fullname, datetime.now()))      
-# %%
