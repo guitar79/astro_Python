@@ -7,7 +7,8 @@ No module named 'ccdproc'
 conda install -c conda-forge ccdproc
 """
 import os
-import shutil 
+import shutil
+from datetime import datetime 
 import Python_utilities
 import astro_utilities
 
@@ -61,7 +62,7 @@ print ("fullnames: {}".format(fullnames))
 
 #########################################
 myMP = Multiprocessor()
-num_cpu = 6
+num_cpu = 16
 values = []
 num_batches = len(fullnames) // num_cpu + 1
 
