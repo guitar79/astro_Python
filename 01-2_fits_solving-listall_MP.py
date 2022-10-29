@@ -6,15 +6,16 @@ Created on Thu Nov 22 01:00:19 2018
 No module named 'ccdproc'
 conda install -c conda-forge ccdproc
 """
+#%%
 import os
 import shutil
 from datetime import datetime 
 import Python_utilities
 import astro_utilities
 
+#%%
 #########################################
 from multiprocessing import Process, Queue
-
 class Multiprocessor():
     def __init__(self):
         self.processes = []
@@ -45,7 +46,7 @@ class Multiprocessor():
         return rets
 
 #########################################
-
+#%%
 log_dir = "logs/"
 log_file = "{}{}.log".format(log_dir, os.path.basename(__file__)[:-3])
 err_log_file = "{}{}_err.log".format(log_dir, os.path.basename(__file__)[:-3])
@@ -59,23 +60,22 @@ base_dir = "../CCD_new_files/"
 ### make all fits file list...
 fullnames = Python_utilities.getFullnameListOfallFiles(base_dir)
 fullnames_fit = [w for w in fullnames if ".fit" in w]
-
 #print ("fullnames: {}".format(fullnames))
-print ("len(fullnames): {}".format(len(fullnames)))
-
+print ("len(fullnames_fit): {}".format(len(fullnames_fit)))
 #########################################
+#%%
 myMP = Multiprocessor()
 num_cpu = 16
 values = []
-num_batches = len(fullnames) // num_cpu + 1
+num_batches = len(fullnames_fit) // num_cpu + 1
 
 for batch in range(num_batches):
     myMP.restart()
-    for fullname in fullnames[batch*num_batches:(batch+1)*num_batches]:
+    for fullname in fullnames_fit[batch*num_batches:(batch+1)*num_batches]:
         myMP.run(astro_utilities.KevinSolver, fullname)
-
     print("Batch " + str(batch))
-    myMP.wait()
+    #myMP.wait()
+
     values.append(myMP.wait())
     print("OK batch" + str(batch))
 
@@ -85,9 +85,8 @@ for batch in range(num_batches):
 #Check existence tmp file and rename ...
 #############################################################################
 fullnames = Python_utilities.getFullnameListOfallFiles(base_dir)
-print ("fullnames: {}".format(fullnames))
-
 fullnames_tmp = [w for w in fullnames if ".tmp" in w]
+print ("fullnames_tmp: {}".format(fullnames_tmp))
 
 #%%
 n = 0
