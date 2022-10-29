@@ -63,22 +63,25 @@ for fullname in fullnames[:] :
                         .format(fullname, datetime.now()))
                 if not 'OBJECT' in hdul[0].header :
                     hdul[0].header.append('OBJECT', 
-                                       '{0}'.format(object_name), 
-                                       'OBJECT information')
-                        
+                                       '{}'.format(object_name), 
+                                       '{}'.format(object_name))
+                    hdul[0].header.append('COMMENT', 
+                                        'append OBJECT {}'.format(object_name),
+                                        'append OBJECT {}'.format(object_name))
+
                 if not 'FLIPSTAT' in hdul[0].header :
                     hdul[0].header.append('FLIPSTAT', 
-                                       'FLIPSTAT {}'.format(flipstat), 
-                                       'FLIPSTAT {}'.format(flipstat))
+                                       '{}'.format(flipstat), 
+                                       '{}'.format(flipstat))
                     hdul[0].header.append('COMMENT', 
                                         'append FLIPSTAT {}'.format(flipstat), 
                                         'append FLIPSTAT {}'.format(flipstat))
                 
                 if not 'CCDNAME' in hdul[0].header :
                     hdul[0].header.append('CCDNAME', 
-                                       'CCDNAME {}'.format(ccd_name), 
-                                       'CCDNAME {}'.format(ccd_name))
-                    hdul[0].header.append('CCDNAME', 
+                                       '{}'.format(ccd_name), 
+                                       '{}'.format(ccd_name))
+                    hdul[0].header.append('COMMENT', 
                                         'append CCDNAME {}'.format(ccd_name), 
                                         'append CCDNAME {}'.format(ccd_name))
 
@@ -86,18 +89,17 @@ for fullname in fullnames[:] :
                     hdul[0].header.append('GAIN', 
                                        '{0}'.format(gain), 
                                        'GAIN')
-                    astro_utilities.write_log(log_file, 
-                        '{1} ::: GAIN is appended at {0}...'\
-                        .format(fullname, datetime.now()))
+                    hdul[0].header.append('COMMENT', 
+                                        'append GAIN {}'.format(gain), 
+                                        'append GAIN {}'.format(gain))
 
                 if not 'RDNOISE' in hdul[0].header :
                     hdul[0].header.append('RDNOISE', 
                                        '{0}'.format(rdnoise), 
                                        'RDNOISE')
-                    astro_utilities.write_log(log_file, 
-                        '{1} ::: RDNOISE is appended at {0}...'\
-                        .format(fullname, datetime.now()))
-
+                    hdul[0].header.append('COMMENT', 
+                                        'append RDNOISE {}'.format(rdnoise), 
+                                        'append RDNOISE {}'.format(rdnoise))
                     
                 hdul.flush()  # changes are written back to original.fits
                 print('*'*30)
@@ -107,33 +109,17 @@ for fullname in fullnames[:] :
             
             # Change something in hdul.
             with fits.open('{0}'.format(fullname), mode="update") as hdul :
-                #
-                #old_object_name = hdul[0].header['OBJECT']
                 hdul[0].header['OBJECT'] = object_name
-                #hdul[0].header.update('OBJECT', 
-                #                   '{0}'.format(object_name), 
-                #                   'OBJECT information')
-                
                 hdul[0].header.append('COMMENT', 
                                        'change HEADER OBJECT {0}'.format(object_name), 
                                        'change HEADER OBJECT {0}'.format(object_name))
 
-                # old_optic_name = hdul[0].header['OPTIC']
                 hdul[0].header['OPTIC'] = optic_name
-                # hdul[0].header.update('OPTIC',
-                #                   '{0}'.format(optic_name),
-                #                   'OPTIC information')
-
                 hdul[0].header.append('COMMENT',
                                       'change HEADER OPTIC {0}'.format(optic_name),
                                       'change HEADER OPTIC {0}'.format(optic_name))
 
-                # old_optic_name = hdul[0].header['INSTRUME']
                 hdul[0].header['CCDNAME'] = ccd_name
-                # hdul[0].header.update('INSTRUME',
-                #                   '{0}'.format(instrument_name),
-                #                   'INSTRUME information')
-
                 hdul[0].header.append('COMMENT',
                                       'change HEADER CCDNAME {0}'.format(ccd_name),
                                       'change HEADER CCDNAME {0}'.format(ccd_name))
