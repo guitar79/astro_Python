@@ -20,14 +20,12 @@ if not os.path.exists('{0}'.format(log_dir)):
     os.makedirs('{0}'.format(log_dir))
     
 base_dir = "../CCD_new_files/"
-#base_dir = "../CCD_obs_raw/"
-#base_dir = "../CCD_wcs_one/"
-#base_dir = "../CCD_obs_raw/STL-11000M_2bin/"
-#base_dir = "../CCD_obs_raw/ST-8300M_1bin/"
+
 
 ### make all fits file list...
 fullnames = Python_utilities.getFullnameListOfallFiles(base_dir)
 fullnames_fit = [w for w in fullnames if ".fit" in w]
+
 #print ("fullnames: {}".format(fullnames))
 print ("len(fullnames): {}".format(len(fullnames)))
 

@@ -56,9 +56,12 @@ if not os.path.exists('{0}'.format(log_dir)):
 
 base_dir = "../CCD_new_files/"
 
+### make all fits file list...
 fullnames = Python_utilities.getFullnameListOfallFiles(base_dir)
-fullnames = [w for w in fullnames if ".fit" in w]
-print ("fullnames: {}".format(fullnames))
+fullnames_fit = [w for w in fullnames if ".fit" in w]
+
+#print ("fullnames: {}".format(fullnames))
+print ("len(fullnames): {}".format(len(fullnames)))
 
 #########################################
 myMP = Multiprocessor()
