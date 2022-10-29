@@ -46,7 +46,6 @@ class KevinSolver():
                             stdout=subprocess.PIPE) as proc :
                     print(proc.stdout.read())
                 
-
                 if os.path.exists("{}".format(self.fullname)):
                     hdul = fits.open(self.fullname)
                     print("fits file is opened...".format(self.fullname_el[-1]))
@@ -68,10 +67,8 @@ class KevinSolver():
                                                 stdout=subprocess.PIPE) as proc :
                             print(proc.stdout.read())
                     
-                    
         else :
-            print("{} is not light frame...".format(self.fullname_el[-1]))
-          
+            print("{} is not light frame...".format(self.fullname_el[-1]))          
 #########################################
 
 
@@ -168,7 +165,6 @@ class AstrometrySolver():
 
 from datetime import datetime
 #from astropy.io import fits
-
 
 def write_log2(log_file, log_str):
     import os
