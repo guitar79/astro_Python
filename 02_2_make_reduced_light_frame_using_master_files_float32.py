@@ -11,13 +11,13 @@ import astropy.units as u
 from ccdproc import CCDData, ccd_process
 import Python_utilities
 
-log_dir = "logs/"
-log_file = "{}{}.log".format(log_dir, os.path.basename(__file__)[:-3])
-err_log_file = "{}{}_err.log".format(log_dir, os.path.basename(__file__)[:-3])
+log_dr = "logs/"
+log_file = "{}{}.log".format(log_dr, os.path.basename(__file__)[:-3])
+err_log_file = "{}{}_err.log".format(log_dr, os.path.basename(__file__)[:-3])
 print ("log_file: {}".format(log_file))
 print ("err_log_file: {}".format(err_log_file))
-if not os.path.exists('{0}'.format(log_dir)):
-    os.makedirs('{0}'.format(log_dir))
+if not os.path.exists('{0}'.format(log_dr)):
+    os.makedirs('{0}'.format(log_dr))
 
 base_dr = "../Post_process/KLEOPATRA_Light_-_2022-10-24_-_RiLA600_STX-16803_-_2bin/"
 

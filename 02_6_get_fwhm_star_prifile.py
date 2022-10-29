@@ -16,13 +16,13 @@ import matplotlib.pyplot as plt
 from mpl_toolkits.axes_grid1 import make_axes_locatable
 from astropy.io import fits
 
-log_dir = "logs/"
-log_file = "{}{}.log".format(log_dir, os.path.basename(__file__)[:-3])
-err_log_file = "{}{}_err.log".format(log_dir, os.path.basename(__file__)[:-3])
+log_dr = "logs/"
+log_file = "{}{}.log".format(log_dr, os.path.basename(__file__)[:-3])
+err_log_file = "{}{}_err.log".format(log_dr, os.path.basename(__file__)[:-3])
 print ("log_file: {}".format(log_file))
 print ("err_log_file: {}".format(err_log_file))
-if not os.path.exists('{0}'.format(log_dir)):
-    os.makedirs('{0}'.format(log_dir))
+if not os.path.exists('{0}'.format(log_dr)):
+    os.makedirs('{0}'.format(log_dr))
 
 base_dr = "../Post_processing/M35_Light_-_2018-10-31_-_TMB130ss_STF-8300M_-_1bin/"
 

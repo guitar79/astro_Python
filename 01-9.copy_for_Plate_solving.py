@@ -12,20 +12,20 @@ import shutil
 import Python_utilities
 import astro_utilities
 
-log_dir = "logs/"
-log_file = "{}{}.log".format(log_dir, os.path.basename(__file__)[:-3])
-err_log_file = "{}{}_err.log".format(log_dir, os.path.basename(__file__)[:-3])
+log_dr = "logs/"
+log_file = "{}{}.log".format(log_dr, os.path.basename(__file__)[:-3])
+err_log_file = "{}{}_err.log".format(log_dr, os.path.basename(__file__)[:-3])
 print ("log_file: {}".format(log_file))
 print ("err_log_file: {}".format(err_log_file))
-if not os.path.exists('{0}'.format(log_dir)):
-    os.makedirs('{0}'.format(log_dir))
+if not os.path.exists('{0}'.format(log_dr)):
+    os.makedirs('{0}'.format(log_dr))
 
-base_dir = "../CCD_obs_raw/"
-save_dir = "../CCD_wcs_one/"
+base_dr = "../CCD_obs_raw/"
+save_dr = "../CCD_wcs_one/"
 
-if not os.path.exists(save_dir):
-    os.makedirs(save_dir)
-fullnames = Python_utilities.getFullnameListOfallFiles(base_dir)
+if not os.path.exists(save_dr):
+    os.makedirs(save_dr)
+fullnames = Python_utilities.getFullnameListOfallFiles(base_dr)
 print ("fullnames: {}".format(fullnames))
 
 n = 0
@@ -44,5 +44,5 @@ for fullname in fullnames[:] :
 
         if filename_el[1].lower() == "light" :
 
-            shutil.copy2(r"{}".format(fullname), r"{}{}".format(save_dir, fullname_el[-1]))
-            print ("copy {}".format(fullname), "{}{}".format(save_dir, fullname_el[-1]))
+            shutil.copy2(r"{}".format(fullname), r"{}{}".format(save_dr, fullname_el[-1]))
+            print ("copy {}".format(fullname), "{}{}".format(save_dr, fullname_el[-1]))

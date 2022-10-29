@@ -12,18 +12,18 @@ import os
 import Python_utilities
 import astro_utilities
 
-log_dir = "logs/"
-log_file = "{}{}.log".format(log_dir, os.path.basename(__file__)[:-3])
-err_log_file = "{}{}_err.log".format(log_dir, os.path.basename(__file__)[:-3])
+log_dr = "logs/"
+log_file = "{}{}.log".format(log_dr, os.path.basename(__file__)[:-3])
+err_log_file = "{}{}_err.log".format(log_dr, os.path.basename(__file__)[:-3])
 print ("log_file: {}".format(log_file))
 print ("err_log_file: {}".format(err_log_file))
-if not os.path.exists('{0}'.format(log_dir)):
-    os.makedirs('{0}'.format(log_dir))
+if not os.path.exists('{0}'.format(log_dr)):
+    os.makedirs('{0}'.format(log_dr))
 
-base_dir = "../CCD_new_files/"
-#base_dir = "../CCD_wcs_One/"
+base_dr = "../CCD_new_files/"
+#base_dr = "../CCD_wcs_One/"
 
-fullnames = sorted(astro_utilities.getFullnameListOfallFiles(base_dir))
+fullnames = sorted(astro_utilities.getFullnameListOfallFiles(base_dr))
 
 print ("fullnames: {}".format(fullnames))
 

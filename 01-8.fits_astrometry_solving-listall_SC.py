@@ -13,19 +13,19 @@ import Python_utilities
 import astro_utilities
 
 
-log_dir = "logs/"
-log_file = "{}{}.log".format(log_dir, os.path.basename(__file__)[:-3])
-err_log_file = "{}{}_err.log".format(log_dir, os.path.basename(__file__)[:-3])
+log_dr = "logs/"
+log_file = "{}{}.log".format(log_dr, os.path.basename(__file__)[:-3])
+err_log_file = "{}{}_err.log".format(log_dr, os.path.basename(__file__)[:-3])
 print ("log_file: {}".format(log_file))
 print ("err_log_file: {}".format(err_log_file))
 
-base_dir = "../CCD_obs_raw/"
-save_dir = "../astrometry_solved"
-if not os.path.exists(save_dir):
-    os.makedirs(save_dir)
+base_dr = "../CCD_obs_raw/"
+save_dr = "../astrometry_solved"
+if not os.path.exists(save_dr):
+    os.makedirs(save_dr)
 
 
-fullnames = Python_utilities.getFullnameListOfallFiles(base_dir)
+fullnames = Python_utilities.getFullnameListOfallFiles(base_dr)
 print ("fullnames: {}".format(fullnames))
 
 
@@ -38,7 +38,7 @@ for fullname in fullnames[100000:] :
     print ("Starting...   fullname: {}".format(fullname))
     
     try:
-        astro_utilities.AstrometrySolver(fullname, save_dir)
+        astro_utilities.AstrometrySolver(fullname, save_dr)
 
     except Exception as err:
         Python_utilities.write_log(err_log_file,
