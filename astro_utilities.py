@@ -56,33 +56,22 @@ class ASTAPSolver():
 #single  class
 #########################################
 class AstrometrySolver():
-    def __init__(self, fullname, save_dir):
+    def __init__(self, fullname):
         self.fullname = fullname
-        self.save_dir = save_dir
 
     #@def fetch(self):
-        if self.fullname[-4:].lower() == ".fit" \
-            and self.fullname[-7:].lower() != "wcs.fit":
-            self.fullname_el = self.fullname.split("/")
-            self.filename_el = self.fullname_el[-1].split("_")
-
-            if self.filename_el[1].lower() == "light" :
-                print("Starting...   self.fullname: {}".format(self.fullname))
-                self.fullname_el = self.fullname.split("/")
-                self.filename_el = self.fullname_el[-1].split(".")
-                self.save_dir = self.fullname[:-len(self.fullname_el[-1])]
-
-                import subprocess
-                with subprocess.Popen(['solve-field', 
-                            #'-O', #--overwrite: overwrite output files if they already exist
-                            #'--scale-units', 'arcsecperpix', #pixel scale
-                            #'--scale-low', '0.1', '--scale-high', '0.40', #pixel scale
-                            '-g', #--guess-scale: try to guess the image scale from the FITS headers
-                            #'-p', # --no-plots: don't create any plots of the results
-                            '-D', '{0}'.format(self.save_dir), 
-                            '{0}'.format(self.fullname)], 
-                            stdout=subprocess.PIPE) as proc :
-                    print(proc.stdout.read())
+        import subprocess
+        with subprocess.Popen(['solve-field', 
+                    #'-O', #--overwrite: overwrite output files if they already exist
+                    #'--scale-units', 'arcsecperpix', #pixel scale
+                    #'--scale-low', '0.1', '--scale-high', '0.40', #pixel scale
+                    '-g', #--guess-scale: try to guess the image scale from the FITS headers
+                    '--cpulimit', '30',  #will make it give up after 30 seconds.
+                    #'-p', # --no-plots: don't create any plots of the results
+                    #'-D', '{0}'.format(self.save_dir), 
+                    '{0}'.format(self.fullname)], 
+                    stdout=subprocess.PIPE) as proc :
+            print(proc.stdout.read())
                
 
 #########################################
