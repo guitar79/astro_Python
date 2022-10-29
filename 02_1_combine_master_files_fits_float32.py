@@ -20,8 +20,8 @@ print ("err_log_file: {}".format(err_log_file))
 if not os.path.exists('{0}'.format(log_dir)):
     os.makedirs('{0}'.format(log_dir))
 
-base_dr = "../Post_processing/M35_Light_-_2018-10-31_-_TMB130ss_STF-8300M_-_1bin/"
-base_dr = "../RnE_2022/KLEOPATRA_Light_-_2022-10-12_-_GSON300_STF-8300M_-_1bin/"
+#base_dr = "../Post_processing/M35_Light_-_2018-10-31_-_TMB130ss_STF-8300M_-_1bin/"
+base_dr = "../Post_process/KLEOPATRA_Light_-_2022-10-24_-_RiLA600_STX-16803_-_2bin/"
 
 ### make all fits file list...
 fullnames = Python_utilities.getFullnameListOfallFiles("{}/input".format(base_dr))
