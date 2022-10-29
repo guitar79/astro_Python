@@ -16,29 +16,29 @@ import matplotlib.pyplot as plt
 from mpl_toolkits.axes_grid1 import make_axes_locatable
 from astropy.io import fits
 
-log_dr = "logs/"
-log_file = "{}{}.log".format(log_dr, os.path.basename(__file__)[:-3])
-err_log_file = "{}{}_err.log".format(log_dr, os.path.basename(__file__)[:-3])
+log_dir = "logs/"
+log_file = "{}{}.log".format(log_dir, os.path.basename(__file__)[:-3])
+err_log_file = "{}{}_err.log".format(log_dir, os.path.basename(__file__)[:-3])
 print ("log_file: {}".format(log_file))
 print ("err_log_file: {}".format(err_log_file))
-if not os.path.exists('{0}'.format(log_dr)):
-    os.makedirs('{0}'.format(log_dr))
+if not os.path.exists('{0}'.format(log_dir)):
+    os.makedirs('{0}'.format(log_dir))
 
-base_dr = "../Post_processing/M35_Light_-_2018-10-31_-_TMB130ss_STF-8300M_-_1bin/"
+base_dir = "../Post_processing/M35_Light_-_2018-10-31_-_TMB130ss_STF-8300M_-_1bin/"
 
 ### make all fits file list...
-fullnames = Python_utilities.getFullnameListOfallFiles("{}/input".format(base_dr))
+fullnames = Python_utilities.getFullnameListOfallFiles("{}/input".format(base_dir))
 #print ("fullnames: {}".format(fullnames))
 print ("len(fullnames): {}".format(len(fullnames)))
 
 c_method = 'median'
-master_dr = "master_files/"
-reduced_dr = "readuced_files/"
-result_dr = "result_files/"
+master_dir = "master_files/"
+reduced_dir = "readuced_files/"
+result_dir = "result_files/"
 
-if not os.path.exists('{0}'.format("{}{}".format(base_dr, result_dr))):
-    os.makedirs("{}{}".format(base_dr, result_dr))
-    print("{}{}is created".format(base_dr, result_dr))
+if not os.path.exists('{0}'.format("{}{}".format(base_dir, result_dir))):
+    os.makedirs("{}{}".format(base_dir, result_dir))
+    print("{}{}is created".format(base_dir, result_dir))
 
 fullnames_light = [w for w in fullnames \
             if ("_bias_" not in w.lower()) \
@@ -268,7 +268,7 @@ else :
     DAOfound.pprint(max_width=1800)
     
     DAOfound.write("{}{}{}_DAOStarfinder.csv".\
-                        format(base_dr, result_dr, fullname_el[-1][:-4]), 
+                        format(base_dir, result_dir, fullname_el[-1][:-4]), 
                         overwrite = True,
                         format='ascii.fast_csv')
     
@@ -317,7 +317,7 @@ if len(IRAFfound)==0 :
 else : 
     IRAFfound.pprint(max_width=1800)
     IRAFfound.write("{}{}{}_IRAFStarfinder.csv".\
-                        format(base_dr, result_dr, fullname_el[-1][:-4]), 
+                        format(base_dir, result_dir, fullname_el[-1][:-4]), 
                         overwrite =True,
                         format='ascii.fast_csv')
     

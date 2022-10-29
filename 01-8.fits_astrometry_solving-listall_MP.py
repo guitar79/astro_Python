@@ -46,16 +46,16 @@ class Multiprocessor():
 
 #########################################
 
-log_dr = "logs/"
-log_file = "{}{}.log".format(log_dr, os.path.basename(__file__)[:-3])
-err_log_file = "{}{}_err.log".format(log_dr, os.path.basename(__file__)[:-3])
+log_dir = "logs/"
+log_file = "{}{}.log".format(log_dir, os.path.basename(__file__)[:-3])
+err_log_file = "{}{}_err.log".format(log_dir, os.path.basename(__file__)[:-3])
 print ("log_file: {}".format(log_file))
 print ("err_log_file: {}".format(err_log_file))
 
-base_dr = "../CCD_obs_raw/QSI683ws_2bin/"
-save_dr = "../astrometry_solved"
-if not os.path.exists(save_dr):
-    os.makedirs(save_dr)
+base_dir = "../CCD_obs_raw/QSI683ws_2bin/"
+save_dir = "../astrometry_solved"
+if not os.path.exists(save_dir):
+    os.makedirs(save_dir)
 
 #########################################
 #single  class
@@ -74,7 +74,7 @@ class AstrometrySolver():
                 print("Starting...   self.fullname: {}".format(self.fullname))
                 self.fullname_el = self.fullname.split("/")
                 self.filename_el = self.fullname_el[-1].split(".")
-                self.save_dr = self.fullname[:-len(self.fullname_el[-1])]
+                self.save_dir = self.fullname[:-len(self.fullname_el[-1])]
 
                 try:
                     with subprocess.Popen(['solve-field', 
@@ -83,7 +83,7 @@ class AstrometrySolver():
                                 #'--scale-low', '0.1', '--scale-high', '0.40', #pixel scale
                                 '-g', #--guess-scale: try to guess the image scale from the FITS headers
                                 #'-p', # --no-plots: don't create any plots of the results
-                                '-D', '{0}'.format(save_dr), 
+                                '-D', '{0}'.format(save_dir), 
                                 '{0}'.format(self.fullname)], 
                                 stdout=subprocess.PIPE) as proc :
                         print(proc.stdout.read())
@@ -92,7 +92,7 @@ class AstrometrySolver():
                                 "{}, error: {}".format(self.fullname_el[-1], err))
 
 
-fullnames = Python_utilities.getFullnameListOfallFiles(base_dr)
+fullnames = Python_utilities.getFullnameListOfallFiles(base_dir)
 print ("fullnames: {}".format(fullnames))
 
 

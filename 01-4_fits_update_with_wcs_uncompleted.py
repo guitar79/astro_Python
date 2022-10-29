@@ -13,19 +13,19 @@ import Python_utilities
 import pandas as pd
 import astro_utilities
 
-log_dr = "logs/"
-log_file = "{}{}.log".format(log_dr, os.path.basename(__file__)[:-3])
-err_log_file = "{}{}_err.log".format(log_dr, os.path.basename(__file__)[:-3])
+log_dir = "logs/"
+log_file = "{}{}.log".format(log_dir, os.path.basename(__file__)[:-3])
+err_log_file = "{}{}_err.log".format(log_dir, os.path.basename(__file__)[:-3])
 print ("log_file: {}".format(log_file))
 print ("err_log_file: {}".format(err_log_file))
-if not os.path.exists('{0}'.format(log_dr)):
-    os.makedirs('{0}'.format(log_dr))
+if not os.path.exists('{0}'.format(log_dir)):
+    os.makedirs('{0}'.format(log_dir))
 
-base_dr = "../CCD_new_files/"
-#base_dr = "../CCD_wcs_one/"
-base_dr = "../CCD_obs_raw/"
+base_dir = "../CCD_new_files/"
+#base_dir = "../CCD_wcs_one/"
+base_dir = "../CCD_obs_raw/"
 
-fullnames = Python_utilities.getFullnameListOfallFiles(base_dr)
+fullnames = Python_utilities.getFullnameListOfallFiles(base_dir)
 print ("fullnames: {}".format(fullnames))
 
 fullnames_wcs = [w for w in fullnames if ".wcs" in w]

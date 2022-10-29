@@ -11,37 +11,37 @@ import astropy.units as u
 from ccdproc import CCDData, ccd_process
 import Python_utilities
 
-log_dr = "logs/"
-log_file = "{}{}.log".format(log_dr, os.path.basename(__file__)[:-3])
-err_log_file = "{}{}_err.log".format(log_dr, os.path.basename(__file__)[:-3])
+log_dir = "logs/"
+log_file = "{}{}.log".format(log_dir, os.path.basename(__file__)[:-3])
+err_log_file = "{}{}_err.log".format(log_dir, os.path.basename(__file__)[:-3])
 print ("log_file: {}".format(log_file))
 print ("err_log_file: {}".format(err_log_file))
-if not os.path.exists('{0}'.format(log_dr)):
-    os.makedirs('{0}'.format(log_dr))
+if not os.path.exists('{0}'.format(log_dir)):
+    os.makedirs('{0}'.format(log_dir))
 
-base_dr = "../Post_process/KLEOPATRA_Light_-_2022-10-24_-_RiLA600_STX-16803_-_2bin/"
+base_dir = "../Post_process/KLEOPATRA_Light_-_2022-10-24_-_RiLA600_STX-16803_-_2bin/"
 
 ### make all fits file list...
-fullnames = Python_utilities.getFullnameListOfallFiles("{}/input".format(base_dr))
+fullnames = Python_utilities.getFullnameListOfallFiles("{}/input".format(base_dir))
 #print ("fullnames: {}".format(fullnames))
 print ("len(fullnames): {}".format(len(fullnames)))
 
 c_method = 'median'
-master_dr = "master_files/"
-reduced_dr = "readuced_files/"
+master_dir = "master_files/"
+reduced_dir = "readuced_files/"
 
-if not os.path.exists('{0}'.format("{}{}".format(base_dr, reduced_dr))):
-    os.makedirs("{}{}".format(base_dr, reduced_dr))
+if not os.path.exists('{0}'.format("{}{}".format(base_dir, reduced_dir))):
+    os.makedirs("{}{}".format(base_dir, reduced_dir))
 
 # Open master bias, dark, and flat
 bias = CCDData.read('{}{}Master_Bias_{}_f32.fit'.\
-            format(base_dr, master_dr, c_method),
+            format(base_dir, master_dir, c_method),
             unit='adu')
 dark0 = CCDData.read('{}{}Master_Dark0_{}_f32.fit'.\
-            format(base_dr, master_dr, c_method),
+            format(base_dir, master_dir, c_method),
             unit='adu')
 dark = CCDData.read('{}{}Master_Dark_{}_f32.fit'.\
-            format(base_dr, master_dr, c_method),
+            format(base_dir, master_dir, c_method),
             unit='adu')
 
 
@@ -56,10 +56,10 @@ for chl in['L', 'R', 'G', 'B', 'H', 'S', 'O', 'v'] :
 
     try : 
         flat0 = CCDData.read('{}{}Master_Flat0_{}_{}_f32.fit'.\
-            format(base_dr, master_dr, chl, c_method),
+            format(base_dir, master_dir, chl, c_method),
             unit='adu')
         flat = CCDData.read('{}{}Master_Flat0_{}_{}_f32.fit'.\
-            format(base_dr, master_dr, chl, c_method),
+            format(base_dir, master_dir, chl, c_method),
             unit='adu')
 
         object_list = [w for w in fullnames_light if "_{}_".format(chl) in w.upper()]
@@ -85,12 +85,14 @@ for chl in['L', 'R', 'G', 'B', 'H', 'S', 'O', 'v'] :
                                 dark_scale = True)        # whether to scale dark frame
             reduced.data = np.array(reduced.data, 
                     dtype=np.float32)
+            print("reduced.data.shape:{}".format(reduced.data))
             reduced.write("{}{}{}_reduced_f32.fit".\
-                        format(base_dr, reduced_dr, fullname_el[-1][:-4]), overwrite =True)
+                        format(base_dir, reduced_dir, fullname_el[-1][:-4]), overwrite =True)
             print("{}{}{}_reduced_f32.fit is created...".\
-                        format(base_dr, reduced_dr, fullname_el[-1][:-4]))
+                        format(base_dir, reduced_dir, fullname_el[-1][:-4]))
 
     except Exception as err: 
         print ('Error messgae .......')
         print (err)
+    break
             

@@ -14,32 +14,32 @@ import shutil
 import Python_utilities
 import astro_utilities
 
-log_dr = "logs/"
-log_file = "{}{}.log".format(log_dr, os.path.basename(__file__)[:-3])
-err_log_file = "{}{}_err.log".format(log_dr, os.path.basename(__file__)[:-3])
+log_dir = "logs/"
+log_file = "{}{}.log".format(log_dir, os.path.basename(__file__)[:-3])
+err_log_file = "{}{}_err.log".format(log_dir, os.path.basename(__file__)[:-3])
 print ("log_file: {}".format(log_file))
 print ("err_log_file: {}".format(err_log_file))
 
-if not os.path.exists('{0}'.format(log_dr)):
-    os.makedirs('{0}'.format(log_dr))
+if not os.path.exists('{0}'.format(log_dir)):
+    os.makedirs('{0}'.format(log_dir))
 
-destination_base_dr_name = "../CCD_obs_raw/"
-target_duplicate_files_dr = "../CCD_duplicate_files/"
+destination_base_dir_name = "../CCD_obs_raw/"
+target_duplicate_files_dir = "../CCD_duplicate_files/"
 
-base_dr = "../CCD_new_files/"
-#base_dr = "../CCD_new_files/new/"
-#base_dr = "../CCD_wcs_one/"
-#base_dr = "../astrometry_solved/"
-#base_dr = "../CCD_obs_process/"
+base_dir = "../CCD_new_files/"
+#base_dir = "../CCD_new_files/new/"
+#base_dir = "../CCD_wcs_one/"
+#base_dir = "../astrometry_solved/"
+#base_dir = "../CCD_obs_process/"
 
-if not os.path.exists('{0}'.format(target_duplicate_files_dr)):
-    os.makedirs('{0}'.format(target_duplicate_files_dr))
+if not os.path.exists('{0}'.format(target_duplicate_files_dir)):
+    os.makedirs('{0}'.format(target_duplicate_files_dir))
 
-if not os.path.exists('{0}'.format(destination_base_dr_name)):
-    os.makedirs('{0}'.format(destination_base_dr_name))
+if not os.path.exists('{0}'.format(destination_base_dir_name)):
+    os.makedirs('{0}'.format(destination_base_dir_name))
                 
 ### make all file list...
-fullnames = astro_utilities.getFullnameListOfallFiles(base_dr)
+fullnames = astro_utilities.getFullnameListOfallFiles(base_dir)
 #print ("fullnames: {}".format(fullnames))
 print ("len(fullnames): {}".format(len(fullnames)))
 
@@ -80,7 +80,7 @@ for fullname in fullnames[:]:
             new_filename = astro_utilities.get_new_filename(fullname)
             new_foldername = astro_utilities.get_new_foldername_from_filename(new_filename)
             print ("new_filename: {}".format(new_filename))
-            new_foldername = "{}{}".format(destination_base_dr_name, new_foldername)
+            new_foldername = "{}{}".format(destination_base_dir_name, new_foldername)
             print ("new_foldername: {}".format(new_foldername))
             
             if not os.path.exists('{0}'.format(new_foldername)):
@@ -93,11 +93,11 @@ for fullname in fullnames[:]:
                     Python_utilities.write_log(log_file, 
                          '{0}{1}_wcs.fit is already exist...'.format(new_foldername, new_filename))
                     os.rename(r"{}".format(fullname), 
-                              r"{}{}".format(target_duplicate_files_dr, new_filename))
+                              r"{}{}".format(target_duplicate_files_dir, new_filename))
                     #shutil.move(r"{}".format(fullname), 
-                    #            r"{}{}".format(target_duplicate_files_dr, new_filename))
+                    #            r"{}{}".format(target_duplicate_files_dir, new_filename))
                     print ("move {}".format(fullname), 
-                           "{}{}".format(target_duplicate_files_dr, new_filename))
+                           "{}{}".format(target_duplicate_files_dir, new_filename))
                 else : 
                     os.rename(r'{0}'.format(fullname), 
                               r'{0}{1}'.format(new_foldername, new_filename))
@@ -109,14 +109,14 @@ for fullname in fullnames[:]:
             elif new_filename[-8:].lower() == "_wcs.fit" : 
                 if os.path.exists('{0}{1}_-.fit'.format(new_foldername, new_filename[:-8])):
                     os.rename(r'{0}{1}_-.fit'.format(new_foldername, new_filename[:-8]), \
-                                r"{0}{1}_-.fit".format(target_duplicate_files_dr, new_filename[:-8]))
+                                r"{0}{1}_-.fit".format(target_duplicate_files_dir, new_filename[:-8]))
                     #shutil.move(r'{0}{1}_-.fit'.format(new_foldername, new_filename[:-8]), \
-                    #            r"{0}{1}_-.fit".format(target_duplicate_files_dr, new_filename[:-8]))
+                    #            r"{0}{1}_-.fit".format(target_duplicate_files_dir, new_filename[:-8]))
                 if os.path.exists('{0}{1}_wcs.fit'.format(new_foldername, new_filename[:-8])):
                     os.rename(r'{0}{1}_wcs.fit'.format(new_foldername, new_filename[:-8]), \
-                                r"{0}{1}_wcs.fit".format(target_duplicate_files_dr, new_filename[:-8]))
+                                r"{0}{1}_wcs.fit".format(target_duplicate_files_dir, new_filename[:-8]))
                     #shutil.move(r'{0}{1}_wcs.fit'.format(new_foldername, new_filename[:-8]), \
-                    #            r"{0}{1}_wcs.fit".format(target_duplicate_files_dr, new_filename[:-8]))
+                    #            r"{0}{1}_wcs.fit".format(target_duplicate_files_dir, new_filename[:-8]))
                 shutil.move(r'{0}'.format(fullname), r'{0}{1}'.format(new_foldername, new_filename))
                 Python_utilities.write_log(log_file, \
                     '{0} is moved to {1}{2}'.format(fullname, new_foldername, new_filename))
@@ -138,15 +138,15 @@ for fullname in fullnames[:]:
 #Check and delete empty folder....
 #############################################################################
 
-master_file_dr_name = 'master_file_Python/'
+master_file_dir_name = 'master_file_Python/'
 
 for i in range(4) : 
-    fullnames = Python_utilities.getFullnameListOfallsubDirs(base_dr)
+    fullnames = Python_utilities.getFullnameListOfallsubDirs(base_dir)
     print ("fullnames: {}".format(fullnames))
     
     for fullname in fullnames[:] :
         fullname_el = fullname.split("/")
-        if fullname_el[-1] == master_file_dr_name[:-1] : 
+        if fullname_el[-1] == master_file_dir_name[:-1] : 
             #shutil.rmtree(r"{}".format(fullname))
             print ("rmtree {}\n".format(fullname))
     

@@ -38,10 +38,10 @@ def print_working_time(cht_start_time):
     working_time = (datetime.now() - cht_start_time) #total days for downloading
     return print('working time ::: %s' % (working_time))
 
-master_file_dr_name = 'master_file_Python/'
-processing_dr_name = 'processing_Python/'
-integration_dr_name = 'integration_Python/'
-alignment_dr_name = 'alignment_Python/'
+master_file_dir_name = 'master_file_Python/'
+processing_dir_name = 'processing_Python/'
+integration_dir_name = 'integration_Python/'
+alignment_dir_name = 'alignment_Python/'
 
 
 # =============================================================================
@@ -92,7 +92,7 @@ def getFullnameListOfallsubDirs(dirName):
     import os
     allFiles = list()
     for it in os.scandir(dirName):
-        if it.is_dr():
+        if it.is_dir():
             allFiles.append(it.path)
             allFiles.extend(getFullnameListOfallsubDirs(it))
     return allFiles

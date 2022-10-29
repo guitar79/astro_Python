@@ -8,13 +8,13 @@ import os
 from astropy.io import fits
 import Python_utilities
 
-log_dr = "logs/"
-log_file = "{}{}.log".format(log_dr, os.path.basename(__file__)[:-3])
-err_log_file = "{}{}_err.log".format(log_dr, os.path.basename(__file__)[:-3])
+log_dir = "logs/"
+log_file = "{}{}.log".format(log_dir, os.path.basename(__file__)[:-3])
+err_log_file = "{}{}_err.log".format(log_dir, os.path.basename(__file__)[:-3])
 print ("log_file: {}".format(log_file))
 print ("err_log_file: {}".format(err_log_file))
-if not os.path.exists('{0}'.format(log_dr)):
-    os.makedirs('{0}'.format(log_dr))
+if not os.path.exists('{0}'.format(log_dir)):
+    os.makedirs('{0}'.format(log_dir))
 
 #%%
 #########################################
@@ -76,10 +76,10 @@ else :
 
 #%%
 #########################################
-base_drs = ['../CCD_obs_raw/']
+base_dirs = ['../CCD_obs_raw/']
 
 fullnames = []
-for dirName in base_drs :
+for dirName in base_dirs :
     try :
         fullnames.extend(Python_utilities.getFullnameListOfallFiles("{}".format(dirName)))
     except Exception as err :
