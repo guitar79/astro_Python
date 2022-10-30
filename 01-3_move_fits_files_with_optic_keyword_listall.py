@@ -131,7 +131,7 @@ for fullname in fullnames[:]:
     except Exception as err :
         print("X"*60)
         Python_utilities.write_log(err_log_file, \
-                 '{2} ::: {0} with move {1} '.format(err, fullname, datetime.now()))
+                '{2} ::: {0} with move {1} '.format(err, fullname, datetime.now()))
 
  #%%   
 #############################################################################

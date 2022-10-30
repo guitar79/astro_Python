@@ -12,6 +12,9 @@ import os
 import Python_utilities
 import astro_utilities
 
+#######################################################
+# for log file
+
 log_dir = "logs/"
 log_file = "{}{}.log".format(log_dir, os.path.basename(__file__)[:-3])
 err_log_file = "{}{}_err.log".format(log_dir, os.path.basename(__file__)[:-3])
@@ -19,30 +22,39 @@ print ("log_file: {}".format(log_file))
 print ("err_log_file: {}".format(err_log_file))
 if not os.path.exists('{0}'.format(log_dir)):
     os.makedirs('{0}'.format(log_dir))
+#######################################################
+
+#######################################################
+# read all files in base directory for processing
 
 base_dir = "../CCD_new_files/"
-#base_dir = "../CCD_obs_raw/"
-#base_dir = "../../../3TB1/CCD_obs"
-
 
 fullnames = astro_utilities.getFullnameListOfallFiles(base_dir)
 print ("fullnames: {}".format(fullnames))
+######################################################
 
-######################
+
+#######################################################
+# set gain and readout noise 
+
 gain = 0
 rdnoise = 0
 gains = {"STF-8300M": 0.37, "STX-16803": 1.27, "STL-11000": 0.8, "QSI683ws": 0.13 } 
 rdnoises = {"STF-8300M": 9.3, "STX-16803": 9.0, "STL-11000": 9.6, "QSI683ws": 8.0 } 
-
+#######################################################
 
 #%%
 n = 0    
 for fullname in fullnames[:] :
 #fullname = fullnames[0]
+    #######################################################
+    # print the processing status
+
     n += 1
     print('#'*40,
         "\n{2:.01f}%  ({0}/{1}) {3}".format(n, len(fullnames), (n/len(fullnames))*100, os.path.basename(__file__)))
     print ("Starting...   fullname: {}".format(fullname))
+    ######################################################
 
     try :
         if fullname[-4:] == ".fit" or fullname[-4:] == ".new" :
@@ -60,9 +72,10 @@ for fullname in fullnames[:] :
                     hdul[0].header.append('OPTIC', 
                                        '{0}'.format(optic_name), 
                                        'OPTIC information')
-                    astro_utilities.write_log(log_file, 
-                        '{1} ::: OPTIC information is appended at {0}...'\
-                        .format(fullname, datetime.now()))
+                    hdul[0].header.append('COMMENT', 
+                                    'append OPTIC {}'.format(optic_name),
+                                    'append OPTIC {}'.format(optic_name))
+
                 if not 'OBJECT' in hdul[0].header :
                     hdul[0].header.append('OBJECT', 
                                        '{}'.format(object_name), 
@@ -167,13 +180,6 @@ for fullname in fullnames[:] :
                 print('*'*30)
                 astro_utilities.write_log(log_file, 
                     '{1} ::: fits header is append with {0} ...'\
-                    .format(fullname, datetime.now()))
-
-
-                hdul.flush()  # changes are written back to original.fits
-                print('*'*60)
-                Python_utilities.write_log(log_file,
-                    '{1} ::: fits header is update with {0} ...'\
                     .format(fullname, datetime.now()))
     
     except Exception as err :

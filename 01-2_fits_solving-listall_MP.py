@@ -14,7 +14,31 @@ import Python_utilities
 import astro_utilities
 
 #%%
-#########################################
+#######################################################
+# for log file
+
+log_dir = "logs/"
+log_file = "{}{}.log".format(log_dir, os.path.basename(__file__)[:-3])
+err_log_file = "{}{}_err.log".format(log_dir, os.path.basename(__file__)[:-3])
+print ("log_file: {}".format(log_file))
+print ("err_log_file: {}".format(err_log_file))
+if not os.path.exists('{0}'.format(log_dir)):
+    os.makedirs('{0}'.format(log_dir))
+#######################################################
+
+#######################################################
+# read all files in base directory for processinglog_dir = "logs/"
+
+base_dir = "../CCD_new_files/"
+
+# make all fits file list...
+fullnames = Python_utilities.getFullnameListOfallFiles(base_dir)
+fullnames_fit = [w for w in fullnames if ".fit" in w]
+#print ("fullnames: {}".format(fullnames))
+print ("len(fullnames_fit): {}".format(len(fullnames_fit)))
+#######################################################
+#%%
+#######################################################
 from multiprocessing import Process, Queue
 class Multiprocessor():
     def __init__(self):
@@ -44,29 +68,11 @@ class Multiprocessor():
         for p in self.processes:
             p.join()
         return rets
+#######################################################
 
-#########################################
-#%%
-log_dir = "logs/"
-log_file = "{}{}.log".format(log_dir, os.path.basename(__file__)[:-3])
-err_log_file = "{}{}_err.log".format(log_dir, os.path.basename(__file__)[:-3])
-print ("log_file: {}".format(log_file))
-print ("err_log_file: {}".format(err_log_file))
-if not os.path.exists('{0}'.format(log_dir)):
-    os.makedirs('{0}'.format(log_dir))
-
-base_dir = "../CCD_new_files/"
-
-### make all fits file list...
-fullnames = Python_utilities.getFullnameListOfallFiles(base_dir)
-fullnames_fit = [w for w in fullnames if ".fit" in w]
-#print ("fullnames: {}".format(fullnames))
-print ("len(fullnames_fit): {}".format(len(fullnames_fit)))
-#########################################
-#%%
 myMP = Multiprocessor()
-num_cpu = 16
-values = []
+num_cpu = 6
+#values = []
 num_batches = len(fullnames_fit) // num_cpu + 1
 
 for batch in range(num_batches):
@@ -74,9 +80,9 @@ for batch in range(num_batches):
     for fullname in fullnames_fit[batch*num_batches:(batch+1)*num_batches]:
         myMP.run(astro_utilities.KevinSolver, fullname)
     print("Batch " + str(batch))
-    #myMP.wait()
+    myMP.wait()
 
-    values.append(myMP.wait())
+    #values.append(myMP.wait())
     print("OK batch" + str(batch))
 
 
