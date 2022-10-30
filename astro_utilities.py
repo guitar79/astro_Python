@@ -22,7 +22,7 @@ class KevinSolver():
         self.fullname = fullname
 
     #@def fetch(self):
-        print("Starting...   self.fullname: {}".format(self.fullname))
+        print("Starting... \n{}".format(self.fullname))
         self.fullname_el = self.fullname.split("/")
         self.filename_el = self.fullname_el[-1].split("_")
 
