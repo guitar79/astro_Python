@@ -25,50 +25,54 @@ class KevinSolver():
         print("Starting...   self.fullname: {}".format(self.fullname))
         self.fullname_el = self.fullname.split("/")
         self.filename_el = self.fullname_el[-1].split("_")
-           
-        hdul = fits.open(fullname)
 
-        if "light" in hdul[0].header["IMAGETYP"].lower() :
-            print("{} is light frame".format(self.fullname_el[-1]))
+        try:    
+            hdul = fits.open(fullname)
 
-            # check HFD data in fits header
-            if "HFD" in hdul[0].header :
-            #if "CD1_1" in hdul[0].header :
-                print("{0} is already solved by ASTAP...".format(self.fullname_el[-1]))
+            if "light" in hdul[0].header["IMAGETYP"].lower() :
+                print("{} is light frame".format(self.fullname_el[-1]))
 
-            else : 
-                print("{0} is being solved by ASTAP...".format(self.fullname_el[-1]))
-                with subprocess.Popen(['astap', 
-                            '-f', 
-                            '{0}'.format(fullname), 
-                            '-analyse2',
-                            '-update'],
-                            stdout=subprocess.PIPE) as proc :
-                    print(proc.stdout.read())
-                
-                if os.path.exists("{}".format(self.fullname)):
-                    hdul = fits.open(self.fullname)
-                    print("fits file is opened...".format(self.fullname_el[-1]))
-                    if "CD1_1" in hdul[0].header :
-                        print("{0} is already solved...".format(self.fullname_el[-1]))
+                # check HFD data in fits header
+                if "HFD" in hdul[0].header :
+                #if "CD1_1" in hdul[0].header :
+                    print("{0} is already solved by ASTAP...".format(self.fullname_el[-1]))
+
+                else : 
+                    print("{0} is being solved by ASTAP...".format(self.fullname_el[-1]))
+                    with subprocess.Popen(['astap', 
+                                '-f', 
+                                '{0}'.format(fullname), 
+                                '-analyse2',
+                                '-update'],
+                                stdout=subprocess.PIPE) as proc :
+                        print(proc.stdout.read())
                     
-                    else : 
-                        print("{0} is being solved by local Astrometry...".format(self.fullname_el[-1]))
-                    
-                        with subprocess.Popen(['solve-field', 
-                                                '-O', #--overwrite: overwrite output files if they already exist
-                                                #'--scale-units', 'arcsecperpix', #pixel scale
-                                                #'--scale-low', '0.1', '--scale-high', '0.40', #pixel scale
-                                                '-g', #--guess-scale: try to guess the image scale from the FITS headers
-                                                '--cpulimit', '15',  #will make it give up after 30 seconds.
-                                                #'-p', # --no-plots: don't create any plots of the results
-                                                #'-D', '{0}'.format(save_dir_name), 
-                                                '{0}'.format(self.fullname)], 
-                                                stdout=subprocess.PIPE) as proc :
-                            print(proc.stdout.read())
-                    
-        else :
-            print("{} is not light frame...".format(self.fullname_el[-1]))          
+                    if os.path.exists("{}".format(self.fullname)):
+                        hdul = fits.open(self.fullname)
+                        print("fits file is opened...".format(self.fullname_el[-1]))
+                        if "CD1_1" in hdul[0].header :
+                            print("{0} is already solved...".format(self.fullname_el[-1]))
+                        
+                        else : 
+                            print("{0} is being solved by local Astrometry...".format(self.fullname_el[-1]))
+                        
+                            with subprocess.Popen(['solve-field', 
+                                                    '-O', #--overwrite: overwrite output files if they already exist
+                                                    #'--scale-units', 'arcsecperpix', #pixel scale
+                                                    #'--scale-low', '0.1', '--scale-high', '0.40', #pixel scale
+                                                    '-g', #--guess-scale: try to guess the image scale from the FITS headers
+                                                    '--cpulimit', '15',  #will make it give up after 30 seconds.
+                                                    #'-p', # --no-plots: don't create any plots of the results
+                                                    #'-D', '{0}'.format(save_dir_name), 
+                                                    '{0}'.format(self.fullname)], 
+                                                    stdout=subprocess.PIPE) as proc :
+                                print(proc.stdout.read())
+                        
+            else :
+                print("{} is not light frame...".format(self.fullname_el[-1]))   
+        except Exception as err :
+            print('{1} ::: {2} with {0} ...'\
+                        .format(fullname, datetime.now(), err))
 #########################################
 
 

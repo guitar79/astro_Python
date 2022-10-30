@@ -85,10 +85,7 @@ for fullname in fullnames_fit[:] :
                                                 stdout=subprocess.PIPE) as proc :
                             print(proc.stdout.read())
                     
-                    except Exception as err :
-                        Python_utilities.write_log(log_file,
-                            '{1} ::: {2} with {0} ...'\
-                            .format(fullname, datetime.now(), err))
+                    
 
     else :
         print("{} is not light frame...".format(fullname_el[-1]))
