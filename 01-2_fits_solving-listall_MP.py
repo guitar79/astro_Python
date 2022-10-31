@@ -72,7 +72,7 @@ class Multiprocessor():
 
 myMP = Multiprocessor()
 num_cpu = 6
-#values = []
+values = []
 num_batches = len(fullnames_fit) // num_cpu + 1
 
 for batch in range(num_batches):
@@ -80,9 +80,9 @@ for batch in range(num_batches):
     for fullname in fullnames_fit[batch*num_batches:(batch+1)*num_batches]:
         myMP.run(astro_utilities.KevinSolver, fullname)
     print("Batch " + str(batch))
-    myMP.wait()
+    #myMP.wait()
 
-    #values.append(myMP.wait())
+    values.append(myMP.wait())
     print("OK batch" + str(batch))
 
 
