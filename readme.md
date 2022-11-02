@@ -15,7 +15,7 @@ conda activate astro_Python_win_env
 deactivate
 
 ## install module
-conda install astropy pymysql spyder
+conda install astropy pymysql
 conda install -c conda-forge ccdproc xarray
 pip install opencv-python
 pip install photutils astroquery

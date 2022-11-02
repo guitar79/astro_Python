@@ -162,14 +162,15 @@ for fullname in fullnames_light[10:11]:
     from photutils import DAOStarFinder
     
     FWHM   = 2.5
-    DAOfind = DAOStarFinder(threshold=thresh, 
-                        fwhm=FWHM 
-                        #sharplo=0.5, sharphi=2.0,  # default values: sharplo=0.2, sharphi=1.0,
-                        #roundlo=0.0, roundhi=0.2,  # default values: roundlo=-1.0, roundhi=1.0,
-                        #sigma_radius=1.5,          # default values: sigma_radius=1.5,
-                        #ratio=0.5,                 # 1.0: circular gaussian:  ratio=1.0,
-                        #sky=None, exclude_border=False)       # To exclude sources near edges : exclude_border=True
-                        )
+    from photutils import DAOStarFinder
+    FWHM   = 4
+    DAOfind = DAOStarFinder(threshold=thresh, fwhm=FWHM, 
+                            sharplo=0.2, sharphi=1.0,  # default values: sharplo=0.2, sharphi=1.0,
+                            roundlo=-1.0, roundhi=1.0,  # default values -1 and +1
+                            sigma_radius=1.5,           # default values 1.5
+                            ratio=1.0,                  # 1.0: circular gaussian
+                            exclude_border=True         # To exclude sources near edges
+                            )
     # The DAOStarFinder object ("DAOfind") gets at least one input: the image.
     # Then it returns the astropy table which contains the aperture photometry results:
     DAOfound = DAOfind(img)
@@ -249,8 +250,9 @@ for fullname in fullnames_light[10:11]:
         
         # aperture sum
         apert_sum = APPHOT(img, DAOapert, method='exact')['aperture_sum']
+        print("apert_sum: {}".format(apert_sum))
+        print("dir(DAOapert): {}".format(dir(DAOapert)))
         ap_area   = DAOapert.area()
-        print(apert_sum)
         
         apert_result = 'ID, Msky, sky_std, Sky count Pixel_N, Sky reject Pixel_N, mag_ann, merr_ann\n'
         
