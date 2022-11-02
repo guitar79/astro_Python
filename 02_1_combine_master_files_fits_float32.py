@@ -22,31 +22,27 @@ print ("log_file: {}".format(log_file))
 print ("err_log_file: {}".format(err_log_file))
 if not os.path.exists('{0}'.format(log_dir)):
     os.makedirs('{0}'.format(log_dir))
-
-base_dir = "../Post_process/KLEOPATRA1_Light_-_2022-10-17_-_GSON300_STF-8300M_-_1bin/"
-
-### make all fits file list...
-fullnames = Python_utilities.getFullnameListOfallFiles("{}".format(base_dir))
-#print ("fullnames: {}".format(fullnames))
-print ("len(fullnames): {}".format(len(fullnames)))
-
 #######################################################
-
-
 c_method = 'median'
 master_dir = "master_files/"
 
 #######################################################
-# read all files in base directory for processing
+### make list all files in base_dir and subdir
+base_dir = "../Post_process/KLEOPATRA1_Light_-_2022-10-17_-_GSON300_STF-8300M_-_1bin/"
 
-#base_dir = "../Post_processing/M35_Light_-_2018-10-31_-_TMB130ss_STF-8300M_-_1bin/"
-base_dir = "../Post_process/KLEOPATRA_Light_-_2022-10-24_-_RiLA600_STX-16803_-_2bin/"
+fullnames = Python_utilities.getFullnameListOfallFiles("{}".format(base_dir))
+#print ("fullnames: {}".format(fullnames))
+print ("len(fullnames): {}".format(len(fullnames)))
+#######################################################
 
+
+#######################################################
+# make list all subdir in base_dir
 base_dir = "../RnE_2022/"
-
 base_dirs = os.listdir(base_dir)
-
+base_dirs = ["{}{}/".format(base_dir, w) for w in base_dirs]
 print ("base_dirs: {}".format(base_dirs))
+print ("len(base_dirs): {}".format(len(base_dirs)))
 
 #%%
 for base_dir in base_dirs :
