@@ -35,7 +35,8 @@ base_dir = "../Post_process/KLEOPATRA_Light_-_2022-10-24_-_RiLA600_STX-16803_-_2
 
 base_dir = "../RnE_2022/"
 
-base_dirs = Python_utilities.getFullnameListOfsubDir(base_dir)
+base_dirs = os.listdir(base_dir)
+
 print ("base_dirs: {}".format(base_dirs))
 
 #%%
