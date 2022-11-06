@@ -19,10 +19,10 @@ print ("err_log_file: {}".format(err_log_file))
 if not os.path.exists('{0}'.format(log_dir)):
     os.makedirs('{0}'.format(log_dir))
 
-base_dir = "../Post_process/KLEOPATRA_Light_-_2022-10-24_-_RiLA600_STX-16803_-_2bin/"
+base_dir = "../Post_process/KLEOPATRA1_Light_-_2022-10-17_-_GSON300_STF-8300M_-_1bin/"
 
 ### make all fits file list...
-fullnames = Python_utilities.getFullnameListOfallFiles("{}/input".format(base_dir))
+fullnames = Python_utilities.getFullnameListOfallFiles("{}".format(base_dir))
 #print ("fullnames: {}".format(fullnames))
 print ("len(fullnames): {}".format(len(fullnames)))
 
@@ -47,9 +47,10 @@ dark = CCDData.read('{}{}Master_Dark_{}_f32.fit'.\
 
 #%%
 n = 0
-fullnames_light = [w for w in fullnames if ("_bias_" not in w.lower()) and ("_dark_" not in w.lower()) and ("_flat_" not in w.lower())]
+fullnames_light = [w for w in fullnames if not (("_bias_" in w.lower()) or "_dark_" in w.lower() or "_flat_" in w.lower())]
+print ("fullnames_light: {}".format(fullnames_light))
 print ("len(fullnames_light): {}".format(len(fullnames_light)))
-
+#%%
 object_list = fullnames_light
 
 for chl in['L', 'R', 'G', 'B', 'H', 'S', 'O', 'v'] :
@@ -80,19 +81,20 @@ for chl in['L', 'R', 'G', 'B', 'H', 'S', 'O', 'v'] :
                                 dark_frame = dark0,        # dark
                                 master_flat = flat0,      # non-calibrated flat
                                 min_value = flat0.data.min(),        # flat.min() should be 30000
-                                exposure_key = 'exptime', # exposure time keyword
+                                #exposure_key = 'EXPTIME', # exposure time keyword
+                                exposure_key = 'EXPOSURE', # exposure time keyword
                                 exposure_unit = u.s,      # exposure time unit
                                 dark_scale = True)        # whether to scale dark frame
             reduced.data = np.array(reduced.data, 
                     dtype=np.float32)
-            print("reduced.data.shape:{}".format(reduced.data))
+            print("reduced.data.shape:{}".format(reduced.data.shape))
             reduced.write("{}{}{}_reduced_f32.fit".\
                         format(base_dir, reduced_dir, fullname_el[-1][:-4]), overwrite =True)
             print("{}{}{}_reduced_f32.fit is created...".\
                         format(base_dir, reduced_dir, fullname_el[-1][:-4]))
-
+            break
     except Exception as err: 
         print ('Error messgae .......')
         print (err)
-    break
+    
             
