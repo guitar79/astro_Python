@@ -38,6 +38,7 @@ print ("fullnames: {}".format(fullnames))
 
 gain = 0
 rdnoise = 0
+binning = 1
 gains = {"STF-8300M": 0.37, "STX-16803": 1.27, "STL-11000": 0.8, "QSI683ws": 0.13 } 
 rdnoises = {"STF-8300M": 9.3, "STX-16803": 9.0, "STL-11000": 9.6, "QSI683ws": 8.0 } 
 #######################################################
@@ -114,6 +115,22 @@ for fullname in fullnames[:] :
                     hdul[0].header.append('COMMENT', 
                                         'append RDNOISE {}'.format(rdnoise), 
                                         'append RDNOISE {}'.format(rdnoise))
+                
+                if not 'XBINNINGE' in hdul[0].header :
+                    hdul[0].header.append('XBINNING'
+                                       '{0}'.format(binning), 
+                                       'XBINNING')
+                    hdul[0].header.append('COMMENT', 
+                                        'append XBINNING {}'.format(binning), 
+                                        'append XBINNING {}'.format(binning))
+                
+                if not 'YBINNINGE' in hdul[0].header :
+                    hdul[0].header.append('YBINNING'
+                                       '{0}'.format(binning), 
+                                       'YBINNING')
+                    hdul[0].header.append('COMMENT', 
+                                        'append YBINNING {}'.format(binning), 
+                                        'append YBINNING {}'.format(binning))
                     
                 hdul.flush()  # changes are written back to original.fits
                 print('*'*30)
@@ -147,6 +164,17 @@ for fullname in fullnames[:] :
                     hdul[0].header.append('COMMENT',
                                       'change HEADER GAIN {0}'.format(rdnoises["STF-8300M"]),
                                       'change HEADER GAIN {0}'.format(rdnoises["STF-8300M"]))
+                    hdul[0].header['XBINNING'] = int(hdul[0].header['XPIXSZ'] / 5.4)
+                    hdul[0].header.append('COMMENT',
+                                      'change HEADER XBINNING {0}'.format(int(hdul[0].header['XPIXSZ'] / 5.4)),
+                                      'change HEADER XBINNING {0}'.format(int(hdul[0].header['XPIXSZ'] / 5.4)))
+                    
+                    hdul[0].header['YBINNING'] = int(hdul[0].header['YPIXSZ'] / 5.4)
+                    hdul[0].header.append('COMMENT',
+                                      'change HEADER YBINNING {0}'.format(int(hdul[0].header['YPIXSZ'] / 5.4)),
+                                      'change HEADER YBINNING {0}'.format(int(hdul[0].header['YPIXSZ'] / 5.4)))
+
+
                 elif "16803" in hdul[0].header['INSTRUME'] :
                     hdul[0].header['GAIN'] = gains["STX-16803"]
                     hdul[0].header.append('COMMENT',
@@ -174,7 +202,7 @@ for fullname in fullnames[:] :
                     hdul[0].header.append('COMMENT',
                                       'change HEADER GAIN {0}'.format(rdnoises["QSI683ws"]),
                                       'change HEADER GAIN {0}'.format(rdnoises["QSI683ws"]))
-                    
+                
                 hdul.flush()  # changes are written back to original.fits
                 print('*'*30)
                 astro_utilities.write_log(log_file, 
