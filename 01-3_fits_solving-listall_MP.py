@@ -10,6 +10,7 @@ conda install -c conda-forge ccdproc
 import os
 import shutil
 from datetime import datetime 
+from astropy.io import fits
 import Python_utilities
 import astro_utilities
 
@@ -30,11 +31,10 @@ if not os.path.exists('{0}'.format(log_dir)):
 # read all files in base directory for processing
 
 base_dir = "../CCD_new_files/"
-base_dir = "../CCD_obs_raw/STX-16803_1bin/"
+base_dir = "../CCD_obs_raw/STX-16803_2bin/"
 
 destination_base_dir_name = "../CCD_obs_raw/"
 target_duplicate_files_dir = "../CCD_duplicate_files/"
-
 
 if not os.path.exists('{0}'.format(target_duplicate_files_dir)):
     os.makedirs('{0}'.format(target_duplicate_files_dir))
@@ -42,13 +42,16 @@ if not os.path.exists('{0}'.format(target_duplicate_files_dir)):
 if not os.path.exists('{0}'.format(destination_base_dir_name)):
     os.makedirs('{0}'.format(destination_base_dir_name))
 
-
 # make all fits file list...
 fullnames = Python_utilities.getFullnameListOfallFiles(base_dir)
+#print ("fullnames: {}".format(fullnames))
+print ("len(fullnames): {}".format(len(fullnames)))
+
 fullnames_fit = [w for w in fullnames if (w.endswith(".fit") or w.endswith(".fits"))]
 #print ("fullnames: {}".format(fullnames))
 print ("len(fullnames_fit): {}".format(len(fullnames_fit)))
 #######################################################
+
 #%%
 #######################################################
 from multiprocessing import Process, Queue
