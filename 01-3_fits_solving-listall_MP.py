@@ -31,7 +31,7 @@ if not os.path.exists('{0}'.format(log_dir)):
 # read all files in base directory for processing
 
 base_dir = "../CCD_new_files/"
-base_dir = "../CCD_obs_raw/STX-16803_2bin/"
+base_dir = "../CCD_obs_raw/STL-11000M_1bin/"
 
 destination_base_dir_name = "../CCD_obs_raw/"
 target_duplicate_files_dir = "../CCD_duplicate_files/"

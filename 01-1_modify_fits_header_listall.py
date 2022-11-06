@@ -184,6 +184,26 @@ for fullname in fullnames[:] :
                     hdul[0].header.append('COMMENT',
                                       'change HEADER GAIN {0}'.format(rdnoises["STX-16803"]),
                                       'change HEADER GAIN {0}'.format(rdnoises["STX-16803"]))
+
+                    if 'XPIXSZ' in hdul[0].header['INSTRUME'] :
+                        binning = int(hdul[0].header['XPIXSZ'] / 9)
+                        
+                    elif hdul[0].header['NAXIS1'] == 4096 or hdul[0].header['NAXIS2'] == 4096 :
+                        binning = 1
+                    elif hdul[0].header['NAXIS1'] == 2048 or hdul[0].header['NAXIS2'] == 2048 :
+                        binning = 2
+                    elif hdul[0].header['NAXIS1'] == 1024 or hdul[0].header['NAXIS2'] == 1024 :
+                        binning = 3    
+
+                    hdul[0].header['XBINNING'] = binning
+                    hdul[0].header['YBINNING'] = binning
+                    hdul[0].header.append('COMMENT',
+                                        'change HEADER XBINNING {0}'.format(binning),
+                                        'change HEADER XBINNING {0}'.format(binning))
+                    hdul[0].header.append('COMMENT',
+                                        'change HEADER YBINNING {0}'.format(binning),
+                                        'change HEADER YBINNING {0}'.format(binning))
+
                 elif "11000" in hdul[0].header['INSTRUME'] :
                     hdul[0].header['GAIN'] = gains["STL-11000"]
                     hdul[0].header.append('COMMENT',
@@ -193,7 +213,16 @@ for fullname in fullnames[:] :
                     hdul[0].header.append('COMMENT',
                                       'change HEADER GAIN {0}'.format(rdnoises["STL-11000"]),
                                       'change HEADER GAIN {0}'.format(rdnoises["STL-11000"]))
-                elif "16803" in hdul[0].header['INSTRUME'] :
+                    hdul[0].header['XBINNING'] = int(hdul[0].header['XPIXSZ'] / 9)
+                    hdul[0].header.append('COMMENT',
+                                      'change HEADER XBINNING {0}'.format(int(hdul[0].header['XPIXSZ'] / 9)),
+                                      'change HEADER XBINNING {0}'.format(int(hdul[0].header['XPIXSZ'] / 9)))
+        
+                    hdul[0].header['YBINNING'] = int(hdul[0].header['YPIXSZ'] / 9)
+                    hdul[0].header.append('COMMENT',
+                                      'change HEADER YBINNING {0}'.format(int(hdul[0].header['YPIXSZ'] / 9)),
+                                      'change HEADER YBINNING {0}'.format(int(hdul[0].header['YPIXSZ'] / 9)))
+                elif "683" in hdul[0].header['INSTRUME'] :
                     hdul[0].header['GAIN'] = gains["QSI683ws"]
                     hdul[0].header.append('COMMENT',
                                       'change HEADER GAIN {0}'.format(gains["QSI683ws"]),
@@ -202,6 +231,15 @@ for fullname in fullnames[:] :
                     hdul[0].header.append('COMMENT',
                                       'change HEADER GAIN {0}'.format(rdnoises["QSI683ws"]),
                                       'change HEADER GAIN {0}'.format(rdnoises["QSI683ws"]))
+                    hdul[0].header['XBINNING'] = int(hdul[0].header['XPIXSZ'] / 5.4)
+                    hdul[0].header.append('COMMENT',
+                                      'change HEADER XBINNING {0}'.format(int(hdul[0].header['XPIXSZ'] / 5.4)),
+                                      'change HEADER XBINNING {0}'.format(int(hdul[0].header['XPIXSZ'] / 5.4)))
+                    
+                    hdul[0].header['YBINNING'] = int(hdul[0].header['YPIXSZ'] / 5.4)
+                    hdul[0].header.append('COMMENT',
+                                      'change HEADER YBINNING {0}'.format(int(hdul[0].header['YPIXSZ'] / 5.4)),
+                                      'change HEADER YBINNING {0}'.format(int(hdul[0].header['YPIXSZ'] / 5.4)))
                 
                 hdul.flush()  # changes are written back to original.fits
                 print('*'*30)
