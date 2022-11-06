@@ -35,7 +35,12 @@ class KevinSolver():
                 # check HFD data in fits header
                 if "HFD" in hdul[0].header :
                 #if "CD1_1" in hdul[0].header :
-                    print("{0} is already solved by ASTAP...".format(self.fullname_el[-1]))
+                    print("{0} is already solved by ASTAP successfully...".format(self.fullname_el[-1]))
+                
+                elif os.path.exists("{}.ini".format(self.fullname[:-4])):
+                    print("{0} is already tried solving by ASTAP but failed...".format(self.fullname_el[-1]))
+
+
 
                 else : 
                     print("{0} is being solved by ASTAP...".format(self.fullname_el[-1]))
@@ -51,7 +56,10 @@ class KevinSolver():
                         hdul = fits.open(self.fullname)
                         print("fits file is opened...".format(self.fullname_el[-1]))
                         if "CD1_1" in hdul[0].header :
-                            print("{0} is already solved...".format(self.fullname_el[-1]))
+                            print("{0} is already solved successfully...".format(self.fullname_el[-1]))
+
+                        elif os.path.exists("{}.axy".format(self.fullname[:-4])):
+                            print("{0} is already tried solving by Astrometry but failed...".format(self.fullname_el[-1]))
                         
                         else : 
                             print("{0} is being solved by local Astrometry...".format(self.fullname_el[-1]))

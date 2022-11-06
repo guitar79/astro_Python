@@ -23,24 +23,11 @@ print ("err_log_file: {}".format(err_log_file))
 if not os.path.exists('{0}'.format(log_dir)):
     os.makedirs('{0}'.format(log_dir))
 #######################################################
-<<<<<<< HEAD
-=======
+
 c_method = 'median'
 master_dir = "master_files/"
 
 #######################################################
-### make list all files in base_dir and subdir
-base_dir = "../Post_process/KLEOPATRA1_Light_-_2022-10-17_-_GSON300_STF-8300M_-_1bin/"
-
-fullnames = Python_utilities.getFullnameListOfallFiles("{}".format(base_dir))
-#print ("fullnames: {}".format(fullnames))
-print ("len(fullnames): {}".format(len(fullnames)))
-#######################################################
->>>>>>> b9a8b2037196f448443bf587b325054150a9a918
-
-
-#######################################################
-<<<<<<< HEAD
 # read all files in base directory for processing
 
 #base_dir = "../Post_processing/M35_Light_-_2018-10-31_-_TMB130ss_STF-8300M_-_1bin/"
@@ -81,45 +68,6 @@ for base_dir in base_dirs :
         else:
             bias_list = fullnames_bias
 
-=======
-# make list all subdir in base_dir
-base_dir = "../RnE_2022/"
-base_dirs = os.listdir(base_dir)
-base_dirs = ["{}{}/".format(base_dir, w) for w in base_dirs]
-print ("base_dirs: {}".format(base_dirs))
-print ("len(base_dirs): {}".format(len(base_dirs)))
-
-#%%
-for base_dir in base_dirs :
-    print ("Starting...\n{}".format(base_dir))
-    ######################################################
-    ### make all fits file list...
-    fullnames = Python_utilities.getFullnameListOfallFiles("{}".format(base_dir))
-    #print ("fullnames: {}".format(fullnames))
-    print ("len(fullnames): {}".format(len(fullnames)))
-
-    if not os.path.exists('{0}'.format("{}{}".format(base_dir, master_dir))):
-        os.makedirs("{}{}".format(base_dir, master_dir))
-
-    #%%
-    fullnames_bias = [w for w in fullnames if "_bias_" in w.lower()]
-    print ("len(fullnames_bias): {}".format(len(fullnames_bias)))
-
-    try: 
-        if os.path.exists('{}{}Master_Bias_{}_f32.fit'.\
-                format(base_dir, master_dir, c_method)) :
-
-            # Open master bias
-            bias = CCDData.read('{}{}Master_Bias_{}_f32.fit'.\
-                    format(base_dir, master_dir, c_method),
-                    unit='adu')
-            
-            print('{0}{1}Master_Dark_{2}_f32.fit is already exist..'.\
-                format(base_dir, master_dir, c_method))
-        else:
-            bias_list = fullnames_bias
-
->>>>>>> b9a8b2037196f448443bf587b325054150a9a918
             bias = combine(bias_list,       # ccdproc does not accept numpy.ndarray, but only python list.
                         method=c_method,         # default is average so I specified median.
                         unit='adu')              # unit is required: it's ADU in our case.

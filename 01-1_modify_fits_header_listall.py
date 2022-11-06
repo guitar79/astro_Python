@@ -26,7 +26,6 @@ if not os.path.exists('{0}'.format(log_dir)):
 
 #######################################################
 # read all files in base directory for processing
-
 base_dir = "../CCD_new_files/"
 
 fullnames = astro_utilities.getFullnameListOfallFiles(base_dir)

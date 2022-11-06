@@ -1,32 +1,39 @@
-"""
 # -*- coding: utf-8 -*-
-
+"""
 Created on Thu Nov 22 01:00:19 2018
-@author: guitar79@naver.com
+@author: user
 
-
+No module named 'ccdproc'
+conda install -c conda-forge ccdproc
 """
 #%%
 import os
-from datetime import datetime
-from astropy.io import fits
-import shutil 
+import shutil
+from datetime import datetime 
 import Python_utilities
 import astro_utilities
+
+#%%
+#######################################################
+# for log file
 
 log_dir = "logs/"
 log_file = "{}{}.log".format(log_dir, os.path.basename(__file__)[:-3])
 err_log_file = "{}{}_err.log".format(log_dir, os.path.basename(__file__)[:-3])
 print ("log_file: {}".format(log_file))
 print ("err_log_file: {}".format(err_log_file))
-
 if not os.path.exists('{0}'.format(log_dir)):
     os.makedirs('{0}'.format(log_dir))
+#######################################################
+
+#######################################################
+# read all files in base directory for processing
+
+base_dir = "../CCD_new_files/"
+base_dir = "../CCD_obs_raw/STX-16803_1bin/Light_RiLA600/KLEOPATRA_Light_-_2022-11-05_-_RiLA600_STX-16803_-_1bin/"
 
 destination_base_dir_name = "../CCD_obs_raw/"
 target_duplicate_files_dir = "../CCD_duplicate_files/"
-
-base_dir = "../CCD_new_files/"
 
 
 if not os.path.exists('{0}'.format(target_duplicate_files_dir)):
@@ -34,35 +41,110 @@ if not os.path.exists('{0}'.format(target_duplicate_files_dir)):
 
 if not os.path.exists('{0}'.format(destination_base_dir_name)):
     os.makedirs('{0}'.format(destination_base_dir_name))
-                
-### make all file list...
-fullnames = astro_utilities.getFullnameListOfallFiles(base_dir)
+
+
+# make all fits file list...
+fullnames = Python_utilities.getFullnameListOfallFiles(base_dir)
+fullnames_fit = [w for w in fullnames if ".fit" in w]
 #print ("fullnames: {}".format(fullnames))
-print ("len(fullnames): {}".format(len(fullnames)))
+print ("len(fullnames_fit): {}".format(len(fullnames_fit)))
+#######################################################
+#%%
+#######################################################
+from multiprocessing import Process, Queue
+class Multiprocessor():
+    def __init__(self):
+        self.processes = []
+        self.queue = Queue()
+
+    @staticmethod
+    def _wrapper(func, queue, args, kwargs):
+        ret = func(*args, **kwargs)
+        queue.put(ret)
+
+    def restart(self):
+        self.processes = []
+        self.queue = Queue()
+
+    def run(self, func, *args, **kwargs):
+        args2 = [func, self.queue, args, kwargs]
+        p = Process(target=self._wrapper, args=args2)
+        self.processes.append(p)
+        p.start()
+
+    def wait(self):
+        rets = []
+        for p in self.processes:
+            ret = self.queue.get()
+            rets.append(ret)
+        for p in self.processes:
+            p.join()
+        return rets
+#######################################################
+
+myMP = Multiprocessor()
+num_cpu = 6
+values = []
+num_batches = len(fullnames_fit) // num_cpu + 1
+
+for batch in range(num_batches):
+    myMP.restart()
+    for fullname in fullnames_fit[batch*num_batches:(batch+1)*num_batches]:
+        myMP.run(astro_utilities.KevinSolver, fullname)
+    print("Batch " + str(batch))
+    #myMP.wait()
+
+    values.append(myMP.wait())
+    print("OK batch" + str(batch))
+
 
 #%%
-n = 0   
-for fullname in fullnames[:]:
-    #fullname = fullnames[10]
+#############################################################################
+#Check existence tmp, new file and rename ...
+#############################################################################
+fullnames = Python_utilities.getFullnameListOfallFiles(base_dir)
+fullnames_tmp = [w for w in fullnames if ".tmp" in w]
+print ("fullnames_tmp: {}".format(fullnames_tmp))
+
+#%%
+n = 0
+for fullname in fullnames_tmp[:] :
+#fullname = fullnames[5]
     n += 1
     print('#'*40,
-        "\n{2:.01f}%  ({0}/{1}) {3}".format(n, len(fullnames), (n/len(fullnames))*100, os.path.basename(__file__)))
-    print ("Starting...   fullname: {}".format(fullname))
+        "\n{2:.01f}%  ({0}/{1}) {3}".format(n, len(fullnames), (n/len(fullnames_tmp))*100, os.path.basename(__file__)))
+    print ("Starting...\nfullname: {}".format(fullname))
 
-    try :
-        if fullname[-4:].lower() in [".txt", "xisf", ".zip", ".png", ".log",
-                                      "seal", "tiff", ".axy", "atch", "lved",
-                                      "rdls", "xyls", "corr", "xosm", ".ini",
-                                      ".wcs", ".csv"] \
-                                and os.path.isfile('{}'.format(fullname)):
-            os.remove("{}".format(fullname))
-            print("{} is removed".format(fullname))
+    try:
+        shutil.move(r"{}".format(fullname), \
+                        r"{}.fit".format(fullname[:-4]))
 
-        elif fullname[-4:].lower() in [".fit", "fits", ".new", ".tmp"]\
-                            and os.path.isfile('{}'.format(fullname)):
+    except Exception as err:
+        Python_utilities.write_log(err_log_file,
+                    '{2} ::: {0} There is no {1} '.format(err, fullname, datetime.now()))      
+#%%
+#############################################################################
+#Check existence tmp file and rename ...
+#############################################################################
+fullnames = Python_utilities.getFullnameListOfallFiles(base_dir)
+print ("fullnames: {}".format(fullnames))
 
-            fits.setval('{}'.format(fullname), \
-                            'NOTES', value='modified by guitar79@naver.com')
+fullnames_wcs = [w for w in fullnames if ((w.endswith(".tmp")) or (w.endswith(".new" in w)))]
+
+#print ("fullnames_wcs: {}".format(fullnames_wcs))
+print ("len(fullnames_wcs): {}".format(len(fullnames_wcs)))
+
+#%%
+n = 0
+for fullname in fullnames_wcs[:] :
+#fullname = fullnames[5]
+    n += 1
+    print('#'*40,
+        "\n{2:.01f}%  ({0}/{1}) {3}".format(n, len(fullnames), (n/len(fullnames_tmp))*100, os.path.basename(__file__)))
+    print ("Starting...\nfullname: {}".format(fullname))
+
+    try:
+        if os.path.isfile('{}'.format(fullname)):
             hdul = fits.open("{}".format(fullname))
             print("hdul[0].header.tostring: {}".format(hdul[0].header.tostring))
             fits_info1 = hdul[0].header.tostring()
@@ -124,30 +206,8 @@ for fullname in fullnames[:]:
                 #shutil.move(r"{}".format(fullname), r"{}{}".format(new_foldername, new_filename))
                 Python_utilities.write_log(log_file, \
                     '{0} is moved to {1}{2}'.format(fullname, new_foldername, new_filename))
-                                 
-    except Exception as err :
-        print("X"*60)
-        Python_utilities.write_log(err_log_file, \
-                '{2} ::: {0} with move {1} '.format(err, fullname, datetime.now()))
+        
+    except Exception as err:
+        Python_utilities.write_log(err_log_file,
+                    '{2} ::: {0} There is no {1} '.format(err, fullname, datetime.now()))      
 
- #%%   
-#############################################################################
-#Check and delete empty folder....
-#############################################################################
-
-master_file_dir_name = 'master_file_Python/'
-
-for i in range(4) : 
-    fullnames = Python_utilities.getFullnameListOfallsubDirs(base_dir)
-    print ("fullnames: {}".format(fullnames))
-    
-    for fullname in fullnames[:] :
-        fullname_el = fullname.split("/")
-        if fullname_el[-1] == master_file_dir_name[:-1] : 
-            #shutil.rmtree(r"{}".format(fullname))
-            print ("rmtree {}\n".format(fullname))
-    
-        # Check is empty..
-        if len(os.listdir(fullname)) == 0 :
-            shutil.rmtree(r"{}".format(fullname)) # Delete..
-            print ("rmtree {}\n".format(fullname))
