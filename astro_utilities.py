@@ -40,8 +40,6 @@ class KevinSolver():
                 elif os.path.exists("{}.ini".format(self.fullname[:-4])):
                     print("{0} is already tried solving by ASTAP but failed...".format(self.fullname_el[-1]))
 
-
-
                 else : 
                     print("{0} is being solved by ASTAP...".format(self.fullname_el[-1]))
                     with subprocess.Popen(['astap', 

@@ -30,7 +30,7 @@ if not os.path.exists('{0}'.format(log_dir)):
 # read all files in base directory for processing
 
 base_dir = "../CCD_new_files/"
-base_dir = "../CCD_obs_raw/STX-16803_1bin/Light_RiLA600/KLEOPATRA_Light_-_2022-11-05_-_RiLA600_STX-16803_-_1bin/"
+base_dir = "../CCD_obs_raw/STX-16803_1bin/"
 
 destination_base_dir_name = "../CCD_obs_raw/"
 target_duplicate_files_dir = "../CCD_duplicate_files/"
@@ -45,7 +45,7 @@ if not os.path.exists('{0}'.format(destination_base_dir_name)):
 
 # make all fits file list...
 fullnames = Python_utilities.getFullnameListOfallFiles(base_dir)
-fullnames_fit = [w for w in fullnames if ".fit" in w]
+fullnames_fit = [w for w in fullnames if (w.endswith(".fit") or w.endswith(".fits"))]
 #print ("fullnames: {}".format(fullnames))
 print ("len(fullnames_fit): {}".format(len(fullnames_fit)))
 #######################################################
@@ -95,33 +95,8 @@ for batch in range(num_batches):
     #myMP.wait()
 
     values.append(myMP.wait())
-    print("OK batch" + str(batch))
+    print("OK batch" + str(batch))  
 
-
-#%%
-#############################################################################
-#Check existence tmp, new file and rename ...
-#############################################################################
-fullnames = Python_utilities.getFullnameListOfallFiles(base_dir)
-fullnames_tmp = [w for w in fullnames if ".tmp" in w]
-print ("fullnames_tmp: {}".format(fullnames_tmp))
-
-#%%
-n = 0
-for fullname in fullnames_tmp[:] :
-#fullname = fullnames[5]
-    n += 1
-    print('#'*40,
-        "\n{2:.01f}%  ({0}/{1}) {3}".format(n, len(fullnames), (n/len(fullnames_tmp))*100, os.path.basename(__file__)))
-    print ("Starting...\nfullname: {}".format(fullname))
-
-    try:
-        shutil.move(r"{}".format(fullname), \
-                        r"{}.fit".format(fullname[:-4]))
-
-    except Exception as err:
-        Python_utilities.write_log(err_log_file,
-                    '{2} ::: {0} There is no {1} '.format(err, fullname, datetime.now()))      
 #%%
 #############################################################################
 #Check existence tmp file and rename ...
@@ -129,7 +104,7 @@ for fullname in fullnames_tmp[:] :
 fullnames = Python_utilities.getFullnameListOfallFiles(base_dir)
 print ("fullnames: {}".format(fullnames))
 
-fullnames_wcs = [w for w in fullnames if ((w.endswith(".tmp")) or (w.endswith(".new" in w)))]
+fullnames_wcs = [w for w in fullnames if ((w.endswith(".tmp")) or (w.endswith(".new")))]
 
 #print ("fullnames_wcs: {}".format(fullnames_wcs))
 print ("len(fullnames_wcs): {}".format(len(fullnames_wcs)))
@@ -140,7 +115,7 @@ for fullname in fullnames_wcs[:] :
 #fullname = fullnames[5]
     n += 1
     print('#'*40,
-        "\n{2:.01f}%  ({0}/{1}) {3}".format(n, len(fullnames), (n/len(fullnames_tmp))*100, os.path.basename(__file__)))
+        "\n{2:.01f}%  ({0}/{1}) {3}".format(n, len(fullnames_wcs), (n/len(fullnames_wcs))*100, os.path.basename(__file__)))
     print ("Starting...\nfullname: {}".format(fullname))
 
     try:
@@ -209,5 +184,4 @@ for fullname in fullnames_wcs[:] :
         
     except Exception as err:
         Python_utilities.write_log(err_log_file,
-                    '{2} ::: {0} There is no {1} '.format(err, fullname, datetime.now()))      
-
+                    '{2} ::: {0} There is no {1} '.format(err, fullname, datetime.now()))    

@@ -42,7 +42,7 @@ if not os.path.exists('{0}'.format(destination_base_dir_name)):
     os.makedirs('{0}'.format(destination_base_dir_name))
 
 fullnames = Python_utilities.getFullnameListOfallFiles(base_dir)
-fullnames_fit = [w for w in fullnames if ".fit" in w]
+fullnames_fit = [w for w in fullnames if (w.endswith(".fit") or w.endswith(".fits"))]
 
 #print ("fullnames_fit: {}".format(fullnames_fit))
 print ("len(fullnames_fit): {}".format(len(fullnames_fit)))
@@ -65,7 +65,7 @@ for fullname in fullnames_fit[:] :
 fullnames = Python_utilities.getFullnameListOfallFiles(base_dir)
 print ("fullnames: {}".format(fullnames))
 
-fullnames_wcs = [w for w in fullnames if ((w.endswith(".tmp")) or (w.endswith(".new" in w)))]
+fullnames_wcs = [w for w in fullnames if ((w.endswith(".tmp")) or (w.endswith(".new")))]
 
 #print ("fullnames_wcs: {}".format(fullnames_wcs))
 print ("len(fullnames_wcs): {}".format(len(fullnames_wcs)))
@@ -76,7 +76,7 @@ for fullname in fullnames_wcs[:] :
 #fullname = fullnames[5]
     n += 1
     print('#'*40,
-        "\n{2:.01f}%  ({0}/{1}) {3}".format(n, len(fullnames), (n/len(fullnames_tmp))*100, os.path.basename(__file__)))
+        "\n{2:.01f}%  ({0}/{1}) {3}".format(n, len(fullnames_wcs), (n/len(fullnames_wcs))*100, os.path.basename(__file__)))
     print ("Starting...\nfullname: {}".format(fullname))
 
     try:
