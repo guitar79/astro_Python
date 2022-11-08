@@ -4,6 +4,9 @@
 Created on Thu Nov 22 01:00:19 2018
 @author: guitar79@naver.com
 
+이 파일은 fits 파일의 헤더에 누락된 정보를 넣어주는 것입니다.
+base_dir 폴더 안에 있는 모든 fit 파일에 대해서 바로 상위 디렉토리 명을 참조하여 
+OPTIC, CCDNAME 등의 정보를 줍니다.
 """
 #%%
 from datetime import datetime

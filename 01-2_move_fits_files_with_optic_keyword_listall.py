@@ -4,6 +4,9 @@
 Created on Thu Nov 22 01:00:19 2018
 @author: guitar79@naver.com
 
+이 파일은 base_dir 폴더 안에 있는 모든 fit 파일에 대해서 
+fits header에 있는 정보를 바탕으로  
+destination_base_dir_name 안에 규칙적으로 폴더를 만들어서 저장합니다. 
 
 """
 #%%
