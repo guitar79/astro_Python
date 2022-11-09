@@ -4,7 +4,7 @@ Created on Thu Nov  8 23:15:44 2018
 
 @author: user
 
-
+이 파일은 DAO starfinder로 별을 찾아 정리해 줍니다.
 """
 #%%
 from cmath import log
@@ -43,7 +43,7 @@ if not os.path.exists('{0}'.format(log_dir)):
 
 base_dir = "../Post_processing/M35_Light_-_2018-10-31_-_TMB130ss_STF-8300M_-_1bin/"
 base_dir = "../Rne_2022/AMPELLA_Light_-_2022-09-06_-_GSON300_STF-8300M_-_1bin/"
-base_dir = "../Rne_2022/INTERAMNIA_Light_-_2022-09-21_-_GSON300_STF-8300M_-_1bin/"
+base_dir = "../Rne_2022/KLEOPATRA_Light_-_2022-10-11_-_GSON300_STF-8300M_-_1bin/result_PI/calibrated/Light_BIN-1_EXPOSURE-20.00s_FILTER-L_Mono_fit/"
 
 fullnames = Python_utilities.getFullnameListOfallFiles(base_dir)
 #print ("fullnames: {}".format(fullnames))
@@ -93,7 +93,7 @@ for fullname in fullnames_light[:]:
 
     #%%
     from photutils import DAOStarFinder
-    FWHM   = 4
+    FWHM   = 10
     DAOfind = DAOStarFinder(threshold=thresh, fwhm=FWHM, 
                             sharplo=0.2, sharphi=1.0,  # default values: sharplo=0.2, sharphi=1.0,
                             roundlo=-1.0, roundhi=1.0,  # default values -1 and +1

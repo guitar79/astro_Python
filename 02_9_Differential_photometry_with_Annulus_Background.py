@@ -239,12 +239,12 @@ plt.tight_layout()
 avg, med, std = sigma_clipped_stats(data) # default is 3-sigma, 5 iters
 thresh = 5 * std
 finder = DAOStarFinder(
-    fwhm=4, threshold=thresh,   # In reality, FWHM must be measured a priori using, e.g., ``ginga``
-    sharplo=0.2, sharphi=1.0,   # default values 0.2 and 1.0
-    roundlo=-1.0, roundhi=1.0,  # default values -1 and +1
-    sigma_radius=1.5,           # default values 1.5
-    ratio=1.0,                  # 1.0: circular gaussian
-    exclude_border=True         # To exclude sources near edges
+            fwhm=4, threshold=thresh,   # In reality, FWHM must be measured a priori using, e.g., ``ginga``
+            sharplo=0.2, sharphi=1.0,   # default values 0.2 and 1.0
+            roundlo=-1.0, roundhi=1.0,  # default values -1 and +1
+            sigma_radius=1.5,           # default values 1.5
+            ratio=1.0,                  # 1.0: circular gaussian
+            exclude_border=True         # To exclude sources near edges
 )
 
 # The DAOStarFinder object ``finder`` gets at least one input: the image.

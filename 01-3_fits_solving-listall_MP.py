@@ -3,8 +3,13 @@
 Created on Thu Nov 22 01:00:19 2018
 @author: user
 
-No module named 'ccdproc'
-conda install -c conda-forge ccdproc
+이 파일은 base_dir 폴더 안에 있는 모든 fit 파일에 대해서 
+plate solving을 수행합니다.
+이미 solving이 완료된 파일은 건너뛰고, 
+먼조 ASTAP로 시도하고, 실패할 경우 Astrometry로 시도합니다.
+
+다만 Multiprocessing을 적용하여 여러개의 core를 사용합니다.
+(터짐 주의)
 """
 #%%
 import os

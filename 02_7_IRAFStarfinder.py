@@ -4,7 +4,7 @@ Created on Thu Nov  8 23:15:44 2018
 
 @author: user
 
-
+이 파일은 IRAF starfinder로 별을 찾아 정리해 줍니다.
 """
 #%%
 from cmath import log
@@ -44,6 +44,7 @@ if not os.path.exists('{0}'.format(log_dir)):
 base_dir = "../Post_processing/M35_Light_-_2018-10-31_-_TMB130ss_STF-8300M_-_1bin/"
 base_dir = "../Rne_2022/AMPELLA_Light_-_2022-09-06_-_GSON300_STF-8300M_-_1bin/"
 base_dir = "../Rne_2022/INTERAMNIA_Light_-_2022-09-21_-_GSON300_STF-8300M_-_1bin/"
+base_dir = "../Rne_2022/KLEOPATRA_Light_-_2022-10-11_-_GSON300_STF-8300M_-_1bin/result_PI/calibrated/Light_BIN-1_EXPOSURE-20.00s_FILTER-L_Mono_fit/"
 
 fullnames = Python_utilities.getFullnameListOfallFiles(base_dir)
 #print ("fullnames: {}".format(fullnames))
@@ -93,12 +94,12 @@ for fullname in fullnames_light[:]:
 
     #%%
     from photutils import IRAFStarFinder
-    FWHM   = 4
+    FWHM   = 8
     IRAFfind = IRAFStarFinder(fwhm=FWHM, threshold=thresh,
-                          sigma_radius=1.5, minsep_fwhm=6.5,  # default values: sigma_radius=1.5, minsep_fwhm=2.5,
+                          sigma_radius=1.5, minsep_fwhm=10.5,  # default values: sigma_radius=1.5, minsep_fwhm=2.5,
                           sharplo=0.5, sharphi=2.0,   # default values: sharplo=0.5, sharphi=2.0,
                           roundlo=0.0, roundhi=0.2,   # default values: roundlo=0.0, roundhi=0.2,
-                          sky=None, exclude_border=False)  # default values: sky=None, exclude_border=False))
+                          sky=None, exclude_border=False)  # default values: sky=None, exclude_border=Fal02_7_IRAFStarfinder.pyse))
                         
     # The IRAFStarFinder object ("IRAFfind") gets at least one input: the image.
     # Then it returns the astropy table which contains the aperture photometry results:

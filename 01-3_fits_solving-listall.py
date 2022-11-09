@@ -3,10 +3,10 @@
 Created on Thu Nov 22 01:00:19 2018
 @author: guitar79@naver.com
 
-이 파일은 fits 파일의 헤더에 누락된 정보를 넣어주는 것입니다.
-base_dir 폴더 안에 있는 모든 fit 파일에 대해서 
-fits header에 있는 정보를 바탕으로  
-destination_base_dir_name 안에 규칙적으로 폴더를 만들어서 저장합니다. 
+이 파일은 base_dir 폴더 안에 있는 모든 fit 파일에 대해서 
+plste solving을 수행합니다.
+이미 solving이 완료된 파일은 건너뛰고, 
+먼조 ASTAP로 시도하고, 실패할 경우 Astrometry로 시도합니다. 
 
 """
 #%%
@@ -35,7 +35,7 @@ if not os.path.exists('{0}'.format(log_dir)):
 # read all files in base directory for processing
 
 base_dir = "../CCD_new_files/"
-base_dir = "../CCD_obs_raw/STX-16803_2bin/Light_RiLA600/KLEOPATRA_Light_-_2022-11-04_-_RiLA600_STX-16803_-_2bin/"
+base_dir = "../CCD_obs_raw/STF-8300M_1bin/Light_OPTIC/KLEOPATRA_Light_-_2022-11-04_-_OPTIC_STF-8300M_-_1bin/"
 
 destination_base_dir_name = "../CCD_obs_raw/"
 target_duplicate_files_dir = "../CCD_duplicate_files/"
@@ -50,7 +50,7 @@ if not os.path.exists('{0}'.format(destination_base_dir_name)):
 fullnames = Python_utilities.getFullnameListOfallFiles(base_dir)
 fullnames_fit = [w for w in fullnames if (w.endswith(".fit") or w.endswith(".fits"))]
 
-#print ("fullnames_fit: {}".format(fullnames_fit))
+#print ("fullnames_fit: {}".format(fullnames_fit))  
 print ("len(fullnames_fit): {}".format(len(fullnames_fit)))
 
 #%%
