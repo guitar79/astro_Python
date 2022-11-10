@@ -5,23 +5,15 @@ Created on Thu Nov  8 23:15:44 2018
 
 https://nbviewer.org/github/ysbach/SNU_AOclass/blob/master/Notebooks/05-Differential_Phot.ipynb
 
-ysvisutilpy:
 
-git clone https://github.com/ysBach/ysvisutilpy
-cd ysvisutilpy && python setup.py install
-
-pip install sep
+git clone https://github.com/ysBach/ysvisutilpy && cd ysvisutilpy && python setup.py install && cd ..
 
 
-cd <where you want to download this package>
-git clone https://github.com/ysBach/ysfitsutilpy
-cd ysfitsutilpy
-python setup.py install
+git clone https://github.com/ysBach/ysfitsutilpy && cd ysfitsutilpy && python setup.py install && cd ..
 
-cd <where you want to download this package>
-git clone https://github.com/ysBach/ysphotutilpy
-cd ysphotutilpy
-pip install -e 
+
+git clone https://github.com/ysBach/ysphotutilpy && cd ysphotutilpy && python setup.py install && cd ..
+
 """
 #%%
 import os
