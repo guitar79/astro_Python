@@ -53,7 +53,7 @@ master_dir = "master_files/"
 summary = yfu.make_summary(
             "{}/*.fit".format(base_dir),
             keywords = ["DATE-OBS", "FILTER", "OBJECT"],  # header keywords; actually it is case-insensitive
-            fname_option = 'name',  # 'file' column will contain only the name of the file (not full path)
+            #fname_option = 'name',  # 'file' column will contain only the name of the file (not full path)
             sort_by = "DATE-OBS",  # 'file' column will be sorted based on "DATE-OBS" value in the header
             output = "{}summary.csv".format(base_dir)
         )
@@ -118,5 +118,3 @@ flat_comb = yfu.group_combine(
                 outdir = "{}{}".format(base_dir, master_dir)  # output directory (will automatically be made if not exist)
             )
 
-
-# %%
