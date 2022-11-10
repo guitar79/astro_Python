@@ -7,21 +7,11 @@ https://nbviewer.org/github/ysbach/SNU_AOclass/blob/master/Notebooks/05-Differen
 
 ysvisutilpy:
 
-git clone https://github.com/ysBach/ysvisutilpy
-cd ysvisutilpy && python setup.py install
+git clone https://github.com/ysBach/ysvisutilpy && cd ysvisutilpy && python setup.py install && cd ..
 
-pip install sep
+git clone https://github.com/ysBach/ysfitsutilpy && cd ysfitsutilpy && python setup.py install && cd ..
 
-
-cd <where you want to download this package>
-git clone https://github.com/ysBach/ysfitsutilpy
-cd ysfitsutilpy
-python setup.py install
-
-cd <where you want to download this package>
-git clone https://github.com/ysBach/ysphotutilpy
-cd ysphotutilpy
-pip install -e 
+git clone https://github.com/ysBach/ysphotutilpy && cd ysphotutilpy && python setup.py install && cd ..
 """
 #%%
 import os
@@ -239,12 +229,12 @@ plt.tight_layout()
 avg, med, std = sigma_clipped_stats(data) # default is 3-sigma, 5 iters
 thresh = 5 * std
 finder = DAOStarFinder(
-            fwhm=4, threshold=thresh,   # In reality, FWHM must be measured a priori using, e.g., ``ginga``
-            sharplo=0.2, sharphi=1.0,   # default values 0.2 and 1.0
-            roundlo=-1.0, roundhi=1.0,  # default values -1 and +1
-            sigma_radius=1.5,           # default values 1.5
-            ratio=1.0,                  # 1.0: circular gaussian
-            exclude_border=True         # To exclude sources near edges
+    fwhm=4, threshold=thresh,   # In reality, FWHM must be measured a priori using, e.g., ``ginga``
+    sharplo=0.2, sharphi=1.0,   # default values 0.2 and 1.0
+    roundlo=-1.0, roundhi=1.0,  # default values -1 and +1
+    sigma_radius=1.5,           # default values 1.5
+    ratio=1.0,                  # 1.0: circular gaussian
+    exclude_border=True         # To exclude sources near edges
 )
 
 # The DAOStarFinder object ``finder`` gets at least one input: the image.
