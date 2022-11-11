@@ -45,10 +45,9 @@ conda activate astro_Python_ubuntu_env
 conda deactivate
 
 # install module
-conda install astropy pymysql spyder
+conda install astropy pymysql
 conda install -c conda-forge ccdproc xarray
-pip install opencv-python
-pip install photutils astroquery
+pip install opencv-python photutils astroquery
 
 # 가상환경 내보내기 (export)
 conda env export > astro_Python_ubuntu_env.yaml

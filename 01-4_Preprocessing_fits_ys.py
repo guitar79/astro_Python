@@ -41,16 +41,16 @@ if not os.path.exists('{0}'.format(log_dir)):
 #%%
 #######################################################
 # read all files in base directory for processing
-c_method = 'median'
-master_dir = "master_files/"
 
 base_dir = "../RnE_2022/KLEOPATRA_Light_-_2022-11-04_-_RiLA600_STX-16803_-_2bin/"
 base_dir = "../RnE_2022/"
 #base_dir = "../CCD_obs_raw/"
 
+master_dir = "master_files/"
+
 base_dirs = Python_utilities.getFullnameListOfsubDir(base_dir)
 base_dirs = [w for w in base_dirs if not (w.endswith(master_dir) \
-        or w.wndswith("fits"))]
+                or w.endswith(".fits"))]
 print ("base_dirs: {}".format(base_dirs))
 
 #%%
