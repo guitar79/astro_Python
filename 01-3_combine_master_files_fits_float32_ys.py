@@ -37,13 +37,11 @@ if not os.path.exists('{0}'.format(log_dir)):
 #######################################################
 # read all files in base directory for processing
 
-#base_dir = "../Post_processing/M35_Light_-_2018-10-31_-_TMB130ss_STF-8300M_-_1bin/"
 base_dir = "../RnE_2022/KLEOPATRA_Light_-_2022-11-04_-_RiLA600_STX-16803_-_2bin/"
+#base_dir = "../CCD_obs_raw/"
 
-#base_dir = "../RnE_2022/"
-
-#base_dirs = Python_utilities.getFullnameListOfsubDir(base_dir)
-#print ("base_dirs: {}".format(base_dirs))
+base_dirs = Python_utilities.getFullnameListOfsubDir(base_dir)
+print ("base_dirs: {}".format(base_dirs))
 
 
 #%%
