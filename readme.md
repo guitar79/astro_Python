@@ -26,6 +26,12 @@ conda env export > astro_Python_win_env.yaml
 ## .yaml 파일로 새로운 가상환경 만들기
 conda env create -f astro_Python_win_env.yaml
 
+## .yaml 파일로 가상환경 업데이트(activate 되어있을 때)
+conda env update --file astro_Python_win_env.yaml
+
+## .yaml 파일로 가상환경 업데이트(deactivate 되어있을 때)
+conda env update --astro_Python_win_env envname --file astro_Python_win_env.yaml
+
 ## 가상환경 제거하기
 conda env remove -n astro_Python_win_env
 
@@ -54,6 +60,12 @@ conda env export > astro_Python_ubuntu_env.yaml
 
 # .yaml 파일로 새로운 가상환경 만들기
 conda env create -f astro_Python_ubuntu_env.yaml
+
+## .yaml 파일로 가상환경 업데이트(activate 되어있을 때)
+conda env update --file astro_Python_ubuntu_env.yaml
+
+## .yaml 파일로 가상환경 업데이트(deactivate 되어있을 때)
+conda env update --astro_Python_ubuntu_env envname --file astro_Python_ubuntu_env.yaml
 
 # 가상환경 제거하기
 conda env remove -n astro_Python_ubuntu_env

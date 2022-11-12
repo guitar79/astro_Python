@@ -8,6 +8,7 @@ Created on Thu Nov 22 01:00:19 2018
 cd ~/Downloads/ && git clone https://github.com/ysBach/ysvisutilpy && cd ysvisutilpy && git pull && pip install -e . && cd ..
 cd ~/Downloads/ && git clone https://github.com/ysBach/ysfitsutilpy && cd ysfitsutilpy && git pull && pip install -e . && cd ..
 cd ~/Downloads/ && git clone https://github.com/ysBach/ysphotutilpy && cd ysphotutilpy && git pull && pip install -e . && cd ..
+cd ~/Downloads/ && git clone https://github.com/ysBach/SNUO1Mpy && cd SNUO1Mpy && git pull && pip install -e . && cd ..
 
 # second time...
 cd ~/Downloads/ysvisutilpy && git pull && pip install -e . 
@@ -27,6 +28,11 @@ import ysfitsutilpy as yfu
 import ysphotutilpy as ypu
 import ysvisutilpy as yvu
 
+
+from pathlib import Path
+from snuo1mpy import Preprocessor
+import numpy as np
+
 #######################################################
 # for log file
 
@@ -42,12 +48,32 @@ if not os.path.exists('{0}'.format(log_dir)):
 #######################################################
 # read all files in base directory for processing
 
-base_dir = "../RnE_2022/KLEOPATRA_Light_-_2022-11-04_-_RiLA600_STX-16803_-_2bin/"
+base_dir = "../Post_process/M13_Light_-_2021-04_-_TEC140x75_STL-11000M_-_1bin/"
 #base_dir = "../RnE_2022/"
 #base_dir = "../CCD_obs_raw/"
 
 master_dir = "master_files/"
 
+#%%
+#######################################################
+# At the current version of SNUO1Mpy, the following bias_kw and dark_kw are 
+# identical to the defaults. I just explicitly wrote them for clarity.
+bias_kw = dict(bias_type_key=["OBJECT"], bias_type_val=["bias"], bias_group_key=[])
+dark_kw = dict(dark_type_key=["OBJECT"], dark_type_val=["dark"], dark_group_key=["EXPTIME"])
+flat_kw = dict(flat_type_key=["OBJECT"], flat_type_val=["flat"], flat_group_key=["FILTER"])
+
+#%%
+TOPDIR = Path("{}".format(base_dir))
+RAWDIR = TOPDIR
+ARCHIVE = TOPDIR/"archive"
+CALIBDIR = TOPDIR/"calib"
+
+p = Preprocessor(topdir=TOPDIR, rawdir=RAWDIR, instrument="STX16803",
+                 **bias_kw, **dark_kw, **flat_kw) 
+
+p.organize_raw(archive_dir=ARCHIVE)
+
+#%%
 base_dirs = Python_utilities.getFullnameListOfsubDir(base_dir)
 base_dirs = [w for w in base_dirs if not (w.endswith(master_dir) \
                 or w.endswith(".fits"))]
