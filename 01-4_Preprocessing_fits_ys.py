@@ -43,7 +43,7 @@ if not os.path.exists('{0}'.format(log_dir)):
 # read all files in base directory for processing
 
 base_dir = "../RnE_2022/KLEOPATRA_Light_-_2022-11-04_-_RiLA600_STX-16803_-_2bin/"
-base_dir = "../RnE_2022/"
+#base_dir = "../RnE_2022/"
 #base_dir = "../CCD_obs_raw/"
 
 master_dir = "master_files/"
