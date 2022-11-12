@@ -27,7 +27,7 @@ class KevinSolver():
         self.filename_el = self.fullname_el[-1].split("_")
 
         try:    
-            hdul = fits.open(fullname)
+            hdul = fits.open(self.fullname)
 
             if "light" in hdul[0].header["IMAGETYP"].lower() :
                 print("{} is light frame".format(self.fullname_el[-1]))
@@ -44,7 +44,7 @@ class KevinSolver():
                     print("{0} is being solved by ASTAP...".format(self.fullname_el[-1]))
                     with subprocess.Popen(['astap', 
                                 '-f', 
-                                '{0}'.format(fullname), 
+                                '{0}'.format(self.fullname), 
                                 '-analyse2',
                                 '-update'],
                                 stdout=subprocess.PIPE) as proc :
@@ -78,7 +78,7 @@ class KevinSolver():
                 print("{} is not light frame...".format(self.fullname_el[-1]))   
         except Exception as err :
             print('{1} ::: {2} with {0} ...'\
-                        .format(fullname, datetime.now(), err))
+                        .format(self.fullname, datetime.now(), err))
 #########################################
 
 
@@ -95,7 +95,7 @@ class KevinSolver1():
         self.filename_el = self.fullname_el[-1].split("_")
 
         try:    
-            hdul = fits.open(fullname)
+            hdul = fits.open(self.fullname)
 
             if "light" in hdul[0].header["IMAGETYP"].lower() :
                 print("{} is light frame".format(self.fullname_el[-1]))
@@ -104,7 +104,7 @@ class KevinSolver1():
                 print("{0} is being solved by ASTAP...".format(self.fullname_el[-1]))
                 with subprocess.Popen(['astap', 
                             '-f', 
-                            '{0}'.format(fullname), 
+                            '{0}'.format(self.fullname), 
                             '-analyse2',
                             '-update'],
                             stdout=subprocess.PIPE) as proc :
@@ -138,8 +138,56 @@ class KevinSolver1():
                 print("{} is not light frame...".format(self.fullname_el[-1]))   
         except Exception as err :
             print('{1} ::: {2} with {0} ...'\
-                        .format(fullname, datetime.now(), err))
+                        .format(self.fullname, datetime.now(), err))
 #########################################
+
+
+
+#########################################
+#single  KevinPSolver2
+#########################################
+class KevinSolver2():
+    def __init__(self, fullname):
+        self.fullname = fullname
+
+    #@def fetch(self):
+        print("Starting... \n{}".format(self.fullname))
+        self.fullname_el = self.fullname.split("/")
+        self.filename_el = self.fullname_el[-1].split("_")
+        self.hdul = fits.open(self.fullname)
+
+        if "light" in self.hdul[0].header["IMAGETYP"].lower() :
+            print("{} is light frame".format(self.fullname_el[-1]))
+        else :
+            print("{} is not light frame...".format(self.fullname_el[-1]))   
+
+    def by_astap(self) :                 
+        print("{0} is being solved by ASTAP...".format(self.fullname_el[-1]))
+        with subprocess.Popen(['astap', 
+                    '-f', 
+                    '{0}'.format(fullname), 
+                    '-analyse2',
+                    '-update'],
+                    stdout=subprocess.PIPE) as proc :
+            print(proc.stdout.read())
+        
+    def by_astrometry(self) :             
+        print("{0} is being solved by local Astrometry...".format(self.fullname_el[-1]))
+                    
+        with subprocess.Popen(['solve-field', 
+                                '-O', #--overwrite: overwrite output files if they already exist
+                                #'--scale-units', 'arcsecperpix', #pixel scale
+                                #'--scale-low', '0.1', '--scale-high', '0.40', #pixel scale
+                                '-g', #--guess-scale: try to guess the image scale from the FITS headers
+                                '--cpulimit', '15',  #will make it give up after 30 seconds.
+                                #'-p', # --no-plots: don't create any plots of the results
+                                #'-D', '{0}'.format(save_dir_name), 
+                                '{0}'.format(self.fullname)], 
+                                stdout=subprocess.PIPE) as proc :
+            print(proc.stdout.read())
+            
+#########################################
+
 
 
 #########################################
