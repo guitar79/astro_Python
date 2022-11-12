@@ -177,8 +177,8 @@ for fullname in fullnames[:] :
                                       'change HEADER EGAIN {0}'.format(gains["STF-8300M"]))
                     hdul[0].header['RDNOISE'] = rdnoises["STF-8300M"]
                     hdul[0].header.append('COMMENT',
-                                      'change HEADER GAIN {0}'.format(rdnoises["STF-8300M"]),
-                                      'change HEADER GAIN {0}'.format(rdnoises["STF-8300M"]))
+                                      'change HEADER RDNOISE {0}'.format(rdnoises["STF-8300M"]),
+                                      'change HEADER RDNOISE {0}'.format(rdnoises["STF-8300M"]))
                     hdul[0].header['XBINNING'] = int(hdul[0].header['XPIXSZ'] / 5.4)
                     hdul[0].header.append('COMMENT',
                                       'change HEADER XBINNING {0}'.format(int(hdul[0].header['XPIXSZ'] / 5.4)),
@@ -202,8 +202,8 @@ for fullname in fullnames[:] :
                     
                     hdul[0].header['RDNOISE'] = rdnoises["STX-16803"]
                     hdul[0].header.append('COMMENT',
-                                      'change HEADER GAIN {0}'.format(rdnoises["STX-16803"]),
-                                      'change HEADER GAIN {0}'.format(rdnoises["STX-16803"]))
+                                      'change HEADER RDNOISE {0}'.format(rdnoises["STX-16803"]),
+                                      'change HEADER RDNOISE {0}'.format(rdnoises["STX-16803"]))
 
                     if 'XPIXSZ' in hdul[0].header['INSTRUME'] :
                         binning = int(hdul[0].header['XPIXSZ'] / 9)
@@ -261,7 +261,7 @@ for fullname in fullnames[:] :
                     hdul[0].header['RDNOISE'] = rdnoises["STX-16803"]
                     hdul[0].header.append('COMMENT',
                                       'change HEADER RDNOISE {0}'.format(rdnoises["QSI683ws"]),
-                                      'change HEADER EDNOISE {0}'.format(rdnoises["QSI683ws"]))
+                                      'change HEADER RDNOISE {0}'.format(rdnoises["QSI683ws"]))
                     hdul[0].header['XBINNING'] = int(hdul[0].header['XPIXSZ'] / 5.4)
                     hdul[0].header.append('COMMENT',
                                       'change HEADER XBINNING {0}'.format(int(hdul[0].header['XPIXSZ'] / 5.4)),

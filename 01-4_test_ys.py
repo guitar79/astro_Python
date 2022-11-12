@@ -24,6 +24,7 @@ import os
 import astropy.units as u
 from astropy.stats import sigma_clip
 from ccdproc import combine, ccd_process, CCDData
+from astropy.io import fits
 import Python_utilities
 import ysfitsutilpy as yfu
 import ysphotutilpy as ypu
@@ -55,6 +56,8 @@ base_dir = "../Post_process/M13_Light_-_2021-04_-_TEC140x75_STL-11000M_-_1bin/"
 
 master_dir = "master_files/"
 
+f_name1 = 
+f_name2 = 
 #%%
 #######################################################
 # At the current version of SNUO1Mpy, the following bias_kw and dark_kw are 
