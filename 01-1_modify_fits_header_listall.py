@@ -30,6 +30,7 @@ if not os.path.exists('{0}'.format(log_dir)):
 #######################################################
 # read all files in base directory for processing
 base_dir = "../CCD_new_files/"
+base_dir = "../Rne_2022/"
 
 fullnames = astro_utilities.getFullnameListOfallFiles(base_dir)
 print ("fullnames: {}".format(fullnames))
@@ -59,96 +60,40 @@ for fullname in fullnames[:] :
     print ("Starting...   fullname: {}".format(fullname))
     ######################################################
 
-    try :
-        if fullname[-4:] == ".fit" or fullname[-4:] == ".new" :
-            print('Starting......\n{0} ...'.format(fullname))
-            fullname_el = fullname.split('/')
-            foldername_el = fullname_el[-2].split('_')
-            object_name = foldername_el[0]
-            optic_name = foldername_el[5]
-            ccd_name = foldername_el[6]
-            flipstat = "        "
+    
+    if fullname[-4:] == ".fit" or fullname[-4:] == ".new" :
+        print('Starting......\n{0} ...'.format(fullname))
+        fullname_el = fullname.split('/')
+        foldername_el = fullname_el[-2].split('_')
+        object_name = foldername_el[0]
+        optic_name = foldername_el[5]
+        ccd_name = foldername_el[6]
+        flipstat = "        "
 
+        checkKEYs = ["OPTIC", "OBJECT", "FLIPSTAT", "CCDNAME", 
+                    "GAIN", "EGAIN", "RDNOISE",
+                    "XBINNING", "YBINNING"]
+        try :
             with fits.open('{0}'.format(fullname), mode="append") as hdul :
             #with fits.open('{0}'.format(fullname), mode="update") as hdul :
-                if not 'OPTIC' in hdul[0].header :
-                    hdul[0].header.append('OPTIC', 
-                                       '{0}'.format(optic_name), 
-                                       'OPTIC information')
-                    hdul[0].header.append('COMMENT', 
-                                    'append OPTIC {}'.format(optic_name),
-                                    'append OPTIC {}'.format(optic_name))
-
-                if not 'OBJECT' in hdul[0].header :
-                    hdul[0].header.append('OBJECT', 
-                                       '{}'.format(object_name), 
-                                       '{}'.format(object_name))
-                    hdul[0].header.append('COMMENT', 
-                                        'append OBJECT {}'.format(object_name),
-                                        'append OBJECT {}'.format(object_name))
-
-                if not 'FLIPSTAT' in hdul[0].header :
-                    hdul[0].header.append('FLIPSTAT', 
-                                       '{}'.format(flipstat), 
-                                       '{}'.format(flipstat))
-                    hdul[0].header.append('COMMENT', 
-                                        'append FLIPSTAT {}'.format(flipstat), 
-                                        'append FLIPSTAT {}'.format(flipstat))
-                
-                if not 'CCDNAME' in hdul[0].header :
-                    hdul[0].header.append('CCDNAME', 
-                                       '{}'.format(ccd_name), 
-                                       '{}'.format(ccd_name))
-                    hdul[0].header.append('COMMENT', 
-                                        'append CCDNAME {}'.format(ccd_name), 
-                                        'append CCDNAME {}'.format(ccd_name))
-
-                if not 'GAIN' in hdul[0].header :
-                    hdul[0].header.append('GAIN', 
-                                       '{0}'.format(gain), 
-                                       'GAIN')
-                    hdul[0].header.append('COMMENT', 
-                                        'append GAIN {}'.format(gain), 
-                                        'append GAIN {}'.format(gain))
-
-                if not 'EGAIN' in hdul[0].header :
-                    hdul[0].header.append('EGAIN', 
-                                       '{0}'.format(gain), 
-                                       'EGAIN')
-                    hdul[0].header.append('COMMENT', 
-                                        'append EGAIN {}'.format(gain), 
-                                        'append EGAIN {}'.format(gain))
-                
-                if not 'RDNOISE' in hdul[0].header :
-                    hdul[0].header.append('RDNOISE', 
-                                       '{0}'.format(rdnoise), 
-                                       'RDNOISE')
-                    hdul[0].header.append('COMMENT', 
-                                        'append RDNOISE {}'.format(rdnoise), 
-                                        'append RDNOISE {}'.format(rdnoise))
-                
-                if not 'XBINNINGE' in hdul[0].header :
-                    hdul[0].header.append('XBINNING'
-                                       '{0}'.format(binning), 
-                                       'XBINNING')
-                    hdul[0].header.append('COMMENT', 
-                                        'append XBINNING {}'.format(binning), 
-                                        'append XBINNING {}'.format(binning))
-                
-                if not 'YBINNINGE' in hdul[0].header :
-                    hdul[0].header.append('YBINNING'
-                                       '{0}'.format(binning), 
-                                       'YBINNING')
-                    hdul[0].header.append('COMMENT', 
-                                        'append YBINNING {}'.format(binning), 
-                                        'append YBINNING {}'.format(binning))
-                    
+                for checkKEY in checkKEYs: 
+                    if not checkKEY in hdul[0].header :
+                        hdul[0].header.append(checkKEY, 
+                                        '', 
+                                        '{} value added'.format(checkKEY))                    
                 hdul.flush()  # changes are written back to original.fits
                 print('*'*30)
                 astro_utilities.write_log(log_file, 
                     '{1} ::: fits header is append with {0} ...'\
                     .format(fullname, datetime.now()))
-            
+        except Exception as err :
+            print("X"*60)
+            Python_utilities.write_log(err_log_file,
+                '{2} ::: \n{1} with {0} ...'\
+                .format(fullname, err, datetime.now()))
+
+
+        try :            
             # Change something in hdul.
             with fits.open('{0}'.format(fullname), mode="update") as hdul :
                 hdul[0].header['OBJECT'] = object_name
@@ -279,8 +224,8 @@ for fullname in fullnames[:] :
                     '{1} ::: fits header is append with {0} ...'\
                     .format(fullname, datetime.now()))
     
-    except Exception as err :
-        print("X"*60)
-        Python_utilities.write_log(err_log_file,
-            '{2} ::: \n{1} with {0} ...'\
-            .format(fullname, err, datetime.now()))
+        except Exception as err :
+            print("X"*60)
+            Python_utilities.write_log(err_log_file,
+                '{2} ::: \n{1} with {0} ...'\
+                .format(fullname, err, datetime.now()))
