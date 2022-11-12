@@ -46,6 +46,8 @@ master_dir = "master_files/"
 
 base_dir = "../Rne_2022/KLEOPATRA_Light_-_2022-11-04_-_RiLA600_STX-16803_-_2bin/"
 base_dir = "../Rne_2022/"
+base_dir = "../Post_process/M13_Light_-_2021-04_-_TEC140x75_STL-11000M_-_1bin/"
+
 #base_dir = "../CCD_obs_raw/"
 
 base_dirs = Python_utilities.getFullnameListOfsubDir(base_dir)
