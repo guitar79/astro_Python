@@ -30,7 +30,7 @@ if not os.path.exists('{0}'.format(log_dir)):
 #######################################################
 # read all files in base directory for processing
 base_dir = "../CCD_new_files/"
-base_dir = "../Rne_2022/"
+#base_dir = "../Rne_2022/"
 
 fullnames = astro_utilities.getFullnameListOfallFiles(base_dir)
 print ("fullnames: {}".format(fullnames))

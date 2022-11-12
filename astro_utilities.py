@@ -83,6 +83,66 @@ class KevinSolver():
 
 
 #########################################
+#single  KevinPSolver1
+#########################################
+class KevinSolver1():
+    def __init__(self, fullname):
+        self.fullname = fullname
+
+    #@def fetch(self):
+        print("Starting... \n{}".format(self.fullname))
+        self.fullname_el = self.fullname.split("/")
+        self.filename_el = self.fullname_el[-1].split("_")
+
+        try:    
+            hdul = fits.open(fullname)
+
+            if "light" in hdul[0].header["IMAGETYP"].lower() :
+                print("{} is light frame".format(self.fullname_el[-1]))
+
+                
+                print("{0} is being solved by ASTAP...".format(self.fullname_el[-1]))
+                with subprocess.Popen(['astap', 
+                            '-f', 
+                            '{0}'.format(fullname), 
+                            '-analyse2',
+                            '-update'],
+                            stdout=subprocess.PIPE) as proc :
+                    print(proc.stdout.read())
+                
+                if os.path.exists("{}".format(self.fullname)):
+                    hdul = fits.open(self.fullname)
+                    print("fits file is opened...".format(self.fullname_el[-1]))
+                    if "CD1_1" in hdul[0].header :
+                        print("{0} is already solved successfully...".format(self.fullname_el[-1]))
+
+                    elif os.path.exists("{}.axy".format(self.fullname[:-4])):
+                        print("{0} is already tried solving by Astrometry but failed...".format(self.fullname_el[-1]))
+                    
+                    else : 
+                        print("{0} is being solved by local Astrometry...".format(self.fullname_el[-1]))
+                    
+                        with subprocess.Popen(['solve-field', 
+                                                '-O', #--overwrite: overwrite output files if they already exist
+                                                #'--scale-units', 'arcsecperpix', #pixel scale
+                                                #'--scale-low', '0.1', '--scale-high', '0.40', #pixel scale
+                                                '-g', #--guess-scale: try to guess the image scale from the FITS headers
+                                                '--cpulimit', '15',  #will make it give up after 30 seconds.
+                                                #'-p', # --no-plots: don't create any plots of the results
+                                                #'-D', '{0}'.format(save_dir_name), 
+                                                '{0}'.format(self.fullname)], 
+                                                stdout=subprocess.PIPE) as proc :
+                            print(proc.stdout.read())
+                        
+            else :
+                print("{} is not light frame...".format(self.fullname_el[-1]))   
+        except Exception as err :
+            print('{1} ::: {2} with {0} ...'\
+                        .format(fullname, datetime.now(), err))
+#########################################
+
+
+#########################################
 #single  class
 #########################################
 class AstrometrySolver():
@@ -396,12 +456,6 @@ def get_new_filename(fullname, **kargs):
         ybin = int(ybin)
         ybin = str(ybin)
     
-    if not 'CD1_1' in hdul[0].header \
-        or not 'CD1_2' in hdul[0].header :
-        wcs = "-"
-    else :
-        wcs = "wcs"
-    
     object_name = object_name.replace('_', '-')
     object_name = object_name.replace(':', '-')
     object_name = object_name.replace('.', '-')
@@ -420,7 +474,7 @@ def get_new_filename(fullname, **kargs):
     else :
         optic = hdul[0].header['OPTIC']
         
-    new_filename = '{0}_{1}_{2}_{3}_{4}sec_{5}_{6}_{7}C_{8}bin_{9}.fit'\
+    new_filename = '{0}_{1}_{2}_{3}_{4}sec_{5}_{6}_{7}C_{8}bin.fit'\
         .format(object_name.upper(),
         image_type,
         filter_name,
@@ -429,8 +483,7 @@ def get_new_filename(fullname, **kargs):
         optic,
         instrument,
         ccd_temp_el[0],
-        xbin,
-        wcs)
+        xbin)
     hdul.close()
     return new_filename
 

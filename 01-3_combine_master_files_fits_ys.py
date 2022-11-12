@@ -3,16 +3,17 @@
 Created on Thu Nov 22 01:00:19 2018
 @author: user
 
-
 #first time
 cd ~/Downloads/ && git clone https://github.com/ysBach/ysvisutilpy && cd ysvisutilpy && git pull && pip install -e . && cd ..
 cd ~/Downloads/ && git clone https://github.com/ysBach/ysfitsutilpy && cd ysfitsutilpy && git pull && pip install -e . && cd ..
 cd ~/Downloads/ && git clone https://github.com/ysBach/ysphotutilpy && cd ysphotutilpy && git pull && pip install -e . && cd ..
+cd ~/Downloads/ && git clone https://github.com/ysBach/SNUO1Mpy && cd SNUO1Mpy && git pull && pip install -e . && cd ..
 
 # second time...
 cd ~/Downloads/ysvisutilpy && git pull && pip install -e . 
 cd ~/Downloads/ysfitsutilpy && git pull && pip install -e . 
 cd ~/Downloads/ysphouutilpy && git pull && pip install -e . 
+cd ~/Downloads/SNUO1Mpy && git pull && pip install -e . 
 
 """
 #%%
@@ -43,8 +44,8 @@ if not os.path.exists('{0}'.format(log_dir)):
 c_method = 'median'
 master_dir = "master_files_ys/"
 
-base_dir = "../Rne_2022/KLEOPATRA_Light_-_2022-11-04_-_RiLA600_STX-16803_-_2bin/"
-base_dir = "../Rne_2022/"
+base_dir = "../RnE_2022/KLEOPATRA_Light_-_2022-11-04_-_RiLA600_STX-16803_-_2bin/"
+base_dir = "../RnE_2022/"
 #base_dir = "../Post_process/M13_Light_-_2021-04_-_TEC140x75_STL-11000M_-_1bin/"
 #base_dir = "../CCD_obs_raw/"
 
@@ -73,14 +74,13 @@ for base_dir in base_dirs :
         print("X"*60)
         print('{0}'.format(err))
 
-
     #%%
     try: 
         bias_comb = yfu.group_combine(
                         "{}/*Bias*.fit".format(base_dir),
                         type_key = ["IMAGETYP"],
                         type_val = ["BIAS"],
-                        group_key = ["EXPTIME"],
+                        #group_key = ["EXPTIME"],
                         fmt = "master_bias.fits",  # output file name format
                         outdir = "{}{}".format(base_dir, master_dir)  # output directory (will automatically be made if not exist)
                     )
@@ -94,7 +94,7 @@ for base_dir in base_dirs :
                         "{}/*Bias*.fit".format(base_dir),
                         type_key = ["IMAGETYP"],
                         type_val = ["bias"],
-                        group_key = ["EXPTIME"],
+                        #group_key = ["EXPTIME"],
                         fmt = "master_bias.fits",  # output file name format
                         outdir = "{}{}".format(base_dir, master_dir)  # output directory (will automatically be made if not exist)
                     )
@@ -111,7 +111,7 @@ for base_dir in base_dirs :
                         type_key = ["IMAGETYP"],
                         type_val = ["DARK"],
                         group_key = ["EXPTIME"],
-                        fmt = "master_dark_{:.1f}sec.fits",  # output file name format
+                        fmt = "master_dark_{:.0f}sec.fits",  # output file name format
                         outdir = "{}{}".format(base_dir, master_dir)  # output directory (will automatically be made if not exist)
                     )
     except Exception as err :
@@ -127,7 +127,7 @@ for base_dir in base_dirs :
                         type_key = ["IMAGETYP"],
                         type_val = ["dark"],
                         group_key = ["EXPTIME"],
-                        fmt = "master_dark_{:.1f}sec.fits",  # output file name format
+                        fmt = "master_dark_{:.0f}sec.fits",  # output file name format
                         outdir = "{}{}".format(base_dir, master_dir)  # output directory (will automatically be made if not exist)
                     )
     except Exception as err :
@@ -142,6 +142,21 @@ for base_dir in base_dirs :
                         "{}/*Flat*.fit".format(base_dir),
                         type_key = ["IMAGETYP"],
                         type_val = ["FLAT"],
+                        group_key = ["FILTER"],
+                        fmt = "master_flat_{:s}.fits",  # output file name format
+                        outdir = "{}{}".format(base_dir, master_dir)  # output directory (will automatically be made if not exist)
+                    )
+    except Exception as err :
+        print("X"*60)
+        print('{0}'.format(err))
+
+     #%%
+    try: 
+        # Say dark frames have header OBJECT = "calib" && "IMAGE-TYP" = "DARK"
+        flat_comb = yfu.group_combine(
+                        "{}/*Flat*.fit".format(base_dir),
+                        type_key = ["IMAGETYP"],
+                        type_val = ["flat"],
                         group_key = ["FILTER"],
                         fmt = "master_flat_{:s}.fits",  # output file name format
                         outdir = "{}{}".format(base_dir, master_dir)  # output directory (will automatically be made if not exist)

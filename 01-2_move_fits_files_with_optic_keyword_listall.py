@@ -19,7 +19,6 @@ import astro_utilities
 
 #######################################################
 # for log file
-
 log_dir = "logs/"
 log_file = "{}{}.log".format(log_dir, os.path.basename(__file__)[:-3])
 err_log_file = "{}{}_err.log".format(log_dir, os.path.basename(__file__)[:-3])
@@ -31,7 +30,6 @@ if not os.path.exists('{0}'.format(log_dir)):
 
 #######################################################
 # read all files in base directory for processing
-
 base_dir = "../CCD_new_files/"
 
 destination_base_dir_name = "../CCD_obs_raw/"
@@ -73,15 +71,15 @@ for fullname in fullnames[:]:
             fits.setval('{}'.format(fullname), \
                             'NOTES', value='modified by guitar79@naver.com')
             hdul = fits.open("{}".format(fullname))
-            print("hdul[0].header.tostring: {}".format(hdul[0].header.tostring))
-            fits_info1 = hdul[0].header.tostring()
-            fits_info = fits_info1.replace("'", "'\'")
-            print("fits_info: {}".format(fits_info))
+            #print("hdul[0].header.tostring: {}".format(hdul[0].header.tostring))
+            #fits_info1 = hdul[0].header.tostring()
+            #fits_info = fits_info1.replace("'", "'\'")
+            #print("fits_info: {}".format(fits_info))
             print("*"*60)
             
-            Python_utilities.write_log(log_file, \
-                        '{1} ::: {0} fits info modified ...'\
-                        .format(fullname, datetime.now()))                
+            #Python_utilities.write_log(log_file, \
+            #            '{1} ::: {0} fits info modified ...'\
+            #            .format(fullname, datetime.now()))                
             
             new_filename = astro_utilities.get_new_filename(fullname)
             new_foldername = astro_utilities.get_new_foldername_from_filename(new_filename)
@@ -91,48 +89,30 @@ for fullname in fullnames[:]:
             
             if not os.path.exists('{0}'.format(new_foldername)):
                 os.makedirs('{0}'.format(new_foldername))
-                Python_utilities.write_log(log_file, \
-                     '{1} ::: {0} is created'.format(new_foldername, datetime.now()))    
+                print('{0} is created'.format(new_foldername))  
         
-            if new_filename[-6:].lower() == "_-.fit" :
-                if os.path.exists('{0}{1}_wcs.fit'.format(new_foldername, new_filename[:-6])):
-                    Python_utilities.write_log(log_file, 
-                         '{0}{1}_wcs.fit is already exist...'.format(new_foldername, new_filename))
-                    os.rename(r"{}".format(fullname), 
-                              r"{}{}".format(target_duplicate_files_dir, new_filename))
-                    #shutil.move(r"{}".format(fullname), 
-                    #            r"{}{}".format(target_duplicate_files_dir, new_filename))
-                    print ("move {}".format(fullname), 
-                           "{}{}".format(target_duplicate_files_dir, new_filename))
-                else : 
-                    os.rename(r'{0}'.format(fullname), 
-                              r'{0}{1}'.format(new_foldername, new_filename))
-                    #shutil.move(r'{0}'.format(fullname), 
-                    #            r'{0}{1}'.format(new_foldername, new_filename))
-                    Python_utilities.write_log(log_file, \
-                             '{0} is moved to {1}{2}'.format(fullname, new_foldername, new_filename))
-                    
-            elif new_filename[-8:].lower() == "_wcs.fit" : 
-                if os.path.exists('{0}{1}_-.fit'.format(new_foldername, new_filename[:-8])):
-                    os.rename(r'{0}{1}_-.fit'.format(new_foldername, new_filename[:-8]), \
-                                r"{0}{1}_-.fit".format(target_duplicate_files_dir, new_filename[:-8]))
-                    #shutil.move(r'{0}{1}_-.fit'.format(new_foldername, new_filename[:-8]), \
-                    #            r"{0}{1}_-.fit".format(target_duplicate_files_dir, new_filename[:-8]))
-                if os.path.exists('{0}{1}_wcs.fit'.format(new_foldername, new_filename[:-8])):
-                    os.rename(r'{0}{1}_wcs.fit'.format(new_foldername, new_filename[:-8]), \
-                                r"{0}{1}_wcs.fit".format(target_duplicate_files_dir, new_filename[:-8]))
-                    #shutil.move(r'{0}{1}_wcs.fit'.format(new_foldername, new_filename[:-8]), \
-                    #            r"{0}{1}_wcs.fit".format(target_duplicate_files_dir, new_filename[:-8]))
-                shutil.move(r'{0}'.format(fullname), r'{0}{1}'.format(new_foldername, new_filename))
-                Python_utilities.write_log(log_file, \
-                    '{0} is moved to {1}{2}'.format(fullname, new_foldername, new_filename))
-            
-            elif fullname[-4:].lower() == ".fit" \
-                or fullname[-4:].lower() == "fits" : 
-                os.rename(r"{}".format(fullname), r"{}{}".format(new_foldername, new_filename))
-                #shutil.move(r"{}".format(fullname), r"{}{}".format(new_foldername, new_filename))
-                Python_utilities.write_log(log_file, \
-                    '{0} is moved to {1}{2}'.format(fullname, new_foldername, new_filename))
+            if os.path.exists('{0}{1}_wcs.fit'.format(new_foldername, new_filename[:-4])):
+                os.rename(r'{0}{1}_wcs.fit'.format(new_foldername, new_filename[:-4]), 
+                            r"{}{}_wcs.fit".format(target_duplicate_files_dir, new_filename[:-4]))
+                print (r"move {0}{1}_wcs.fit".format(new_foldername, new_filename[:-8]), 
+                            r"{}{}".format(target_duplicate_files_dir, new_filename))
+            if os.path.exists('{0}{1}_-.fit'.format(new_foldername, new_filename[:-6])):
+                os.rename(r'{0}{1}_-.fit'.format(new_foldername, new_filename[:-6]), 
+                            r"{}{}_-.fit".format(target_duplicate_files_dir, new_filename[:-4]))
+                print (r"move {0}{1}_-.fit".format(new_foldername, new_filename[:-6]), 
+                            r"{}{}_-.fit".format(target_duplicate_files_dir, new_filename[:-4]))
+            if os.path.exists('{0}{1}.fit'.format(new_foldername, new_filename[:-4])):
+                os.rename(r'{0}{1}.fit'.format(new_foldername, new_filename[:-4]), 
+                            r"{}{}.fit".format(target_duplicate_files_dir, new_filename[:-4]))
+                print (r"move {0}{1}.fit".format(new_foldername, new_filename[:-4]), 
+                            r"{}{}.fit".format(target_duplicate_files_dir, new_filename[:-4]))
+
+            os.rename(r'{0}'.format(fullname), 
+                    r'{0}{1}'.format(new_foldername, new_filename))
+            #shutil.move(r'{0}'.format(fullname), 
+            #            r'{0}{1}'.format(new_foldername, new_filename))
+            Python_utilities.write_log(log_file, \
+                        '{0} is moved to {1}{2}'.format(fullname, new_foldername, new_filename))
                                  
     except Exception as err :
         print("X"*60)

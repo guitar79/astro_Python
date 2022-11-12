@@ -36,6 +36,7 @@ if not os.path.exists('{0}'.format(log_dir)):
 
 base_dir = "../CCD_new_files/"
 base_dir = "../CCD_obs_raw/STF-8300M_1bin/Light_OPTIC/KLEOPATRA_Light_-_2022-11-04_-_OPTIC_STF-8300M_-_1bin/"
+base_dir = "../Rne_2022/KLEOPATRA_Light_-_2022-10-27_-_RiLA600_STX-16803_-_2bin/readuced_files/"
 
 destination_base_dir_name = "../CCD_obs_raw/"
 target_duplicate_files_dir = "../CCD_duplicate_files/"
@@ -62,7 +63,7 @@ for fullname in fullnames_fit[:] :
         "\n{2:.01f}%  ({0}/{1}) {3}".format(n, len(fullnames_fit), (n/len(fullnames_fit))*100, os.path.basename(__file__)))
     print ("Starting...\nfullname: {}".format(fullname))
        
-    astro_utilities.KevinSolver(fullname)
+    astro_utilities.KevinSolver1(fullname)
              
 #%%
 #############################################################################
