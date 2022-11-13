@@ -95,18 +95,13 @@ reduced_dir = "reduced"
 solved_dir = "solved"
 
 #%%
-base_dirs = sorted(Python_utilities.getFullnameListOfallsubDirs(base_dir))
+base_dirs = sorted(Python_utilities.getFullnameListOfsubDir(base_dir))
 print ("base_dirs1: {}".format(base_dirs))
-base_dirs = [w for w in base_dirs \
-        if not (w.endswith("{}/".format(master_dir)) \
-            or w.endswith("{}/".format(reduced_dir)) \
-            or w.endswith("{}/".format(solved_dir)) \
-                or w.endswith(".fits"))]
-print ("base_dirs2: {}".format(base_dirs))
+#base_dirs = ["{}{}".format(w, reduced_dir) for w in base_dirs]
+#print ("base_dirs2: {}".format(base_dirs))
 
 #%%
 #base_dir = Path("../RnE_2022/KLEOPATRA_Light_-_2022-11-04_-_RiLA600_STX-16803_-_2bin/")
-
 
 #%%
 for base_dir in base_dirs :
@@ -146,18 +141,19 @@ for base_dir in base_dirs :
     print ("summary_new: {}".format(summary_new))
 
     #%%
-    n = 0
-    try:
+    if summary_new is not None :
+        n = 0
+    
         for _, row in summary_new.iterrows():
             n += 1
             print('#'*40,
                 "\n{2:.01f}%  ({0}/{1}) {3}".format(n, len(summary_new), (n/len(summary_new))*100, os.path.basename(__file__)))
             print ("Starting...\nfullname: {}".format(row["file"]))
 
-        
-            shutil.move(r"{}".format(row["file"]), \
-                            r"{}.fits".format(row["file"][:-4]))
+            try:
+                shutil.move(r"{}".format(row["file"]), \
+                                r"{}.fits".format(row["file"][:-4]))
 
-    except Exception as err:
-        Python_utilities.write_log(err_log_file,
-                    '{2} ::: {0} There is no {1} '.format(err, row["file"], datetime.now())) 
+            except Exception as err:
+                Python_utilities.write_log(err_log_file,
+                        '{2} ::: {0} There is no {1} '.format(err, row["file"], datetime.now())) 

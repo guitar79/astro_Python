@@ -59,11 +59,16 @@ class KevinSolver():
                     
                         with subprocess.Popen(['solve-field', 
                                                 '-O', #--overwrite: overwrite output files if they already exist
-                                                #'--scale-units', 'arcsecperpix', #pixel scale
                                                 #'--scale-low', '0.1', '--scale-high', '0.40', #pixel scale
                                                 '-g', #--guess-scale: try to guess the image scale from the FITS headers
-                                                '--cpulimit', '15',  #will make it give up after 30 seconds.
-                                                #'-p', # --no-plots: don't create any plots of the results
+                                                '--cpulimit', '120',  #will make it give up after 30 seconds.
+                                                '--nsigma', '15',
+                                                #'--downsample', '4',
+                                                '-u', 'app', #'--scale-units', 'arcsecperpix', #pixel scale
+                                                '-L', '1.2', '-U', '1.3',
+                                                #'-N',  '{}'.format(self.fullname[-1]), #--new-fits <filename>: output filename of the new FITS file containingthe WCS header; "none" to not create this file
+                                                '-p', 
+                                                '--no-plots',#: don't create any plots of the results
                                                 '-D', '{}/{}/'.format((os.path.dirname(self.fullname)), solved_dir),
                                                 '{0}'.format(self.fullname)], 
                                                 stdout=subprocess.PIPE) as proc :
@@ -121,6 +126,7 @@ class KevinSolver1():
                                                 #'--scale-low', '0.1', '--scale-high', '0.40', #pixel scale
                                                 '-g', #--guess-scale: try to guess the image scale from the FITS headers
                                                 '--cpulimit', '15',  #will make it give up after 30 seconds.
+                                                '-N',  #--new-fits <filename>: output filename of the new FITS file containingthe WCS header; "none" to not create this file
                                                 #'-p', # --no-plots: don't create any plots of the results
                                                 #'-D', '{0}'.format(save_dir_name), 
                                                 '{0}'.format(self.fullname)], 
