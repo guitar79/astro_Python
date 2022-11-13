@@ -56,6 +56,7 @@ base_dir = "../RnE_2022/"
 c_method = 'median'
 master_dir = "master_files_ys/"
 reduced_dir = "reduced/"
+solved_dir = "solved/"
 
 #%%
 base_dirs = sorted(Python_utilities.getFullnameListOfsubDir(base_dir))
@@ -65,6 +66,9 @@ print ("base_dirs: {}".format(base_dirs))
 
 #%%
 base_dir = Path("../RnE_2022/KLEOPATRA_Light_-_2022-11-08_-_RiLA600_STX-16803_-_2bin/")
+
+if not (base_dir/reduced_dir/solved_dir).exists():
+    os.makedirs(str((base_dir/reduced_dir/solved_dir)))
 
 summary = yfu.make_summary(base_dir/reduced_dir/"*.fits")
 
@@ -82,7 +86,7 @@ for _, row  in df_light.iterrows():
         "\n{2:.01f}%  ({0}/{1}) {3}".format(n, len(df_light), (n/len(df_light))*100, os.path.basename(__file__)))
     print ("Starting...\nfullname: {}".format(row["file"]))
 
-    astro_utilities.KevinSolver1(row["file"])
+    astro_utilities.KevinSolver(row["file"], solved_dir)
              
 #%%
 #############################################################################

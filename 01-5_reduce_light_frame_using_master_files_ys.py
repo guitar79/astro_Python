@@ -48,13 +48,17 @@ base_dir = "../RnE_2022/"
 c_method = 'median'
 master_dir = "master_files_ys/"
 reduced_dir = "reduced/"
+solved_dir = "solved/"
 
 #%%
 base_dirs = sorted(Python_utilities.getFullnameListOfsubDir(base_dir))
-base_dirs = [w for w in base_dirs if not (w.endswith(master_dir) \
+base_dirs = [w for w in base_dirs \
+        if not (w.endswith(master_dir) \
+            or w.endswith(reduced_dir) \
+            or w.endswith(solved_dir) \
                 or w.endswith(".fits"))]
-print ("base_dirs: {}".format(base_dirs))
 
+print ("base_dirs: {}".format(base_dirs))
 
 #%%
 for base_dir in base_dirs :
@@ -86,7 +90,6 @@ for base_dir in base_dirs :
                 # flat_norm_value=1,  # 1 = skip normalization, None = normalize by mean
                 overwrite=True
             )
-
         except Exception as err: 
             print ('Error messgae .......')
             print (err)

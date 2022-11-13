@@ -12,19 +12,23 @@ conda install -c condaforge ccdproc
 from astropy.io import fits
 import subprocess
 import os
+from pathlib import Path
 
 
 #########################################
 #single  KevinPSolver
 #########################################
 class KevinSolver():
-    def __init__(self, fullname):
+    def __init__(self, fullname, solved_dir):
         self.fullname = fullname
+        self.solved_dir = solved_dir
 
     #@def fetch(self):
         print("Starting... \n{}".format(self.fullname))
         self.fullname_el = self.fullname.split("/")
         self.filename_el = self.fullname_el[-1].split("_")
+
+        #Path(os.path.dirname(str(f_path))).parents[0]
 
         try:    
             hdul = fits.open(self.fullname)
@@ -44,7 +48,7 @@ class KevinSolver():
                     print("{0} is being solved by ASTAP...".format(self.fullname_el[-1]))
                     with subprocess.Popen(['astap', 
                                 '-f', '{0}'.format(self.fullname), 
-                                #'-o', '{0}.fit'.format(self.fullname[:-5]), 
+                                '-o', '{}/{}{}.fit'.format((os.path.dirname(self.fullname)), solved_dir, self.fullname_el[-1][:-5]), 
                                 '-wcs',
                                 '-analyse2',
                                 '-update',],
@@ -70,7 +74,7 @@ class KevinSolver():
                                                     '-g', #--guess-scale: try to guess the image scale from the FITS headers
                                                     '--cpulimit', '15',  #will make it give up after 30 seconds.
                                                     #'-p', # --no-plots: don't create any plots of the results
-                                                    #'-D', '{0}'.format(save_dir_name), 
+                                                    '-D', '{}/{}/'.format((os.path.dirname(self.fullname)), solved_dir),
                                                     '{0}'.format(self.fullname)], 
                                                     stdout=subprocess.PIPE) as proc :
                                 print(proc.stdout.read())
