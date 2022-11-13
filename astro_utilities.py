@@ -43,10 +43,11 @@ class KevinSolver():
                 else : 
                     print("{0} is being solved by ASTAP...".format(self.fullname_el[-1]))
                     with subprocess.Popen(['astap', 
-                                '-f', 
-                                '{0}'.format(self.fullname), 
+                                '-f', '{0}'.format(self.fullname), 
+                                #'-o', '{0}.fit'.format(self.fullname[:-5]), 
+                                '-wcs',
                                 '-analyse2',
-                                '-update'],
+                                '-update',],
                                 stdout=subprocess.PIPE) as proc :
                         print(proc.stdout.read())
                     
@@ -436,40 +437,6 @@ def get_new_filename(fullname, **kargs):
     else : 
         object_name = hdul[0].header['OBJECT']
     
-    if not 'IMAGETYP' in hdul[0].header : 
-        image_type = '-'
-        if 'FILTER' in hdul[0].header:
-            filter_name = hdul[0].header['FILTER']
-        else :
-            filter_name = "-"
-
-        if 'OBJECT' in hdul[0].header:
-            object_name = hdul[0].header['OBJECT']
-        else:
-            object_name = "-"
-    elif hdul[0].header['IMAGETYP'][:1].lower() == 'b' \
-        or hdul[0].header['IMAGETYP'][0:1].lower() == 'z':
-        image_type = 'Bias'
-        filter_name = '-'
-        object_name = '-'
-        optic = '-'
-    elif hdul[0].header['IMAGETYP'][0:1].lower() == 'd':
-        image_type = 'Dark'
-        filter_name = '-'
-        object_name = '-'
-        optic = '-'
-    elif hdul[0].header['IMAGETYP'][0:1].lower() == 'f':
-        image_type = 'Flat'
-        object_name = '-'
-    elif hdul[0].header['IMAGETYP'][0:1].lower() == 'l' :
-        image_type = 'Light'
-        #filter_name = hdul[0].header['FILTER'] 
-        object_name = hdul[0].header['OBJECT']   
-    elif hdul[0].header['IMAGETYP'][0:1] == 'o' :
-        image_type = 'Light'
-        filter_name = hdul[0].header['FILTER'] 
-        object_name = hdul[0].header['OBJECT']
-        
     if not 'FILTER' in hdul[0].header : 
         filter_name = '-'
     elif hdul[0].header['FILTER'] == 'Ha' :
@@ -489,6 +456,42 @@ def get_new_filename(fullname, **kargs):
     else : 
         filter_name = hdul[0].header['FILTER'] 
 
+
+    if not 'IMAGETYP' in hdul[0].header : 
+        image_type = '-'
+        if 'FILTER' in hdul[0].header:
+            filter_name = hdul[0].header['FILTER']
+        else :
+            filter_name = "-"
+
+        if 'OBJECT' in hdul[0].header:
+            object_name = hdul[0].header['OBJECT']
+        else:
+            object_name = "-"
+    elif hdul[0].header['IMAGETYP'][:1].lower() == 'b' \
+        or hdul[0].header['IMAGETYP'][:1].lower() == 'z':
+        image_type = 'Bias'
+        filter_name = '-'
+        object_name = '-'
+        optic = '-'
+    elif hdul[0].header['IMAGETYP'][:1].lower() == 'd':
+        image_type = 'Dark'
+        filter_name = '-'
+        object_name = '-'
+        optic = '-'
+    elif hdul[0].header['IMAGETYP'][:1].lower() == 'f':
+        image_type = 'Flat'
+        object_name = '-'
+    elif hdul[0].header['IMAGETYP'][:1].lower() == 'l' :
+        image_type = 'Light'
+        #filter_name = hdul[0].header['FILTER'] 
+        object_name = hdul[0].header['OBJECT']   
+    elif hdul[0].header['IMAGETYP'][0:1] == 'o' :
+        image_type = 'Light'
+        filter_name = hdul[0].header['FILTER'] 
+        object_name = hdul[0].header['OBJECT']
+        
+    
     if not 'XBINNING' in hdul[0].header \
         or not 'YBINNING' in hdul[0].header : 
         xbin = '-'

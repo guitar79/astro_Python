@@ -51,8 +51,12 @@ rdnoises = {"STF-8300M": 9.3, "STX-16803": 9.0, "STL-11000": 9.6, "QSI683ws": 8.
 #%%
 
 checkKEYs = ["OPTIC", "OBJECT", "FLIPSTAT", "CCDNAME", 
-                        "GAIN", "EGAIN", "RDNOISE",
-                        "XBINNING", "YBINNING"]
+            "GAIN", "EGAIN", "RDNOISE",
+            "XBINNING", "YBINNING"]
+
+changeKEYs = ["OPTIC", "OBJECT", "FLIPSTAT", "CCDNAME", 
+            "GAIN", "EGAIN", "RDNOISE",
+            "XBINNING", "YBINNING"]
 
 n = 0    
 for fullname in fullnames[:] :

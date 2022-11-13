@@ -18,8 +18,9 @@ cd ~/Downloads/SNUO1Mpy && git pull && pip install -e .
 """
 #%%
 from glob import glob
-import numpy as np
+from pathlib import Path
 import os
+import numpy as np
 import astropy.units as u
 from astropy.stats import sigma_clip
 from ccdproc import combine, ccd_process, CCDData
@@ -44,15 +45,18 @@ if not os.path.exists('{0}'.format(log_dir)):
 
 c_method = 'median'
 master_dir = "master_files_ys/"
+reduce_dir = "reduced_ys/"
 
 base_dir = "../RnE_2022/KLEOPATRA_Light_-_2022-11-04_-_RiLA600_STX-16803_-_2bin/"
-#base_dir = "../RnE_2022/"
+base_dir = "../RnE_2022/"
 #base_dir = "../Post_process/M13_Light_-_2021-04_-_TEC140x75_STL-11000M_-_1bin/"
 #base_dir = "../CCD_obs_raw/"
-
-base_dirs = Python_utilities.getFullnameListOfsubDir(base_dir)
+#%%
+base_dirs = sorted(Python_utilities.getFullnameListOfsubDir(base_dir))
 print ("base_dirs1: {}".format(base_dirs))
-base_dirs = [w for w in base_dirs if not (w.endswith("{}".format(master_dir)) \
+base_dirs = [w for w in base_dirs \
+        if not (w.endswith("{}".format(master_dir)) \
+        or w.endswith(reduce_dir) 
         or w.endswith("fits"))]
 print ("base_dirs2: {}".format(base_dirs))
 
@@ -62,22 +66,27 @@ for base_dir in base_dirs :
     ######################################################
 
     try : 
-        summary = yfu.make_summary(
-                    "{}/*.fit".format(base_dir),
-                    keywords = ["DATE-OBS", "FILTER", "OBJECT", "IMAGETYP"],  # header keywords; actually it is case-insensitive
-                    #fname_option = 'name',  # 'file' column will contain only the name of the file (not full path)
-                    sort_by = "DATE-OBS",  # 'file' column will be sorted based on "DATE-OBS" value in the header
-                    output = "{}summary.csv".format(base_dir)
-                )
+        summary = yfu.make_summary("{}/*.fit".format(base_dir))
         print("summary:\n {}".format(summary))
-    
+
+        #TOPDIR = Path("{}".format(base_dir))
+        #RAWDIR = TOPDIR
+        #ARCHIVE = TOPDIR/"archive"
+        #BIASDIR = TOPDIR/"BIAS"
+        #DARKDIR = TOPDIR/"DARK"
+        #FLATDIR = TOPDIR/"FALT"
+        #MASTERDIR = TOPDIR/master_dir
+
+        #yfu.fits_newpath()
+
     except Exception as err :
         print("X"*60)
         print('{0}'.format(err))
 
     try: 
+        bias_fits = summary[summary["IMAGETYP"] == "BIAS"]["file"]
         bias_comb = yfu.group_combine(
-                        "{}/*_Bias_*.fit".format(base_dir),
+                        bias_fits.tolist(),
                         type_key = ["IMAGETYP"],
                         type_val = ["BIAS"],
                         group_key = ["EXPTIME"],
@@ -90,9 +99,10 @@ for base_dir in base_dirs :
         print('{0}'.format(err))
 
     try: 
+        dark_fits = summary[summary["IMAGETYP"] == "DARK"]["file"]
         # Say dark frames have header OBJECT = "calib" && "IMAGE-TYP" = "DARK"
         dark_comb = yfu.group_combine(
-                        "{}/*_Dark_*.fit".format(base_dir),
+                        dark_fits.tolist(),
                         type_key = ["IMAGETYP"],
                         type_val = ["DARK"],
                         group_key = ["EXPTIME"],
@@ -104,21 +114,33 @@ for base_dir in base_dirs :
         print('{0}'.format(err))
 
 
-    try: 
+    try:
+        flat_fits = summary[summary["IMAGETYP"] == "FLAT"]["file"] 
         # Say dark frames have header OBJECT = "calib" && "IMAGE-TYP" = "DARK"
-        flat_comb = yfu.group_combine(
-                        "{}/*_Flat_*.fit".format(base_dir),
+        flat_comb_norm = yfu.group_combine(
+                        flat_fits.tolist(),
+                        type_key = ["IMAGETYP"],
+                        type_val = ["FLAT"],
+                        group_key = ["FILTER"],
+                        fmt = "master_flat_{:s}_norm.fits",  # output file name format
+                        scale="med_sc", #norm
+                        scale_to_0th=False, #norm
+                        outdir = "{}{}".format(base_dir, master_dir)  # output directory (will automatically be made if not exist)
+                    )
+
+        # Say dark frames have header OBJECT = "calib" && "IMAGE-TYP" = "DARK"
+        flat_comb_norm = yfu.group_combine(
+                        flat_fits.tolist(),
                         type_key = ["IMAGETYP"],
                         type_val = ["FLAT"],
                         group_key = ["FILTER"],
                         fmt = "master_flat_{:s}.fits",  # output file name format
-                        scale="med_sc",
-                        scale_to_0th=False,
+                        #scale="med_sc", #norm
+                        #scale_to_0th=False, #norm
                         outdir = "{}{}".format(base_dir, master_dir)  # output directory (will automatically be made if not exist)
                     )
     except Exception as err :
         print("X"*60)
         print('{0}'.format(err))
-
     
 # %%

@@ -3,6 +3,18 @@
 Created on Thu Nov 22 01:00:19 2018
 @author: user
 
+#first time
+cd ~/Downloads/ && git clone https://github.com/ysBach/ysvisutilpy && cd ysvisutilpy && git pull && pip install -e . && cd ..
+cd ~/Downloads/ && git clone https://github.com/ysBach/ysfitsutilpy && cd ysfitsutilpy && git pull && pip install -e . && cd ..
+cd ~/Downloads/ && git clone https://github.com/ysBach/ysphotutilpy && cd ysphotutilpy && git pull && pip install -e . && cd ..
+cd ~/Downloads/ && git clone https://github.com/ysBach/SNUO1Mpy && cd SNUO1Mpy && git pull && pip install -e . && cd ..
+
+# second time...
+cd ~/Downloads/ysvisutilpy && git pull && pip install -e . 
+cd ~/Downloads/ysfitsutilpy && git pull && pip install -e . 
+cd ~/Downloads/ysphouutilpy && git pull && pip install -e . 
+cd ~/Downloads/SNUO1Mpy && git pull && pip install -e . 
+
 이 파일은 base_dir 폴더 안에 있는 모든 fit 파일에 대해서 
 plate solving을 수행합니다.
 이미 solving이 완료된 파일은 건너뛰고, 
@@ -12,12 +24,19 @@ plate solving을 수행합니다.
 (터짐 주의)
 """
 #%%
+from glob import glob
+from pathlib import Path
 import os
+import numpy as np
 import shutil
 from datetime import datetime 
 from astropy.io import fits
 import Python_utilities
 import astro_utilities
+
+import ysfitsutilpy as yfu
+import ysphotutilpy as ypu
+import ysvisutilpy as yvu
 
 #%%
 #######################################################
@@ -30,32 +49,6 @@ print ("log_file: {}".format(log_file))
 print ("err_log_file: {}".format(err_log_file))
 if not os.path.exists('{0}'.format(log_dir)):
     os.makedirs('{0}'.format(log_dir))
-#######################################################
-
-#######################################################
-# read all files in base directory for processing
-
-base_dir = "../CCD_new_files/"
-base_dir = "../CCD_obs_raw/STX-16803_2bin/Light_RiLA600/KLEOPATRA_Light_-_2022-11-04_-_RiLA600_STX-16803_-_2bin/"
-base_dir = "../CCD_obs_raw/STX-16803_2bin/"
-
-destination_base_dir_name = "../CCD_obs_raw/"
-target_duplicate_files_dir = "../CCD_duplicate_files/"
-
-if not os.path.exists('{0}'.format(target_duplicate_files_dir)):
-    os.makedirs('{0}'.format(target_duplicate_files_dir))
-
-if not os.path.exists('{0}'.format(destination_base_dir_name)):
-    os.makedirs('{0}'.format(destination_base_dir_name))
-
-# make all fits file list...
-fullnames = Python_utilities.getFullnameListOfallFiles(base_dir)
-#print ("fullnames: {}".format(fullnames))
-print ("len(fullnames): {}".format(len(fullnames)))
-
-fullnames_fit = [w for w in fullnames if (w.endswith(".fit") or w.endswith(".fits"))]
-#print ("fullnames: {}".format(fullnames))
-print ("len(fullnames_fit): {}".format(len(fullnames_fit)))
 #######################################################
 
 #%%
@@ -91,106 +84,96 @@ class Multiprocessor():
         return rets
 #######################################################
 
-myMP = Multiprocessor()
-num_cpu = 6
-values = []
-num_batches = len(fullnames_fit) // num_cpu + 1
+#%%
+#######################################################
+# read all files in base directory for processing
+base_dir = "../RnE_2022/"
 
-for batch in range(num_batches):
-    myMP.restart()
-    for fullname in fullnames_fit[batch*num_batches:(batch+1)*num_batches]:
-        myMP.run(astro_utilities.KevinSolver, fullname)
-    print("Batch " + str(batch))
-    #myMP.wait()
-
-    values.append(myMP.wait())
-    print("OK batch" + str(batch))  
+c_method = 'median'
+master_dir = "master_files_ys/"
+reduced_dir = "reduced/"
 
 #%%
-#############################################################################
-#Check existence tmp file and rename ...
-#############################################################################
-fullnames = Python_utilities.getFullnameListOfallFiles(base_dir)
-print ("fullnames: {}".format(fullnames))
-
-fullnames_wcs = [w for w in fullnames if ((w.endswith(".tmp")) or (w.endswith(".new")))]
-
-#print ("fullnames_wcs: {}".format(fullnames_wcs))
-print ("len(fullnames_wcs): {}".format(len(fullnames_wcs)))
+base_dirs = sorted(Python_utilities.getFullnameListOfsubDir(base_dir))
+base_dirs = [w for w in base_dirs \
+            if not (w.endswith(master_dir) \
+                or w.endswith(reduced_dir)
+                or w.endswith(".fits"))]
+print ("base_dirs: {}".format(base_dirs))
 
 #%%
-n = 0
-for fullname in fullnames_wcs[:] :
-#fullname = fullnames[5]
-    n += 1
-    print('#'*40,
-        "\n{2:.01f}%  ({0}/{1}) {3}".format(n, len(fullnames_wcs), (n/len(fullnames_wcs))*100, os.path.basename(__file__)))
-    print ("Starting...\nfullname: {}".format(fullname))
+#base_dir = Path("../RnE_2022/KLEOPATRA_Light_-_2022-11-04_-_RiLA600_STX-16803_-_2bin/")
 
+
+#%%
+for base_dir in base_dirs :
+    print ("Starting...\n{}".format(base_dir))
+
+    base_dir = Path(base_dir)
+
+    summary = yfu.make_summary(base_dir/reduced_dir/"*.fits")
+
+    df_light = summary.loc[summary["IMAGETYP"] == "LIGHT"].copy()
+    df_light = df_light.reset_index(drop=True)
+    print("df_light:\n{}".format(df_light))
+
+    myMP = Multiprocessor()
+    num_cpu = 6
+    values = []
+    fullnames = df_light["file"].tolist()
+    num_batches = len(fullnames) // num_cpu + 1
+
+    for batch in range(num_batches):
+        myMP.restart()
+        for fullname  in fullnames[batch*num_batches:(batch+1)*num_batches]:
+            myMP.run(astro_utilities.KevinSolver, fullname)
+        print("Batch " + str(batch))
+        #myMP.wait()
+
+        values.append(myMP.wait())
+        print("OK batch" + str(batch))  
+
+    #%%
+    #############################################################################
+    #Check existence tmp file and rename ...
+    #############################################################################
+    summary_tmp = yfu.make_summary(base_dir/reduced_dir/"*.tmp")
+
+    print ("summary_tmp: {}".format(summary_tmp))
+
+    #%%
+    n = 0
     try:
-        if os.path.isfile('{}'.format(fullname)):
-            hdul = fits.open("{}".format(fullname))
-            print("hdul[0].header.tostring: {}".format(hdul[0].header.tostring))
-            fits_info1 = hdul[0].header.tostring()
-            fits_info = fits_info1.replace("'", "'\'")
-            print("fits_info: {}".format(fits_info))
-            print("*"*60)
-            
-            Python_utilities.write_log(log_file, \
-                        '{1} ::: {0} fits info modified ...'\
-                        .format(fullname, datetime.now()))                
-            
-            new_filename = astro_utilities.get_new_filename(fullname)
-            new_foldername = astro_utilities.get_new_foldername_from_filename(new_filename)
-            print ("new_filename: {}".format(new_filename))
-            new_foldername = "{}{}".format(destination_base_dir_name, new_foldername)
-            print ("new_foldername: {}".format(new_foldername))
-            
-            if not os.path.exists('{0}'.format(new_foldername)):
-                os.makedirs('{0}'.format(new_foldername))
-                Python_utilities.write_log(log_file, \
-                     '{1} ::: {0} is created'.format(new_foldername, datetime.now()))    
+        for _, row in summary_tmp.iterrows():
+            n += 1
+            print('#'*40,
+                "\n{2:.01f}%  ({0}/{1}) {3}".format(n, len(summary_tmp), (n/len(summary_tmp))*100, os.path.basename(__file__)))
+            print ("Starting...\nfullname: {}".format(row["file"]))
+
         
-            if new_filename[-6:].lower() == "_-.fit" :
-                if os.path.exists('{0}{1}_wcs.fit'.format(new_foldername, new_filename[:-6])):
-                    Python_utilities.write_log(log_file, 
-                         '{0}{1}_wcs.fit is already exist...'.format(new_foldername, new_filename))
-                    os.rename(r"{}".format(fullname), 
-                              r"{}{}".format(target_duplicate_files_dir, new_filename))
-                    #shutil.move(r"{}".format(fullname), 
-                    #            r"{}{}".format(target_duplicate_files_dir, new_filename))
-                    print ("move {}".format(fullname), 
-                           "{}{}".format(target_duplicate_files_dir, new_filename))
-                else : 
-                    os.rename(r'{0}'.format(fullname), 
-                              r'{0}{1}'.format(new_foldername, new_filename))
-                    #shutil.move(r'{0}'.format(fullname), 
-                    #            r'{0}{1}'.format(new_foldername, new_filename))
-                    Python_utilities.write_log(log_file, \
-                             '{0} is moved to {1}{2}'.format(fullname, new_foldername, new_filename))
-                    
-            elif new_filename[-8:].lower() == "_wcs.fit" : 
-                if os.path.exists('{0}{1}_-.fit'.format(new_foldername, new_filename[:-8])):
-                    os.rename(r'{0}{1}_-.fit'.format(new_foldername, new_filename[:-8]), \
-                                r"{0}{1}_-.fit".format(target_duplicate_files_dir, new_filename[:-8]))
-                    #shutil.move(r'{0}{1}_-.fit'.format(new_foldername, new_filename[:-8]), \
-                    #            r"{0}{1}_-.fit".format(target_duplicate_files_dir, new_filename[:-8]))
-                if os.path.exists('{0}{1}_wcs.fit'.format(new_foldername, new_filename[:-8])):
-                    os.rename(r'{0}{1}_wcs.fit'.format(new_foldername, new_filename[:-8]), \
-                                r"{0}{1}_wcs.fit".format(target_duplicate_files_dir, new_filename[:-8]))
-                    #shutil.move(r'{0}{1}_wcs.fit'.format(new_foldername, new_filename[:-8]), \
-                    #            r"{0}{1}_wcs.fit".format(target_duplicate_files_dir, new_filename[:-8]))
-                shutil.move(r'{0}'.format(fullname), r'{0}{1}'.format(new_foldername, new_filename))
-                Python_utilities.write_log(log_file, \
-                    '{0} is moved to {1}{2}'.format(fullname, new_foldername, new_filename))
-            
-            elif fullname[-4:].lower() == ".fit" \
-                or fullname[-4:].lower() == "fits" : 
-                os.rename(r"{}".format(fullname), r"{}{}".format(new_foldername, new_filename))
-                #shutil.move(r"{}".format(fullname), r"{}{}".format(new_foldername, new_filename))
-                Python_utilities.write_log(log_file, \
-                    '{0} is moved to {1}{2}'.format(fullname, new_foldername, new_filename))
-        
+            shutil.move(r"{}".format(row["file"]), \
+                            r"{}.fit".format(row["file"][:-4]))
+
     except Exception as err:
         Python_utilities.write_log(err_log_file,
-                    '{2} ::: {0} There is no {1} '.format(err, fullname, datetime.now()))    
+                        '{2} ::: {0} There is no {1} '.format(err, row["file"], datetime.now())) 
+
+    summary_new = yfu.make_summary(base_dir/reduced_dir/"*.new")
+
+    print ("summary_new: {}".format(summary_new))
+
+    #%%
+    n = 0
+    try:
+        for _, row in summary_new.iterrows():
+            n += 1
+            print('#'*40,
+                "\n{2:.01f}%  ({0}/{1}) {3}".format(n, len(summary_new), (n/len(summary_new))*100, os.path.basename(__file__)))
+            print ("Starting...\nfullname: {}".format(row["file"]))
+
+            shutil.move(r"{}".format(row["file"]), \
+                            r"{}.fit".format(row["file"][:-4]))
+
+    except Exception as err:
+        Python_utilities.write_log(err_log_file,
+                    '{2} ::: {0} There is no {1} '.format(err, row["file"], datetime.now())) 
