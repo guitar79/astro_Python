@@ -46,16 +46,16 @@ if not os.path.exists('{0}'.format(log_dir)):
 base_dir = "../RnE_2022/"
 
 c_method = 'median'
-master_dir = "master_files_ys/"
-reduced_dir = "reduced/"
-solved_dir = "solved/"
+master_dir = "master_files_ys"
+reduced_dir = "reduced"
+solved_dir = "solved"
 
 #%%
 base_dirs = sorted(Python_utilities.getFullnameListOfsubDir(base_dir))
 base_dirs = [w for w in base_dirs \
-        if not (w.endswith(master_dir) \
-            or w.endswith(reduced_dir) \
-            or w.endswith(solved_dir) \
+        if not (w.endswith("{}/".format(master_dir)) \
+            or w.endswith("{}/".format(reduced_dir)) \
+            or w.endswith("{}/".format(solved_dir)) \
                 or w.endswith(".fits"))]
 
 print ("base_dirs: {}".format(base_dirs))

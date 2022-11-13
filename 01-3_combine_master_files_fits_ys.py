@@ -44,8 +44,8 @@ if not os.path.exists('{0}'.format(log_dir)):
 # read all files in base directory for processing
 
 c_method = 'median'
-master_dir = "master_files_ys/"
-reduce_dir = "reduced_ys/"
+master_dir = "master_files_ys"
+reduce_dir = "reduced_ys"
 
 base_dir = "../RnE_2022/KLEOPATRA_Light_-_2022-11-04_-_RiLA600_STX-16803_-_2bin/"
 base_dir = "../RnE_2022/"
@@ -55,8 +55,8 @@ base_dir = "../RnE_2022/"
 base_dirs = sorted(Python_utilities.getFullnameListOfsubDir(base_dir))
 print ("base_dirs1: {}".format(base_dirs))
 base_dirs = [w for w in base_dirs \
-        if not (w.endswith("{}".format(master_dir)) \
-        or w.endswith(reduce_dir) 
+        if not (w.endswith("{}/".format(master_dir)) \
+        or w.endswith("{}/".format(reduce_dir))
         or w.endswith("fits"))]
 print ("base_dirs2: {}".format(base_dirs))
 

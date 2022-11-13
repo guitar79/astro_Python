@@ -90,17 +90,19 @@ class Multiprocessor():
 base_dir = "../RnE_2022/"
 
 c_method = 'median'
-master_dir = "master_files_ys/"
-reduced_dir = "reduced/"
-solved_dir = "solved/"
+master_dir = "master_files_ys"
+reduced_dir = "reduced"
+solved_dir = "solved"
 
 #%%
-base_dirs = sorted(Python_utilities.getFullnameListOfsubDir(base_dir))
+base_dirs = sorted(Python_utilities.getFullnameListOfallsubDirs(base_dir))
+print ("base_dirs1: {}".format(base_dirs))
 base_dirs = [w for w in base_dirs \
-            if not (w.endswith(master_dir) \
-                or w.endswith(reduced_dir)
+        if not (w.endswith("{}/".format(master_dir)) \
+            or w.endswith("{}/".format(reduced_dir)) \
+            or w.endswith("{}/".format(solved_dir)) \
                 or w.endswith(".fits"))]
-print ("base_dirs: {}".format(base_dirs))
+print ("base_dirs2: {}".format(base_dirs))
 
 #%%
 #base_dir = Path("../RnE_2022/KLEOPATRA_Light_-_2022-11-04_-_RiLA600_STX-16803_-_2bin/")
@@ -137,33 +139,10 @@ for base_dir in base_dirs :
         values.append(myMP.wait())
         print("OK batch" + str(batch))  
 
-    #%%
     #############################################################################
     #Check existence tmp file and rename ...
     #############################################################################
-    summary_tmp = yfu.make_summary(base_dir/reduced_dir/"*.tmp")
-
-    print ("summary_tmp: {}".format(summary_tmp))
-
-    #%%
-    n = 0
-    try:
-        for _, row in summary_tmp.iterrows():
-            n += 1
-            print('#'*40,
-                "\n{2:.01f}%  ({0}/{1}) {3}".format(n, len(summary_tmp), (n/len(summary_tmp))*100, os.path.basename(__file__)))
-            print ("Starting...\nfullname: {}".format(row["file"]))
-
-        
-            shutil.move(r"{}".format(row["file"]), \
-                            r"{}.fit".format(row["file"][:-4]))
-
-    except Exception as err:
-        Python_utilities.write_log(err_log_file,
-                        '{2} ::: {0} There is no {1} '.format(err, row["file"], datetime.now())) 
-
-    summary_new = yfu.make_summary(base_dir/reduced_dir/"*.new")
-
+    summary_new = yfu.make_summary(base_dir/reduced_dir/solved_dir/"*.new")
     print ("summary_new: {}".format(summary_new))
 
     #%%
@@ -175,8 +154,9 @@ for base_dir in base_dirs :
                 "\n{2:.01f}%  ({0}/{1}) {3}".format(n, len(summary_new), (n/len(summary_new))*100, os.path.basename(__file__)))
             print ("Starting...\nfullname: {}".format(row["file"]))
 
+        
             shutil.move(r"{}".format(row["file"]), \
-                            r"{}.fit".format(row["file"][:-4]))
+                            r"{}.fits".format(row["file"][:-4]))
 
     except Exception as err:
         Python_utilities.write_log(err_log_file,
