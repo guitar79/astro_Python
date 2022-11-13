@@ -61,19 +61,20 @@ for fullname in fullnames[:] :
     ######################################################
 
     
-    if fullname[-4:] == ".fit" or fullname[-4:] == ".new" :
-        print('Starting......\n{0} ...'.format(fullname))
-        fullname_el = fullname.split('/')
-        foldername_el = fullname_el[-2].split('_')
-        object_name = foldername_el[0]
-        optic_name = foldername_el[5]
-        ccd_name = foldername_el[6]
-        flipstat = "        "
+    try: 
+        if fullname[-4:] == ".fit" or fullname[-4:] == ".new" :
+            print('Starting......\n{0} ...'.format(fullname))
+            fullname_el = fullname.split('/')
+            foldername_el = fullname_el[-2].split('_')
+            object_name = foldername_el[0]
+            optic_name = foldername_el[5]
+            ccd_name = foldername_el[6]
+            flipstat = "        "
 
-        checkKEYs = ["OPTIC", "OBJECT", "FLIPSTAT", "CCDNAME", 
-                    "GAIN", "EGAIN", "RDNOISE",
-                    "XBINNING", "YBINNING"]
-        try :
+            checkKEYs = ["OPTIC", "OBJECT", "FLIPSTAT", "CCDNAME", 
+                        "GAIN", "EGAIN", "RDNOISE",
+                        "XBINNING", "YBINNING"]
+    
             with fits.open('{0}'.format(fullname), mode="append") as hdul :
             #with fits.open('{0}'.format(fullname), mode="update") as hdul :
                 for checkKEY in checkKEYs: 
@@ -86,11 +87,11 @@ for fullname in fullnames[:] :
                 astro_utilities.write_log(log_file, 
                     '{1} ::: fits header is append with {0} ...'\
                     .format(fullname, datetime.now()))
-        except Exception as err :
-            print("X"*60)
-            Python_utilities.write_log(err_log_file,
-                '{2} ::: \n{1} with {0} ...'\
-                .format(fullname, err, datetime.now()))
+    except Exception as err :
+        print("X"*60)
+        Python_utilities.write_log(err_log_file,
+            '{2} ::: \n{1} with {0} ...'\
+            .format(fullname, err, datetime.now()))
 
 
         try :            
