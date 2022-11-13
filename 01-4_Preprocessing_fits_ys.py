@@ -8,7 +8,7 @@ Created on Thu Nov 22 01:00:19 2018
 cd ~/Downloads/ && git clone https://github.com/ysBach/ysvisutilpy && cd ysvisutilpy && git pull && pip install -e . && cd ..
 cd ~/Downloads/ && git clone https://github.com/ysBach/ysfitsutilpy && cd ysfitsutilpy && git pull && pip install -e . && cd ..
 cd ~/Downloads/ && git clone https://github.com/ysBach/ysphotutilpy && cd ysphotutilpy && git pull && pip install -e . && cd ..
-cd ~/Downloads/ && git clone https://github.com/ysBach/SNUO1Mpy && cd SNUO1Mpy && git pull && pip install -e . && cd ..
+cd ~/Downloads/ && git clone https://github.com/ysBach/SNUO1Mpy && cdSNUO1Mpy && git pull && pip install -e . && cd ..
 
 # second time...
 cd ~/Downloads/ysvisutilpy && git pull && pip install -e . 
