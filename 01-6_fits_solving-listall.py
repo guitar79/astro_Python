@@ -18,6 +18,10 @@ import shutil
 import Python_utilities
 import astro_utilities
 
+import ysfitsutilpy as yfu
+import ysphotutilpy as ypu
+import ysvisutilpy as yvu
+
 #%%
 #######################################################
 # for log file
@@ -36,17 +40,10 @@ if not os.path.exists('{0}'.format(log_dir)):
 
 base_dir = "../CCD_new_files/"
 base_dir = "../CCD_obs_raw/STF-8300M_1bin/Light_OPTIC/KLEOPATRA_Light_-_2022-11-04_-_OPTIC_STF-8300M_-_1bin/"
-base_dir = "../Rne_2022/KLEOPATRA_Light_-_2022-10-27_-_RiLA600_STX-16803_-_2bin/readuced_files/"
+base_dir = "../RnE_2022/KLEOPATRA_Light_-_2022-11-04_-_RiLA600_STX-16803_-_2bin/"
 
 destination_base_dir_name = "../CCD_obs_raw/"
 target_duplicate_files_dir = "../CCD_duplicate_files/"
-
-
-if not os.path.exists('{0}'.format(target_duplicate_files_dir)):
-    os.makedirs('{0}'.format(target_duplicate_files_dir))
-
-if not os.path.exists('{0}'.format(destination_base_dir_name)):
-    os.makedirs('{0}'.format(destination_base_dir_name))
 
 fullnames = Python_utilities.getFullnameListOfallFiles(base_dir)
 fullnames_fit = [w for w in fullnames if (w.endswith(".fit") or w.endswith(".fits"))]
@@ -57,12 +54,17 @@ print ("len(fullnames_fit): {}".format(len(fullnames_fit)))
 #%%
 n = 0
 for fullname in fullnames_fit[:] :
-#fullname = fullnames[5]
+    #fullname = fullnames[5]
     n += 1
     print('#'*40,
         "\n{2:.01f}%  ({0}/{1}) {3}".format(n, len(fullnames_fit), (n/len(fullnames_fit))*100, os.path.basename(__file__)))
     print ("Starting...\nfullname: {}".format(fullname))
-       
+
+    wcs_removed = yfu.wcsremove(
+                        path = fullname,
+                        overwrite = True)
+    print(wcs_removed)
+    break
     astro_utilities.KevinSolver1(fullname)
              
 #%%
