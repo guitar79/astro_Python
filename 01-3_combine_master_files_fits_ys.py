@@ -63,7 +63,7 @@ for base_dir in base_dirs :
     try : 
         summary = yfu.make_summary(
                     "{}/*.fit".format(base_dir),
-                    keywords = ["DATE-OBS", "FILTER", "OBJECT"],  # header keywords; actually it is case-insensitive
+                    keywords = ["DATE-OBS", "FILTER", "OBJECT", "IMAGETYP"],  # header keywords; actually it is case-insensitive
                     #fname_option = 'name',  # 'file' column will contain only the name of the file (not full path)
                     sort_by = "DATE-OBS",  # 'file' column will be sorted based on "DATE-OBS" value in the header
                     output = "{}summary.csv".format(base_dir)
@@ -77,7 +77,7 @@ for base_dir in base_dirs :
     #%%
     try: 
         bias_comb = yfu.group_combine(
-                        "{}/*Bias*.fit".format(base_dir),
+                        "{}/*_Bias_*.fit".format(base_dir),
                         type_key = ["IMAGETYP"],
                         type_val = ["BIAS"],
                         #group_key = ["EXPTIME"],
@@ -91,7 +91,7 @@ for base_dir in base_dirs :
     #%%
     try:
         bias_comb = yfu.group_combine(
-                        "{}/*Bias*.fit".format(base_dir),
+                        "{}/*_Bias_*.fit".format(base_dir),
                         type_key = ["IMAGETYP"],
                         type_val = ["bias"],
                         #group_key = ["EXPTIME"],
@@ -107,7 +107,7 @@ for base_dir in base_dirs :
     try: 
         # Say dark frames have header OBJECT = "calib" && "IMAGE-TYP" = "DARK"
         dark_comb = yfu.group_combine(
-                        "{}/*Dark*.fit".format(base_dir),
+                        "{}/*_Dark_*.fit".format(base_dir),
                         type_key = ["IMAGETYP"],
                         type_val = ["DARK"],
                         group_key = ["EXPTIME"],
@@ -123,7 +123,7 @@ for base_dir in base_dirs :
     try: 
         # Say dark frames have header OBJECT = "calib" && "IMAGE-TYP" = "DARK"
         dark_comb = yfu.group_combine(
-                        "{}/*Dark*.fit".format(base_dir),
+                        "{}/*_Dark_*.fit".format(base_dir),
                         type_key = ["IMAGETYP"],
                         type_val = ["dark"],
                         group_key = ["EXPTIME"],
@@ -139,7 +139,7 @@ for base_dir in base_dirs :
     try: 
         # Say dark frames have header OBJECT = "calib" && "IMAGE-TYP" = "DARK"
         flat_comb = yfu.group_combine(
-                        "{}/*Flat*.fit".format(base_dir),
+                        "{}/*_Flat_*.fit".format(base_dir),
                         type_key = ["IMAGETYP"],
                         type_val = ["FLAT"],
                         group_key = ["FILTER"],
@@ -154,7 +154,7 @@ for base_dir in base_dirs :
     try: 
         # Say dark frames have header OBJECT = "calib" && "IMAGE-TYP" = "DARK"
         flat_comb = yfu.group_combine(
-                        "{}/*Flat*.fit".format(base_dir),
+                        "{}/*_Flat_*.fit".format(base_dir),
                         type_key = ["IMAGETYP"],
                         type_val = ["flat"],
                         group_key = ["FILTER"],
