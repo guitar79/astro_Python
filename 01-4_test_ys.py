@@ -49,7 +49,7 @@ if not os.path.exists('{0}'.format(log_dir)):
 #%%
 #######################################################
 # read all files in base directory for processing
-base_dir = "../Rne_2022/KLEOPATRA_Light_-_2022-10-27_-_RiLA600_STX-16803_-_2bin/"
+base_dir = "../RnE_2022/KLEOPATRA_Light_-_2022-10-27_-_RiLA600_STX-16803_-_2bin/"
 #base_dir = "../RnE_2022/"
 
 master_dir = "master_files/"
@@ -61,7 +61,7 @@ base_dirs = [w for w in base_dirs if not (w.endswith(master_dir) \
 print ("base_dirs: {}".format(base_dirs))
 
 #%%
-base_dir = "../Rne_2022/KLEOPATRA_Light_-_2022-10-27_-_RiLA600_STX-16803_-_2bin/"
+base_dir = "../RnE_2022/KLEOPATRA_Light_-_2022-10-27_-_RiLA600_STX-16803_-_2bin/"
 
 fullnames = Python_utilities.getFullnameListOfallFiles("{}".format(base_dir))
 fullnames = [w for w in fullnames \
@@ -80,5 +80,10 @@ hdul1 = fits.open("{}".format(f_name1))
 hdul2 = fits.open("{}".format(f_name2))
 
 print(hdul1[0].header.tostring())
-print(hdul1[0].header.tostring())print(hdul2[0].header.tostring())
+print(hdul1[0].header.tostring())
+print(hdul2[0].header.tostring())
+#%%
+import ysfitsutilpy as yfu
+yfu.wcsremove(fullnames[-1], output=fullnames[-1], overwrite=True)
+
 # %%

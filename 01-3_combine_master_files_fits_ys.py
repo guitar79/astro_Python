@@ -59,7 +59,7 @@ print ("base_dirs2: {}".format(base_dirs))
 for base_dir in base_dirs :
     print ("Starting...\n{}".format(base_dir))
     ######################################################
-    #%%
+
     try : 
         summary = yfu.make_summary(
                     "{}/*.fit".format(base_dir),
@@ -74,36 +74,20 @@ for base_dir in base_dirs :
         print("X"*60)
         print('{0}'.format(err))
 
-    #%%
     try: 
         bias_comb = yfu.group_combine(
                         "{}/*_Bias_*.fit".format(base_dir),
                         type_key = ["IMAGETYP"],
                         type_val = ["BIAS"],
-                        #group_key = ["EXPTIME"],
+                        group_key = ["EXPTIME"],
                         fmt = "master_bias.fits",  # output file name format
-                        outdir = "{}{}".format(base_dir, master_dir)  # output directory (will automatically be made if not exist)
+                        outdir = "{}{}".format(base_dir, master_dir),  # output directory (will automatically be made if not exist)
+                        verbose=True
                     )
     except Exception as err :
         print("X"*60)
         print('{0}'.format(err))
 
-    #%%
-    try:
-        bias_comb = yfu.group_combine(
-                        "{}/*_Bias_*.fit".format(base_dir),
-                        type_key = ["IMAGETYP"],
-                        type_val = ["bias"],
-                        #group_key = ["EXPTIME"],
-                        fmt = "master_bias.fits",  # output file name format
-                        outdir = "{}{}".format(base_dir, master_dir)  # output directory (will automatically be made if not exist)
-                    )
-    except Exception as err :
-        print("X"*60)
-        print('{0}'.format(err))
-
-
-    #%%
     try: 
         # Say dark frames have header OBJECT = "calib" && "IMAGE-TYP" = "DARK"
         dark_comb = yfu.group_combine(
@@ -119,23 +103,6 @@ for base_dir in base_dirs :
         print('{0}'.format(err))
 
 
-    #%%
-    try: 
-        # Say dark frames have header OBJECT = "calib" && "IMAGE-TYP" = "DARK"
-        dark_comb = yfu.group_combine(
-                        "{}/*_Dark_*.fit".format(base_dir),
-                        type_key = ["IMAGETYP"],
-                        type_val = ["dark"],
-                        group_key = ["EXPTIME"],
-                        fmt = "master_dark_{:.0f}sec.fits",  # output file name format
-                        outdir = "{}{}".format(base_dir, master_dir)  # output directory (will automatically be made if not exist)
-                    )
-    except Exception as err :
-        print("X"*60)
-        print('{0}'.format(err))
-
-
-    #%%
     try: 
         # Say dark frames have header OBJECT = "calib" && "IMAGE-TYP" = "DARK"
         flat_comb = yfu.group_combine(
@@ -144,24 +111,13 @@ for base_dir in base_dirs :
                         type_val = ["FLAT"],
                         group_key = ["FILTER"],
                         fmt = "master_flat_{:s}.fits",  # output file name format
+                        scale="med_sc",
+                        scale_to_0th=False,
                         outdir = "{}{}".format(base_dir, master_dir)  # output directory (will automatically be made if not exist)
                     )
     except Exception as err :
         print("X"*60)
         print('{0}'.format(err))
 
-     #%%
-    try: 
-        # Say dark frames have header OBJECT = "calib" && "IMAGE-TYP" = "DARK"
-        flat_comb = yfu.group_combine(
-                        "{}/*_Flat_*.fit".format(base_dir),
-                        type_key = ["IMAGETYP"],
-                        type_val = ["flat"],
-                        group_key = ["FILTER"],
-                        fmt = "master_flat_{:s}.fits",  # output file name format
-                        outdir = "{}{}".format(base_dir, master_dir)  # output directory (will automatically be made if not exist)
-                    )
-    except Exception as err :
-        print("X"*60)
-        print('{0}'.format(err))
-
+    
+# %%

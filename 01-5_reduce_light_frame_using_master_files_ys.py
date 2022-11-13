@@ -19,6 +19,7 @@ cd ~/Downloads/SNUO1Mpy && git pull && pip install -e .
 """
 #%%
 from glob import glob
+from pathlib import Path
 import numpy as np
 import os
 import astropy.units as u
@@ -42,8 +43,8 @@ if not os.path.exists('{0}'.format(log_dir)):
 #%%
 #######################################################
 # read all files in base directory for processing
-base_dir = "../RnE_2022/KLEOPATRA_Light_-_2022-11-04_-_RiLA600_STX-16803_-_2bin/"
-base_dir = "../RnE_2022/KLEOPATRA_Light_-_2022-10-27_-_RiLA600_STX-16803_-_2bin/"
+base_dir = Path("../RnE_2022/KLEOPATRA_Light_-_2022-11-04_-_RiLA600_STX-16803_-_2bin/")
+base_dir = Path("../RnE_2022/KLEOPATRA_Light_-_2022-10-27_-_RiLA600_STX-16803_-_2bin/")
 
 ### make all fits file list...
 fullnames = Python_utilities.getFullnameListOfallFiles("{}".format(base_dir))
@@ -69,11 +70,45 @@ if not os.path.exists('{0}'.format("{}{}".format(base_dir, reduced_dir))):
 #            unit='adu')
 
 #%%
+from pathlib import Path
+summary = yfu.make_summary(base_dir/"*.fit")
+df_light = summary.loc[summary["IMAGETYP"] == "LIGHT"].copy()
+df_light = df_light.reset_index(drop=True)
+
+# %%
+for _, row in df_light.iterrows():
+    fpath = Path(row["file"])
+    ccd = yfu.load_ccd(fpath)
+    filt = ccd.header["FILTER"]
+    expt = ccd.header["EXPTIME"]
+    red = yfu.ccdred(
+        ccd,
+        output=Path(f"{base_dir}/reduced/{fpath.stem}.fits"),
+        mdarkpath=str(base_dir/"master_files_ys/master_dark_{:.0f}sec.fits".format(expt)),
+        mflatpath=str(base_dir/"master_files_ys/master_flat_{}.fits".format(filt.upper())),
+        # flat_norm_value=1,  # 1 = skip normalization, None = normalize by mean
+        overwrite=True
+    )
+
+
+# %%
+
+# %%
+
+# %%
+
+# %%
+
+#%%
 n = 0
 fullnames_light = [w for w in fullnames if not (("_bias_" in w.lower()) \
             or "_dark_" in w.lower() or "_flat_" in w.lower())]
 print ("fullnames_light: {}".format(fullnames_light))
 print ("len(fullnames_light): {}".format(len(fullnames_light)))
+
+#%%
+
+
 #%%
 object_list = fullnames_light
 
