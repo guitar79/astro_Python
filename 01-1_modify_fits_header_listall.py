@@ -35,12 +35,11 @@ base_dir = "../CCD_new_files/"
 fullnames = astro_utilities.getFullnameListOfallFiles(base_dir)
 
 print ("fullnames: {}".format(fullnames))
-######################################################
+#######################################################
 
 
 #######################################################
 # set gain and readout noise 
-
 gain = 0
 rdnoise = 0
 binning = 1
