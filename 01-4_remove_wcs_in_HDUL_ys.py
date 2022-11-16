@@ -63,9 +63,11 @@ print ("base_dirs: {}".format(base_dirs))
 
 #%%
 for base_dir in base_dirs :
+    # 디렉토리 하나씩 loop...
     print ("Starting...\n{}".format(base_dir))
 
     try : 
+        #파일 목록을 DataFrame으로 만들어서 이용하자
         summary = yfu.make_summary("{}/*.fit".format(base_dir))
                             #keywords = ["DATE-OBS", "FILTER", "OBJECT", "IMAGETYP"],  # header keywords; actually it is case-insensitive
                             #fname_option = 'name',  # 'file' column will contain only the name of the file (not full path)
@@ -80,17 +82,19 @@ for base_dir in base_dirs :
 
     #%%
     try:
+        # light frame  만 선택
         df_light = summary[summary["IMAGETYP"] == "LIGHT"]
         print ("df_light: {}".format(df_light))
         print ("len(df_light): {}".format(len(df_light)))
 
         #%%
         for _, row in df_light.iterrows():
+            # 파일명 출력
             print (row["file"])
+            # fits hedaer 에 있는 wcs 정보를 지운다
             yfu.wcsremove(row["file"], 
                         output=row["file"], 
                         overwrite=True)
     except Exception as err :
         print("X"*60)
         print('{0}'.format(err))
-# %%
