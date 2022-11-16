@@ -18,7 +18,7 @@ cd ~/Downloads/SNUO1Mpy && git pull && pip install -e .
 이 파일은 base_dir 폴더 안에 있는 모든 fit 파일에 대해서 
 plste solving을 수행합니다.
 이미 solving이 완료된 파일은 건너뛰고, 
-먼조 ASTAP로 시도하고, 실패할 경우 Astrometry로 시도합니다. 
+먼저 ASTAP로 시도하고, 실패할 경우 Astrometry로 시도합니다. 
 
 """
 #%%
@@ -59,7 +59,7 @@ reduced_dir = "reduced"
 solved_dir = "solved"
 
 #%%
-base_dirs = sorted(Python_utilities.getFullnameListOfallsubDirs(base_dir))
+base_dirs = sorted(Python_utilities.getFullnameListOfsubDir(base_dir))
 print ("base_dirs1: {}".format(base_dirs))
 base_dirs = [w for w in base_dirs \
         if not (w.endswith("{}/".format(master_dir)) \
@@ -69,7 +69,7 @@ base_dirs = [w for w in base_dirs \
 print ("base_dirs2: {}".format(base_dirs))
 
 #%%
-#base_dir = Path("../RnE_2022/KLEOPATRA_Light_-_2022-11-04_-_RiLA600_STX-16803_-_2bin/")
+base_dir = Path("../RnE_2022/KLEOPATRA_Light_-_2022-11-04_-_RiLA600_STX-16803_-_2bin/")
 
 
 #%%
@@ -78,8 +78,8 @@ for base_dir in base_dirs :
 
     base_dir = Path(base_dir)
 
-    if not (base_dir/reduced_dir/solved_dir).exists():
-        os.makedirs(str((base_dir/reduced_dir/solved_dir)))
+    if not (base_dir/solved_dir).exists():
+        os.makedirs(str((base_dir/solved_dir)))
 
     summary = yfu.make_summary(base_dir/reduced_dir/"*.fits")
 
@@ -97,12 +97,15 @@ for base_dir in base_dirs :
             "\n{2:.01f}%  ({0}/{1}) {3}".format(n, len(df_light), (n/len(df_light))*100, os.path.basename(__file__)))
         print ("Starting...\nfullname: {}".format(row["file"]))
 
-        astro_utilities.KevinSolver(row["file"], solved_dir)
+        #astro_utilities.KevinSolver(row["file"], solved_dir)
+        #astro_utilities.AstrometrySolver(df_light["file"][0], base_dir/solved_dir)
+        astro_utilities.AstrometrySolver(row["file"], str(base_dir/solved_dir))
+        #astro_utilities.AstrometrySolver(row["file"], "../{}".format(solved_dir))
                 
     #############################################################################
     #Check existence tmp file and rename ...
     #############################################################################
-    summary_new = yfu.make_summary(base_dir/reduced_dir/solved_dir/"*.new")
+    summary_new = yfu.make_summary(base_dir/solved_dir/"*.new")
     print ("summary_new: {}".format(summary_new))
 
     #%%
@@ -113,11 +116,9 @@ for base_dir in base_dirs :
             print('#'*40,
                 "\n{2:.01f}%  ({0}/{1}) {3}".format(n, len(summary_new), (n/len(summary_new))*100, os.path.basename(__file__)))
             print ("Starting...\nfullname: {}".format(row["file"]))
-
-        
             shutil.move(r"{}".format(row["file"]), \
-                            r"{}.fits".format(row["file"][:-4]))
+                        r"{}.fits".format(row["file"][:-4]))
 
     except Exception as err:
         Python_utilities.write_log(err_log_file,
-                    '{2} ::: {0} There is no {1} '.format(err, row["file"], datetime.now())) 
+                '{2} ::: {0} There is no {1} '.format(err, row["file"], datetime.now())) 

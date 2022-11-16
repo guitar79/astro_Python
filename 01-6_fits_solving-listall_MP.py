@@ -109,8 +109,8 @@ for base_dir in base_dirs :
 
     base_dir = Path(base_dir)
 
-    if not (base_dir/reduced_dir/solved_dir).exists():
-        os.makedirs(str((base_dir/reduced_dir/solved_dir)))
+    if not (base_dir/solved_dir).exists():
+        os.makedirs(str(base_dir/solved_dir))
 
     summary = yfu.make_summary(base_dir/reduced_dir/"*.fits")
 
@@ -127,7 +127,9 @@ for base_dir in base_dirs :
     for batch in range(num_batches):
         myMP.restart()
         for fullname  in fullnames[batch*num_batches:(batch+1)*num_batches]:
-            myMP.run(astro_utilities.KevinSolver, fullname, solved_dir)
+            #myMP.run(astro_utilities.KevinSolver, fullname, solved_dir)
+            myMP.run(astro_utilities.AstrometrySolver, fullname, str(base_dir/solved_dir))
+
         print("Batch " + str(batch))
         #myMP.wait()
 
@@ -137,7 +139,7 @@ for base_dir in base_dirs :
     #############################################################################
     #Check existence tmp file and rename ...
     #############################################################################
-    summary_new = yfu.make_summary(base_dir/reduced_dir/solved_dir/"*.new")
+    summary_new = yfu.make_summary(base_dir/solved_dir/"*.new")
     print ("summary_new: {}".format(summary_new))
 
     #%%

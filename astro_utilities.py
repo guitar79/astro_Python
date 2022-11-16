@@ -11,9 +11,9 @@ conda install -c condaforge ccdproc
 
 from astropy.io import fits
 import subprocess
+from datetime import datetime
 import os
 from pathlib import Path
-
 
 #########################################
 #single  KevinPSolver
@@ -84,8 +84,9 @@ class KevinSolver():
 #single  KevinPSolver1
 #########################################
 class KevinSolver1():
-    def __init__(self, fullname):
+    def __init__(self, fullname, solved_dir):
         self.fullname = fullname
+        self.solved_dir = solved_dir
 
     #@def fetch(self):
         print("Starting... \n{}".format(self.fullname))
@@ -146,8 +147,9 @@ class KevinSolver1():
 #single  KevinPSolver2
 #########################################
 class KevinSolver2():
-    def __init__(self, fullname):
+    def __init__(self, fullname, solved_dir):
         self.fullname = fullname
+        self.solved_dir = solved_dir
 
     #@def fetch(self):
         print("Starting... \n{}".format(self.fullname))
@@ -164,7 +166,7 @@ class KevinSolver2():
         print("{0} is being solved by ASTAP...".format(self.fullname_el[-1]))
         with subprocess.Popen(['astap', 
                     '-f', 
-                    '{0}'.format(fullname), 
+                    '{0}'.format(self.fullname), 
                     '-analyse2',
                     '-update'],
                     stdout=subprocess.PIPE) as proc :
@@ -193,22 +195,49 @@ class KevinSolver2():
 #single  class
 #########################################
 class AstrometrySolver():
-    def __init__(self, fullname):
+    def __init__(self, fullname, solved_dir):
         self.fullname = fullname
+        self.solved_dir = solved_dir
 
-    #@def fetch(self):
-        import subprocess
-        with subprocess.Popen(['solve-field', 
-                    #'-O', #--overwrite: overwrite output files if they already exist
-                    #'--scale-units', 'arcsecperpix', #pixel scale
-                    #'--scale-low', '0.1', '--scale-high', '0.40', #pixel scale
-                    '-g', #--guess-scale: try to guess the image scale from the FITS headers
-                    '--cpulimit', '30',  #will make it give up after 30 seconds.
-                    #'-p', # --no-plots: don't create any plots of the results
-                    #'-D', '{0}'.format(self.save_dir), 
-                    '{0}'.format(self.fullname)], 
-                    stdout=subprocess.PIPE) as proc :
-            print(proc.stdout.read())
+        print("Starting... \n{}".format(self.fullname))
+        self.fullname_el = self.fullname.split("/")
+        self.filename_el = self.fullname_el[-1].split("_")
+
+        print("self.solved_dir:", self.solved_dir)
+        print('{}/{}'.format(self.solved_dir, self.fullname_el[-1]))
+
+        if os.path.exists('{}/{}'.format(self.solved_dir, self.fullname_el[-1])):
+            print("{} is already solved ...".format(self.fullname_el[-1]))
+        
+        else: 
+
+        #@def fetch(self):
+
+            try : 
+                print("Starting... \n{}".format(self.fullname))
+                self.fullname_el = self.fullname.split("/")
+                self.filename_el = self.fullname_el[-1].split("_")
+                
+                with subprocess.Popen(['solve-field', 
+                                        '-O', #--overwrite: overwrite output files if they already exist
+                                        #'--scale-low', '0.1', '--scale-high', '0.40', #pixel scale
+                                        '-g', #--guess-scale: try to guess the image scale from the FITS headers
+                                        '--cpulimit', '120',  #will make it give up after 30 seconds.
+                                        '--nsigma', '15',
+                                        #'--downsample', '4',
+                                        '-u', 'app', #'--scale-units', 'arcsecperpix', #pixel scale
+                                        '-L', '1.2', '-U', '1.3',
+                                        #'-N',  '{}'.format(self.fullname[-1]), #--new-fits <filename>: output filename of the new FITS file containingthe WCS header; "none" to not create this file
+                                        '-p', 
+                                        '--no-plots',#: don't create any plots of the results
+                                        '-D', '{}/'.format(solved_dir),
+                                        '{0}'.format(self.fullname)], 
+                                        stdout=subprocess.PIPE) as proc :
+                    print(proc.stdout.read())
+                
+            except Exception as err :
+                    print('{1} ::: {2} with {0} ...'\
+                            .format(self.fullname, datetime.now(), err))
                
 
 #########################################
@@ -255,29 +284,7 @@ class ASTAPSolver():
 #########################################
 
 
-#########################################
-#single  class
-#########################################
-class AstrometrySolver():
-    def __init__(self, fullname):
-        self.fullname = fullname
 
-    #@def fetch(self):
-        import subprocess
-        with subprocess.Popen(['solve-field', 
-                    #'-O', #--overwrite: overwrite output files if they already exist
-                    #'--scale-units', 'arcsecperpix', #pixel scale
-                    #'--scale-low', '0.1', '--scale-high', '0.40', #pixel scale
-                    '-g', #--guess-scale: try to guess the image scale from the FITS headers
-                    '--cpulimit', '30',  #will make it give up after 30 seconds.
-                    #'-p', # --no-plots: don't create any plots of the results
-                    #'-D', '{0}'.format(self.save_dir), 
-                    '{0}'.format(self.fullname)], 
-                    stdout=subprocess.PIPE) as proc :
-            print(proc.stdout.read())
-               
-
-#########################################
 
 
 from datetime import datetime
