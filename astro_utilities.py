@@ -81,69 +81,6 @@ class KevinSolver():
 
 
 #########################################
-#single  KevinPSolver1
-#########################################
-class KevinSolver1():
-    def __init__(self, fullname, solved_dir):
-        self.fullname = fullname
-        self.solved_dir = solved_dir
-
-    #@def fetch(self):
-        print("Starting... \n{}".format(self.fullname))
-        self.fullname_el = self.fullname.split("/")
-        self.filename_el = self.fullname_el[-1].split("_")
-
-        try:    
-            hdul = fits.open(self.fullname)
-
-            if "light" in hdul[0].header["IMAGETYP"].lower() :
-                print("{} is light frame".format(self.fullname_el[-1]))
-
-                
-                print("{0} is being solved by ASTAP...".format(self.fullname_el[-1]))
-                with subprocess.Popen(['astap', 
-                            '-f', 
-                            '{0}'.format(self.fullname), 
-                            '-analyse2',
-                            '-update'],
-                            stdout=subprocess.PIPE) as proc :
-                    print(proc.stdout.read())
-                
-                if os.path.exists("{}".format(self.fullname)):
-                    hdul = fits.open(self.fullname)
-                    print("fits file is opened...".format(self.fullname_el[-1]))
-                    if "CD1_1" in hdul[0].header :
-                        print("{0} is already solved successfully...".format(self.fullname_el[-1]))
-
-                    elif os.path.exists("{}.axy".format(self.fullname[:-4])):
-                        print("{0} is already tried solving by Astrometry but failed...".format(self.fullname_el[-1]))
-                    
-                    else : 
-                        print("{0} is being solved by local Astrometry...".format(self.fullname_el[-1]))
-                    
-                        with subprocess.Popen(['solve-field', 
-                                                '-O', #--overwrite: overwrite output files if they already exist
-                                                #'--scale-units', 'arcsecperpix', #pixel scale
-                                                #'--scale-low', '0.1', '--scale-high', '0.40', #pixel scale
-                                                '-g', #--guess-scale: try to guess the image scale from the FITS headers
-                                                '--cpulimit', '15',  #will make it give up after 30 seconds.
-                                                '-N',  #--new-fits <filename>: output filename of the new FITS file containingthe WCS header; "none" to not create this file
-                                                #'-p', # --no-plots: don't create any plots of the results
-                                                #'-D', '{0}'.format(save_dir_name), 
-                                                '{0}'.format(self.fullname)], 
-                                                stdout=subprocess.PIPE) as proc :
-                            print(proc.stdout.read())
-                        
-            else :
-                print("{} is not light frame...".format(self.fullname_el[-1]))   
-        except Exception as err :
-            print('{1} ::: {2} with {0} ...'\
-                        .format(self.fullname, datetime.now(), err))
-#########################################
-
-
-
-#########################################
 #single  KevinPSolver2
 #########################################
 class KevinSolver2():
@@ -192,10 +129,21 @@ class KevinSolver2():
 
 
 #########################################
-#single  class
+#single  Astrometry Solver
 #########################################
 class AstrometrySolver():
     def __init__(self, fullname, solved_dir):
+        
+        """
+        Parameters
+        ----------
+        fullname : string
+            The fullname of input file...
+
+        solved dir: string
+            The directory where the output file              
+        """
+
         self.fullname = fullname
         self.solved_dir = solved_dir
 
@@ -211,13 +159,9 @@ class AstrometrySolver():
         
         else: 
 
-        #@def fetch(self):
-
             try : 
-                print("Starting... \n{}".format(self.fullname))
-                self.fullname_el = self.fullname.split("/")
-                self.filename_el = self.fullname_el[-1].split("_")
-                
+                # solve command.
+                # solve-field fullname.fit -O --cpulimit 120 --nsigma 15 -u app -L 1.2 -U 1.3 -N new_filename.fits -p --no-plots -D output_directory {0}
                 with subprocess.Popen(['solve-field', 
                                         '-O', #--overwrite: overwrite output files if they already exist
                                         #'--scale-low', '0.1', '--scale-high', '0.40', #pixel scale
@@ -247,39 +191,50 @@ class AstrometrySolver():
 #single  ASTAPSolver
 #########################################
 class ASTAPSolver():
-    def __init__(self, fullname):
+    def __init__(self, fullname, solved_dir):
         self.fullname = fullname
+        self.solved_dir = solved_dir
+        """
+        Parameters
+        ----------
+        fullname : string
+            The fullname of input file...
 
-    #@def fetch(self):
-        #print("Starting...   self.fullname: {}".format(self.fullname))
+        solved dir: string
+            The directory where the output file              
+        """
+
+        print("Starting... \n{}".format(self.fullname))
         self.fullname_el = self.fullname.split("/")
         self.filename_el = self.fullname_el[-1].split("_")
-        if self.fullname[-4:].lower() == ".fit" :
-            
-            hdul = fits.open(fullname)
 
-            if "light" in hdul[0].header["IMAGETYP"].lower() :
-                print("{} is light frame".format(self.fullname_el[-1]))
+        print("self.solved_dir:", self.solved_dir)
+        print('{}/{}'.format(self.solved_dir, self.fullname_el[-1]))
 
-                #if 'CD1_1' in hdul[0].header :
-                #if 'PIXELSCALE' in hdul[0].header :
-                import os
-                if not os.path.isfile(r'{0}.wcs'.format(self.fullname[:-4])):
-                    import subprocess
-                    with subprocess.Popen(['astap', 
-                                '-f', 
-                                '{0}'.format(self.fullname), 
-                                #'-update'
-                                '-analyse2'
-                                ],
+        if os.path.exists('{}/{}'.format(self.solved_dir, self.fullname_el[-1])):
+            print("{} is already solved ...".format(self.fullname_el[-1]))
+        
+        else : 
+
+            try:
+                # solve command.
+                # astap -f fullname.fit -o output_file.fits -wcs -analyse2 -update
+                #astap -f ../RnE_2022/KLEOPATRA_Light_-_2022-11-04_-_RiLA600_STX-16803_-_2bin/KLEOPATRA_Light_v_2022-11-04-11-48-17_160sec_RiLA600_STX-16803_-20C_2bin.fit -o ../RnE_2022/KLEOPATRA_Light_-_2022-11-04_-_RiLA600_STX-16803_-_2bin/solved1/11.fit -update
+                with subprocess.Popen(['astap', 
+                            '-f', '{0}'.format(self.fullname), 
+                            '-o', 
+                            '{}/{}'.format(self.solved_dir, 
+                                    self.fullname_el[-1]), 
+                            '-wcs',
+                            '-analyse2',
+                            '-update',],
                                 stdout=subprocess.PIPE) as proc :
-                        print(proc.stdout.read())
+                    print(proc.stdout.read())
             
-                else : 
-                    print("{} is already solved...".format(self.fullname_el[-1]))
-                    
-            else :
-                print("{} is not light frame".format(self.fullname_el[-1]))
+            except Exception as err :
+                    print('{1} ::: {2} with {0} ...'\
+                            .format(self.fullname, datetime.now(), err))
+               
 
 #########################################
 

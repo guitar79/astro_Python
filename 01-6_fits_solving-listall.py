@@ -99,7 +99,7 @@ for base_dir in base_dirs :
 
         #astro_utilities.KevinSolver(row["file"], solved_dir)
         #astro_utilities.AstrometrySolver(df_light["file"][0], base_dir/solved_dir)
-        astro_utilities.AstrometrySolver(row["file"], str(base_dir/solved_dir))
+        solved = astro_utilities.AstrometrySolver(row["file"], str(base_dir/solved_dir))
         #astro_utilities.AstrometrySolver(row["file"], "../{}".format(solved_dir))
                 
     #############################################################################

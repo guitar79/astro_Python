@@ -49,7 +49,7 @@ if not os.path.exists('{0}'.format(log_dir)):
 #######################################################
 # read all files in base directory for processing
 base_dir = "../Post_process/M13_Light_-_2021-04_-_TEC140x75_STL-11000M_-_1bin/"
-base_dir = "../Rne_2022/KLEOPATRA_Light_-_2022-11-04_-_RiLA600_STX-16803_-_2bin/"
+base_dir = "../RnE_2022/KLEOPATRA_Light_-_2022-11-08_-_RiLA600_STX-16803_-_2bin_work/"
 #base_dir = "../RnE_2022/"
 #base_dir = "../CCD_obs_raw/"
 
@@ -70,11 +70,12 @@ ARCHIVE = TOPDIR/"archive"
 CALIBDIR = TOPDIR/"calib"
 
 p = Preprocessor(topdir=TOPDIR, rawdir=RAWDIR, 
-                instrument = "STX16803",
+                instrument = "STX-16803",
                 #overwrite=True,
                 **bias_kw, **dark_kw, **flat_kw) 
 
 #%%
-p.organize_raw(archive_dir=ARCHIVE)
+p.organize_raw(archive_dir=ARCHIVE, 
+                verbose=True)
 
 # %%

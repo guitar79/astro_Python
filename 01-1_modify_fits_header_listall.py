@@ -43,8 +43,21 @@ print ("fullnames: {}".format(fullnames))
 gain = 0
 rdnoise = 0
 binning = 1
-gains = {"STF-8300M": 0.37, "STX-16803": 1.27, "STL-11000": 0.8, "QSI683ws": 0.13 } 
-rdnoises = {"STF-8300M": 9.3, "STX-16803": 9.0, "STL-11000": 9.6, "QSI683ws": 8.0 } 
+gains = {"STF-8300M": 0.37, 
+        "STX-16803": 1.27, 
+        "STL-11000": 0.8, 
+        "QSI683ws": 0.13 } 
+
+rdnoises = {"STF-8300M": 9.3, 
+            "STX-16803": 9.0, 
+            "STL-11000": 9.6, 
+            "QSI683ws": 8.0 } 
+
+pixscale = {"STF-8300M": None, 
+            "RiLA600_STX-16803_1bin": 0.512, 
+            "RiLA600_STX-16803_2bin": 1.024, 
+            "STL-11000": None, 
+            "QSI683ws": None } 
 #######################################################
 
 #%%
