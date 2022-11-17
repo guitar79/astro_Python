@@ -280,7 +280,10 @@ def get_new_filename(fullname, **kargs):
 
 
     if not 'INSTRUME' in hdul[0].header : 
-        instrument = 'UNKNOWN'
+        if hdul[0].header['CCDNAME'].lower() :     
+            instrument = hdul[0].header['CCDNAME']
+        else:
+            instrument = 'UNKNOWN'
     elif  'qsi' in hdul[0].header['INSTRUME'].lower() :     
         instrument = 'QSI683ws'
     elif  'st-8300' in hdul[0].header['INSTRUME'].lower() :     
