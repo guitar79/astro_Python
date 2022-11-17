@@ -87,7 +87,6 @@ for base_dir in base_dirs :
         print ("df_light: {}".format(df_light))
         print ("len(df_light): {}".format(len(df_light)))
 
-        #%%
         for _, row in df_light.iterrows():
             # 파일명 출력
             print (row["file"])
@@ -95,6 +94,7 @@ for base_dir in base_dirs :
             yfu.wcsremove(row["file"], 
                         output=row["file"], 
                         overwrite=True)
+                        
     except Exception as err :
         print("X"*60)
         print('{0}'.format(err))

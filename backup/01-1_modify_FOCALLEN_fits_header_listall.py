@@ -49,13 +49,13 @@ for fullname in fullnames[:] :
                     hdul[0].header.append('FOCALLEN', 
                                        '{0}'.format(focal_length), 
                                        'Focal length (mm)')
-                    astro_utilities.write_log(log_file, 
+                    Python_utilities.write_log(log_file, 
                         '{1} ::: FOCALLEN is appended at {0}...'\
                         .format(fullname, datetime.now()))
                     
                 hdul.flush()  # changes are written back to original.fits
                 print('*'*30)
-                astro_utilities.write_log(log_file, 
+                Python_utilities.write_log(log_file, 
                     '{1} ::: fits header is append with {0} ...'\
                     .format(fullname, datetime.now()))
             

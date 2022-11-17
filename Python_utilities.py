@@ -8,9 +8,10 @@ conda install -c condaforge ccdproc
 """
 
 from datetime import datetime
+
 #from astropy.io import fits
 
-
+#%%
 # =============================================================================
 # creat log
 # =============================================================================

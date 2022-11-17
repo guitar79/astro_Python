@@ -54,7 +54,7 @@ for fullname in fullnames[:] :
                                        '{}'.format(object_RA), 
                                        'RA')
                     print('{0} is added at RA...'.format(object_RA))
-                    astro_utilities.write_log(log_file, 
+                    Python_utilities.write_log(log_file, 
                         '{1} ::: RA is appended at {0}...'\
                         .format(fullname, datetime.now()))
                 if not 'DEC' in hdul[0].header :
@@ -62,13 +62,13 @@ for fullname in fullnames[:] :
                                        '{}'.format(object_DEC), 
                                        'DEC')
                     print('{0} is added at DEC...'.format(object_DEC))
-                    astro_utilities.write_log(log_file, 
+                    Python_utilities.write_log(log_file, 
                         '{1} ::: DEC is appended at {0}...'\
                         .format(fullname, datetime.now()))
                     
                 hdul.flush()  # changes are written back to original.fits
                 print('*'*30)
-                astro_utilities.write_log(log_file, 
+                Python_utilities.write_log(log_file, 
                     '{1} ::: fits header is appended with {0} ...'\
                     .format(fullname, datetime.now()))
             
@@ -80,7 +80,7 @@ for fullname in fullnames[:] :
                     hdul[0].header['DEC'] = object_DEC
                     print('{0} is added at RA...'.format(object_RA))
                     print('{0} is added at DEC...'.format(object_DEC))
-                    astro_utilities.write_log(log_file, 
+                    Python_utilities.write_log(log_file, 
                         '{1} ::: RA, DEC is appended at {0}...'\
                         .format(fullname, datetime.now()))
                 hdul.flush()  # changes are written back to original.fits

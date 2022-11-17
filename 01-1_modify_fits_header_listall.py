@@ -31,6 +31,7 @@ if not os.path.exists('{0}'.format(log_dir)):
 # read all files in base directory for processing
 base_dir = "../CCD_new_files/"
 #base_dir = "../Rne_2022/"
+#base_dir = "../CCD_obs_raw/"
 
 fullnames = astro_utilities.getFullnameListOfallFiles(base_dir)
 
@@ -102,7 +103,7 @@ for fullname in fullnames[:] :
                                         '{} value added'.format(checkKEY))                    
                 hdul.flush()  # changes are written back to original.fits
                 print('*'*30)
-                astro_utilities.write_log(log_file, 
+                Python_utilities.write_log(log_file, 
                     '{1} ::: fits header is append with {0} ...'\
                     .format(fullname, datetime.now()))
         except Exception as err :
@@ -239,7 +240,7 @@ for fullname in fullnames[:] :
                 hdul.flush()  # changes are written back to original.fits
                 print('*'*30)
                 print('*'*35)
-                astro_utilities.write_log(log_file, 
+                Python_utilities.write_log(log_file, 
                     '{1} ::: fits header is append with {0} ...'\
                     .format(fullname, datetime.now()))
     

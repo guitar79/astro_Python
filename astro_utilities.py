@@ -8,13 +8,16 @@ Created on Thu Nov 22 01:00:19 2018
 ModuleNotFoundError: No module named 'ccdproc'
 conda install -c condaforge ccdproc
 """
-
+#%%
 from astropy.io import fits
 import subprocess
 from datetime import datetime
 import os
 from pathlib import Path
+import numpy as np
+from ccdproc import combine
 
+#%%
 #########################################
 #single  KevinPSolver
 #########################################
@@ -22,23 +25,27 @@ class KevinSolver():
     def __init__(self, fullname, solved_dir):
         self.fullname = fullname
         self.solved_dir = solved_dir
+        """
+        Parameters
+        ----------
+        fullname : string
+            The fullname of input file...
 
-    #@def fetch(self):
+        solved dir: string
+            The directory where the output file              
+        """
+    def astap(self):
         print("Starting... \n{}".format(self.fullname))
         self.fullname_el = self.fullname.split("/")
         self.filename_el = self.fullname_el[-1].split("_")
 
         #Path(os.path.dirname(str(f_path))).parents[0]
         if os.path.exists('{}/{}/{}'.format((os.path.dirname(self.fullname)), 
-                        self.solved_dir, self.fullname_el[-1])):
+                                            self.solved_dir, self.fullname_el[-1])):
             print("{} is already solved ...".format(self.fullname_el[-1]))
 
         else : 
-
             try:    
-                hdul = fits.open(self.fullname)
-
-                print("{0} is being solved by ASTAP...".format(self.fullname_el[-1]))
                 with subprocess.Popen(['astap', 
                             '-f', '{0}'.format(self.fullname), 
                             '-o', 
@@ -49,85 +56,48 @@ class KevinSolver():
                             '-update',],
                             stdout=subprocess.PIPE) as proc :
                     print(proc.stdout.read())
-                    
-                    if os.path.exists('{}/{}/{}'.format((os.path.dirname(self.fullname)), 
-                            self.solved_dir, self.fullname_el[-1])):
-                        print("{} is solved by ASTAP...".format(self.fullname_el[-1]))
-                        
-                    else : 
-                        print("{0} is being solved by local Astrometry...".format(self.fullname_el[-1]))
-                    
-                        with subprocess.Popen(['solve-field', 
-                                                '-O', #--overwrite: overwrite output files if they already exist
-                                                #'--scale-low', '0.1', '--scale-high', '0.40', #pixel scale
-                                                '-g', #--guess-scale: try to guess the image scale from the FITS headers
-                                                '--cpulimit', '120',  #will make it give up after 30 seconds.
-                                                '--nsigma', '15',
-                                                #'--downsample', '4',
-                                                '-u', 'app', #'--scale-units', 'arcsecperpix', #pixel scale
-                                                '-L', '1.2', '-U', '1.3',
-                                                #'-N',  '{}'.format(self.fullname[-1]), #--new-fits <filename>: output filename of the new FITS file containingthe WCS header; "none" to not create this file
-                                                '-p', 
-                                                '--no-plots',#: don't create any plots of the results
-                                                '-D', '{}/{}/'.format((os.path.dirname(self.fullname)), solved_dir),
-                                                '{0}'.format(self.fullname)], 
-                                                stdout=subprocess.PIPE) as proc :
-                            print(proc.stdout.read())
                                 
+            except Exception as err :
+                print('{1} ::: {2} with {0} ...'\
+                            .format(self.fullname, datetime.now(), err))
+
+    def astap(self):
+        print("Starting... \n{}".format(self.fullname))
+        self.fullname_el = self.fullname.split("/")
+        self.filename_el = self.fullname_el[-1].split("_")
+
+        #Path(os.path.dirname(str(f_path))).parents[0]
+        if os.path.exists('{}/{}/{}'.format((os.path.dirname(self.fullname)), 
+                                            self.solved_dir, self.fullname_el[-1])):
+            print("{} is already solved ...".format(self.fullname_el[-1]))
+
+        else : 
+            try:
+                with subprocess.Popen(['solve-field', 
+                                        '-O', #--overwrite: overwrite output files if they already exist
+                                        #'--scale-low', '0.1', '--scale-high', '0.40', #pixel scale
+                                        '-g', #--guess-scale: try to guess the image scale from the FITS headers
+                                        '--cpulimit', '120',  #will make it give up after 30 seconds.
+                                        '--nsigma', '15',
+                                        #'--downsample', '4',
+                                        '-u', 'app', #'--scale-units', 'arcsecperpix', #pixel scale
+                                        '-L', '1.2', '-U', '1.3',
+                                        #'-N',  '{}'.format(self.fullname[-1]), #--new-fits <filename>: output filename of the new FITS file containingthe WCS header; "none" to not create this file
+                                        '-p', 
+                                        '--no-plots',#: don't create any plots of the results
+                                        '-D', '{}/{}/'.format((os.path.dirname(self.fullname)), self.solved_dir),
+                                        '{0}'.format(self.fullname)], 
+                                        stdout=subprocess.PIPE) as proc :
+                    print(proc.stdout.read())
             except Exception as err :
                 print('{1} ::: {2} with {0} ...'\
                             .format(self.fullname, datetime.now(), err))
 #########################################
 
 
-#########################################
-#single  KevinPSolver2
-#########################################
-class KevinSolver2():
-    def __init__(self, fullname, solved_dir):
-        self.fullname = fullname
-        self.solved_dir = solved_dir
-
-    #@def fetch(self):
-        print("Starting... \n{}".format(self.fullname))
-        self.fullname_el = self.fullname.split("/")
-        self.filename_el = self.fullname_el[-1].split("_")
-        self.hdul = fits.open(self.fullname)
-
-        if "light" in self.hdul[0].header["IMAGETYP"].lower() :
-            print("{} is light frame".format(self.fullname_el[-1]))
-        else :
-            print("{} is not light frame...".format(self.fullname_el[-1]))   
-
-    def by_astap(self) :                 
-        print("{0} is being solved by ASTAP...".format(self.fullname_el[-1]))
-        with subprocess.Popen(['astap', 
-                    '-f', 
-                    '{0}'.format(self.fullname), 
-                    '-analyse2',
-                    '-update'],
-                    stdout=subprocess.PIPE) as proc :
-            print(proc.stdout.read())
-        
-    def by_astrometry(self) :             
-        print("{0} is being solved by local Astrometry...".format(self.fullname_el[-1]))
-                    
-        with subprocess.Popen(['solve-field', 
-                                '-O', #--overwrite: overwrite output files if they already exist
-                                #'--scale-units', 'arcsecperpix', #pixel scale
-                                #'--scale-low', '0.1', '--scale-high', '0.40', #pixel scale
-                                '-g', #--guess-scale: try to guess the image scale from the FITS headers
-                                '--cpulimit', '15',  #will make it give up after 30 seconds.
-                                #'-p', # --no-plots: don't create any plots of the results
-                                #'-D', '{0}'.format(save_dir_name), 
-                                '{0}'.format(self.fullname)], 
-                                stdout=subprocess.PIPE) as proc :
-            print(proc.stdout.read())
-            
-#########################################
 
 
-
+#%%
 #########################################
 #single  Astrometry Solver
 #########################################
@@ -182,11 +152,9 @@ class AstrometrySolver():
             except Exception as err :
                     print('{1} ::: {2} with {0} ...'\
                             .format(self.fullname, datetime.now(), err))
-               
-
 #########################################
 
-
+#%%
 #########################################
 #single  ASTAPSolver
 #########################################
@@ -239,27 +207,7 @@ class ASTAPSolver():
 #########################################
 
 
-
-
-
-from datetime import datetime
-#from astropy.io import fits
-
-def write_log2(log_file, log_str):
-    import os
-    with open(log_file, 'a') as log_f:
-        log_f.write("{}, {}\n".format(os.path.basename(__file__), log_str))
-    return print ("{}, {}\n".format(os.path.basename(__file__), log_str))
-
-def write_log(log_file, log_str):
-    import time
-    timestamp = time.strftime('%Y-%m-%d %H:%M:%S')
-    msg = '[' + timestamp + '] ' + log_str
-    print (msg)
-    with open(log_file, 'a') as f:
-        f.write(msg + '\n')
-        
-        
+#%%        
 # =============================================================================
 # for checking time
 # =============================================================================
@@ -276,6 +224,7 @@ alignment_dir_name = 'alignment_Python/'
 # =============================================================================
 #     
 # =============================================================================
+#%%
 def get_new_filename(fullname, **kargs):
     print('Starting get_new_filename ...\n{0}'.format(fullname))
     from astropy.io import fits
@@ -620,6 +569,7 @@ def get_new_foldername(filename):
     #            .format(new_foldername, datetime.now()))    
     return new_foldername
 
+#%%
 def getFullnameListOfallFiles(dirName):
     ##############################################3
     import os
@@ -639,7 +589,7 @@ def getFullnameListOfallFiles(dirName):
                 
     return allFiles
 
-
+#%%
 def getFullnameListOfallsubDirs1(dirName):
     ##############################################3
     import os
@@ -663,7 +613,7 @@ def getFullnameListOfallsubDirs(dirName):
     return allFiles
 
 
-                                
+#%%                                
 def connectMariaDB():
     #import pymysql
     import pymysql.cursors
@@ -684,21 +634,15 @@ def connectMariaDB():
     
     return conn
 
-import numpy as np
-from astropy.io import fits
-from ccdproc import combine
-from datetime import datetime
-#ModuleNotFoundError: No module named 'ccdproc'
-#conda install -c conda-forge ccdproc
 
-
+#%%
 def print_subworking_time(sub_start_time):
     from datetime import datetime
     working_time = (datetime.now() - cht_start_time) #total days for downloading
     return print('working time ::: %s' % (working_time))
 
-
-def sub_p_solve_field(fullname, save_dir_name, sub_start_time): 
+#%%
+def subp_solve_field(fullname, save_dir_name, sub_start_time): 
     import subprocess
     print('-'*60)
     print(fullname)
@@ -718,6 +662,7 @@ def sub_p_solve_field(fullname, save_dir_name, sub_start_time):
        '''
     return 0
 
+#%%
 def align_image(im1, im2):
     import cv2
     #conda install -c conda-forge opencv
@@ -762,7 +707,7 @@ def align_image(im1, im2):
     # Show final results
     return im2_aligned
 
-
+#%%
 def combine_BiasDark(file_list, c_method, 
         base_dir_name, master_file_dir_name, current_dir_name) :
         
@@ -794,6 +739,7 @@ def combine_BiasDark(file_list, c_method,
 
     return 0
 
+#%%
 def combine_Flat(file_list, c_method, 
         base_dir_name, master_file_dir_name, current_dir_name, chl) :
         
@@ -825,7 +771,7 @@ def combine_Flat(file_list, c_method,
 
     return 0
 
-
+#%%
 def combine_master_file(file_list, c_method, 
         base_dir_name, master_file_dir_name, current_dir_name) :
         
@@ -857,6 +803,7 @@ def combine_master_file(file_list, c_method,
 
     return 0
 
+#%%
 def combine_master_flat_file(file_list, c_method, 
          base_dir_name, master_file_dir_name, current_dir_name, chl) :
         
