@@ -155,7 +155,8 @@ for fullname in fullnames[:] :
                                       'change HEADER YBINNING {0}'.format(int(hdul[0].header['YPIXSZ'] / 5.4)))
 
 
-                elif "16803" in hdul[0].header['INSTRUME'] :
+                elif "16803" in hdul[0].header['INSTRUME'] \
+                    or "16803" in hdul[0].header['CCDNAME']:
                     hdul[0].header['GAIN'] = gains["STX-16803"]
                     hdul[0].header.append('COMMENT',
                                       'change HEADER GAIN {0}'.format(gains["STX-16803"]),
@@ -170,7 +171,7 @@ for fullname in fullnames[:] :
                                       'change HEADER RDNOISE {0}'.format(rdnoises["STX-16803"]),
                                       'change HEADER RDNOISE {0}'.format(rdnoises["STX-16803"]))
 
-                    if 'XPIXSZ' in hdul[0].header['INSTRUME'] :
+                    if 'XPIXSZ' in hdul[0].header :
                         binning = int(hdul[0].header['XPIXSZ'] / 9)
                         
                     elif hdul[0].header['NAXIS1'] == 4096 or hdul[0].header['NAXIS2'] == 4096 :
