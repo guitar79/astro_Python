@@ -74,9 +74,7 @@ if not os.path.exists('{0}'.format(log_dir)):
 #######################################################
 # 
 BASEDIR = "../RnE_2022/"
-#BASEDIR = Path("..\RnE_2022\KLEOPATRA_Light_-_2022-11-04_-_RiLA600_STX-16803_-_2bin\reduced\solved\")
-BASEDIR = Path("../RnE_2022/KLEOPATRA_Light_-_2022-11-04_-_RiLA600_STX-16803_-_2bin/reduced/solved/")
-BASEDIR = "../RnE_2022/KLEOPATRA_Light_-_2022-11-04_-_RiLA600_STX-16803_-_2bin/"
+BASEDIR = "../RnE_2022/RiLA600_STX-16803_2bin/"
 
 c_method = 'median'
 master_dir = "master_files_ys"
@@ -109,178 +107,196 @@ R_OUT = 6*FWHM_INIT  # Outer radius of annulus
 
 
 #%%
-# BASEDIRs = sorted(Python_utilities.getFullnameListOfsubDir(BASEDIR))
-# print ("BASEDIRs: {}".format(BASEDIRs))
+BASEDIRs = sorted(Python_utilities.getFullnameListOfsubDir(BASEDIR))
+print ("BASEDIRs: {}".format(BASEDIRs))
 
-# for BASEDIR in BASEDIRs :
-#     print ("Starting...\n{}".format(BASEDIR))
+for BASEDIR in BASEDIRs[:2]:
+    print ("Starting...\n{}".format(BASEDIR))
 
-#     BASEDIR = Path(BASEDIR)
+    BASEDIR = Path(BASEDIR)
+    RESULTDIR = BASEDIR / phot_result_dir
+    SOLVEDDIR = BASEDIR / solved_dir
+
+    if not RESULTDIR.exists():
+        os.makedirs("{}".format(str(RESULTDIR)))
+        print("{} is created...".format(str(RESULTDIR)))
 
 
-#%%
-print ("Starting...\n{}".format(BASEDIR))
-BASEDIR = Path("../RnE_2022/KLEOPATRA_Light_-_2022-11-04_-_RiLA600_STX-16803_-_2bin/")
-RESULTDIR = BASEDIR / phot_result_dir
-SOLVEDDIR = BASEDIR / solved_dir
-summary = yfu.make_summary(SOLVEDDIR/"*.fits")
-#print(summary)
-print("len(summary):", len(summary))
-print(summary["file"][0])
+    #%%
+    summary = yfu.make_summary(SOLVEDDIR/"*.fits")
+    #print(summary)
+    print("len(summary):", len(summary))
+    print(summary["file"][0])
 
-fname = summary["file"][10]
-fname = Path(fname)
-#%%
-if not RESULTDIR.exists():
-    os.makedirs("{}".format(str(RESULTDIR)))
-    print("{} is created...".format(str(RESULTDIR)))
+    #%%
+    n = 0
+    for fname in summary["file"][:1]:
+        #fpath = summary["file"][1]
+        n += 1
+        print('#'*40,
+            "\n{2:.01f}%  ({0}/{1}) {3}".format(n, len(summary["file"]), 
+                                                (n/len(summary["file"]))*100, os.path.basename(__file__)))
+        print ("Starting...\nfname: {}".format(fname))
+        
+        fpath = Path(fname)
 
-#%%
-# n = 0
-# for fullname in fullnames_light[:]:
-# #fullname = fullnames_light[1]
-#     n += 1
-#     print('#'*40,
-#         "\n{2:.01f}%  ({0}/{1}) {3}".format(n, len(fullnames_light), 
-#                                             (n/len(fullnames_light))*100, os.path.basename(__file__)))
-#     print ("Starting...\nfullname: {}".format(fullname))
+        # load as ccd
+        ccd = yfu.load_ccd(fpath, 
+                        unit="adu")
 
-#%%
-# load as ccd
-ccd = yfu.load_ccd(fname, 
-                unit="adu")
+        #%%
+        r_fov = yfu.fov_radius(ccd.header+ccd.wcs.to_header())
+        print(r_fov)
+        ps1 = ypu.PanSTARRS1(ccd.wcs.wcs.crval[0]*u.deg, 
+                            ccd.wcs.wcs.crval[1]*u.deg, 
+                            radius = r_fov,
+                            column_filters = {"rmag":"7.0..15.0", 
+                                            "e_rmag":"<0.10", 
+                                            "nr":">5"})
 
-#%%
-r_fov = yfu.fov_radius(ccd.header+ccd.wcs.to_header())
-print(r_fov)
-ps1 = ypu.PanSTARRS1(ccd.wcs.wcs.crval[0]*u.deg, 
-                    ccd.wcs.wcs.crval[1]*u.deg, 
-                    radius = r_fov,
-                    column_filters = {"rmag":"7.0..15.0", "e_rmag":"<0.10", "nr":">5"})
+        isnear = ypu.organize_ps1_and_isnear(
+                            ps1, 
+                            header = ccd.header+ccd.wcs.to_header(), 
+                            bezel = 5*FWHM_INIT*PIX2ARCSEC.value,
+                            nearby_obj_minsep= 5 *FWHM_INIT*PIX2ARCSEC.value,
+                            group_crit_separation = 6*FWHM_INIT
+                        )
+        df_stars = ps1.queried.to_pandas()
+        df_stars.to_csv("{}_stars.csv".format(str(RESULTDIR / fpath.stem)))
+        print("df_stars:", df_stars)
 
-isnear = ypu.organize_ps1_and_isnear(
-                    ps1, 
-                    header = ccd.header+ccd.wcs.to_header(), 
-                    bezel = 5*FWHM_INIT*PIX2ARCSEC.value,
-                    nearby_obj_minsep= 5 *FWHM_INIT*PIX2ARCSEC.value,
-                    group_crit_separation = 6*FWHM_INIT
-                )
-df_stars = ps1.queried.to_pandas()
-df_stars.to_csv("{}_stars.csv".format(str(RESULTDIR / fname.stem)))
-print("df_stars:", df_stars)
+        #%%
+        fig, axs = plt.subplots(1, 1, 
+                    figsize=(10, 10), 
+                    sharex=False, 
+                    sharey=False, 
+                    gridspec_kw=None)
 
-#%%
-fig, axs = plt.subplots(1, 1, 
-            figsize=(10, 10), 
-            sharex=False, 
-            sharey=False, 
-            gridspec_kw=None)
+        yvu.norm_imshow(axs, ccd, zscale=True)
+        _phot_stars = []
 
-yvu.norm_imshow(axs, ccd, zscale=True)
-_phot_stars = []
+        for i, row in df_stars.iterrows():
+            pos_star = SkyCoord(row["RAJ2000"], row["DEJ2000"], **SKYC_KW).to_pixel(ccd.wcs)
+            ap = CAp([pos_star[0], pos_star[1]], r=R_AP)
+            an = CAn([pos_star[0], pos_star[1]], r_in=R_IN, r_out=R_OUT)
+            _phot_star = ypu.apphot_annulus(ccd, ap, an, error=yfu.errormap(ccd))
+            _phot_star["Rmag"] = row["Rmag"]
+            _phot_star["e_Rmag"] = row["e_Rmag"]
+            _phot_star["grcolor"] = row["grcolor"]
+            _phot_star["e_grcolor"] = row["e_grcolor"]
+            _phot_star["id"] = i
+            _phot_star["objID"] = int(row["objID"])
+            _phot_stars.append(_phot_star)
+            axs.text(pos_star[0]+10, pos_star[1]+10, f"star {i}", fontsize=8)
+            ap.plot(axs, color="orange")
+            an.plot(axs, color="w")
 
-for i, row in df_stars.iterrows():
-    pos_star = SkyCoord(row["RAJ2000"], row["DEJ2000"], **SKYC_KW).to_pixel(ccd.wcs)
-    ap = CAp([pos_star[0], pos_star[1]], r=R_AP)
-    an = CAn([pos_star[0], pos_star[1]], r_in=R_IN, r_out=R_OUT)
-    _phot_star = ypu.apphot_annulus(ccd, ap, an, error=yfu.errormap(ccd))
-    _phot_star["Rmag"] = row["Rmag"]
-    _phot_star["e_Rmag"] = row["e_Rmag"]
-    _phot_star["grcolor"] = row["grcolor"]
-    _phot_star["e_grcolor"] = row["e_grcolor"]
-    _phot_star["id"] = i
-    _phot_star["objID"] = int(row["objID"])
-    _phot_stars.append(_phot_star)
-    axs.text(pos_star[0]+10, pos_star[1]+10, f"star {i}", fontsize=8)
-    ap.plot(axs, color="orange")
-    an.plot(axs, color="w")
+        plt.tight_layout()
+        plt.savefig("{}_stars.png".format(str(RESULTDIR / fpath.stem)))
+        #plt.show()
 
-plt.tight_layout()
-plt.savefig("{}_stars.png".format(str(RESULTDIR / fname.stem)))
-plt.show();
+        #%%
+        for idx, row in df_stars.iterrows():
+            pos_star = SkyCoord(
+                                row["RAJ2000"], row["DEJ2000"], 
+                                **SKYC_KW
+                                ).to_pixel(ccd.wcs)
+            print("pos_star:", pos_star)
+            print("pos_star[0], pos_star[1] :", pos_star[0], pos_star[1])
 
-#%%
-# for i, row in df_stars.iterrows():
-#     pos_star = SkyCoord(row["RAJ2000"], row["DEJ2000"], **SKYC_KW).to_pixel(ccd.wcs)
+            #%%
+            #2. Loading and Cut Data
+            # star = df_stars.iloc[22]
+            # print("star:", star)
 
-#%%
-#2. Loading and Cut Data
-star = df_stars.iloc[22]
-print("star:", star)
+            # pos_targ_init = SkyCoord(
+            #                 #star["RA"], star["DEC"], 
+            #                 star["RAJ2000"], star["DEJ2000"],
+            #                 **SKYC_KW).to_pixel(ccd.wcs)
 
-pos_targ_init = SkyCoord(
-                #star["RA"], star["DEC"], 
-                star["RAJ2000"], star["DEJ2000"],
-                **SKYC_KW).to_pixel(ccd.wcs)
+            # print("pos_targ_init:", pos_targ_init)
+            # print("pos_targ_init[0], pos_targ_init[1] :", pos_targ_init[0], pos_targ_init[1])
+            #%%
+            cut_hdu = Cutout2D(
+                        data = ccd, 
+                        position = ([pos_star[0], pos_star[1]]), 
+                        size=(100,100)
+                        )
 
-print("pos_targ_init:", pos_targ_init)
-print("pos_targ_init[0], pos_targ_init[1] :", pos_targ_init[0], pos_targ_init[1])
-#%%
-cut_hdu = Cutout2D(
-            data=ccd, 
-            position=([pos_targ_init[0], pos_targ_init[1]]), 
-            size=(100,100))
+            #%%
+            fig, axs = plt.subplots(1, 1, 
+                                    figsize=(6, 6), 
+                                    sharex=False, 
+                                    sharey=False, 
+                                    gridspec_kw=None
+                                    )
+            yvu.zimshow(axs, cut_hdu.data)
+            plt.tight_layout()
+            plt.savefig("{}_star_{:02d}.png".format(str(RESULTDIR / fpath.stem), idx))
 
-#%%
-fig, axs = plt.subplots(1, 1, figsize=(6, 6), sharex=False, sharey=False, gridspec_kw=None)
-yvu.zimshow(axs, cut_hdu.data)
-plt.tight_layout()
+            #%%
+            avg, med, std = sigma_clipped_stats(cut_hdu.data)  # by default, 3-sigma 5-iteration.
+            thresh_3sig = med + 3 * std
+            mask_3sig = (cut_hdu.data < thresh_3sig)
+            center = centroid_com(
+                        data = cut_hdu.data, 
+                        mask=mask_3sig
+                        )
+            print("center:", center)
 
-#%%
-avg, med, std = sigma_clipped_stats(cut_hdu.data)  # by default, 3-sigma 5-iteration.
-thresh_3sig = med + 3 * std
-mask_3sig = (cut_hdu.data < thresh_3sig)
-center = centroid_com(
-            data = cut_hdu.data, 
-            mask=mask_3sig)
-print(center)
+            #%%
+            # 3. Finding Centroid
+            fig, axs = plt.subplots(1, 1, 
+                                    figsize=(6, 6), 
+                                    sharex=False, 
+                                    sharey=False, 
+                                    gridspec_kw=None
+                                    )
+            yvu.zimshow(axs, mask_3sig.astype(int))
+            yvu.zimshow(axs, cut_hdu.data, alpha=0.4)
+            axs.plot(*center, 'rx')
+            plt.tight_layout()
+            plt.savefig("{}_star_{:02d}_C.png".format(str(RESULTDIR / fpath.stem), idx))
+"""
+        #%%
+        #Putting Aperture and Annulus
+        fwhm = 4
+        r_ap = 2 * fwhm
+        r_in = 4 * fwhm
+        r_out = 6 * fwhm
+        ap = CAp(positions=center, r=r_ap)
+        an = CAn(positions=center, r_in=r_in, r_out=r_out)
 
-#%%
-# 3. Finding Centroid
-fig, axs = plt.subplots(1, 1, figsize=(6, 6), sharex=False, sharey=False, gridspec_kw=None)
-yvu.zimshow(axs, mask_3sig.astype(int))
-yvu.zimshow(axs, cut_hdu.data, alpha=0.4)
-axs.plot(*center, 'rx')
-plt.tight_layout()
+        fig, axs = plt.subplots(1, 1, 
+                        figsize=(6, 6), 
+                        sharex=False, 
+                        sharey=False, 
+                        gridspec_kw=None)
+        yvu.zimshow(axs, cut_hdu.data)
+        ap.plot(axs, color='r', lw=2)
+        an.plot(axs, color='w', lw=2)
+        axs.plot(*center, 'rx')
+        plt.tight_layout()
 
-#%%
-#Putting Aperture and Annulus
-fwhm = 4
-r_ap = 2 * fwhm
-r_in = 4 * fwhm
-r_out = 6 * fwhm
-ap = CAp(positions=center, r=r_ap)
-an = CAn(positions=center, r_in=r_in, r_out=r_out)
+        #%%
+        # 5. Estimating Sky
+        sky_mask = an.to_mask(method='center')
 
-fig, axs = plt.subplots(1, 1, 
-                figsize=(6, 6), 
-                sharex=False, 
-                sharey=False, 
-                gridspec_kw=None)
-yvu.zimshow(axs, cut_hdu.data)
-ap.plot(axs, color='r', lw=2)
-an.plot(axs, color='w', lw=2)
-axs.plot(*center, 'rx')
-plt.tight_layout()
+        try:  # prior to photutils 0.7
+            sky_vals = sky_mask[0].multiply(cut_hdu.data)
+        except TypeError:
+            sky_vals = sky_mask.multiply(cut_hdu.data)
+        #%%    
+        sky_vals = sky_vals[sky_vals > 0]
+        avg, med, std = sigma_clipped_stats(sky_vals, sigma=3, maxiters=10, std_ddof=1)
 
-#%%
-# 5. Estimating Sky
-sky_mask = an.to_mask(method='center')
+        if med - avg < 0.3 * std:
+            msky = med
+        else:
+            msky = 2.5 * med - 1.5 * avg
 
-try:  # prior to photutils 0.7
-    sky_vals = sky_mask[0].multiply(cut_hdu.data)
-except TypeError:
-    sky_vals = sky_mask.multiply(cut_hdu.data)
-#%%    
-sky_vals = sky_vals[sky_vals > 0]
-avg, med, std = sigma_clipped_stats(sky_vals, sigma=3, maxiters=10, std_ddof=1)
+        print(f"Sky estimation: {msky:.3f} +- {std:.3f}")
 
-if med - avg < 0.3 * std:
-    msky = med
-else:
-    msky = 2.5 * med - 1.5 * avg
-
-print(f"Sky estimation: {msky:.3f} +- {std:.3f}")
 #%%    
 fig, axs = plt.subplots(1, 1, 
                 figsize=(6, 6), 
@@ -340,3 +356,4 @@ phot["inst_mag"] = -2.5 * np.log10(phot["source_sum"] / ccd.header["EXPTIME"])
 print("phot:", phot)
 
 # %%
+"""

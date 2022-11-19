@@ -38,7 +38,6 @@ import numpy as np
 
 #######################################################
 # for log file
-
 log_dir = "logs/"
 log_file = "{}{}.log".format(log_dir, os.path.basename(__file__)[:-3])
 err_log_file = "{}{}_err.log".format(log_dir, os.path.basename(__file__)[:-3])
@@ -50,27 +49,35 @@ if not os.path.exists('{0}'.format(log_dir)):
 #%%
 #######################################################
 # read all files in base directory for processing
-BASEDIR = "../RnE_2022/KLEOPATRA_Light_-_2022-11-08_-_RiLA600_STX-16803_-_2bin/"
 BASEDIR = "../RnE_2022/"
+BASEDIR = "../RnE_2022/RiLA600_STX-16803_2bin/"
 
-master_dir = "master_files"
+c_method = "median"
+master_dir = "master_files_ys"
+reduced_dir = "reduced"
+solved_dir = "solved"
+DAOfinder_result = "DAOfinder_result"
 
 #%%
 BASEDIRs = sorted(Python_utilities.getFullnameListOfsubDir(BASEDIR))
-# BASEDIRs = [w for w in BASEDIRs \
-#                 if not (w.endswith("{}".format(master_dir)) \
-#                 or w.endswith(".fits"))]
 print ("BASEDIRs: {}".format(BASEDIRs))
-
 
 #%%
 for BASEDIR in BASEDIRs :
     # 디렉토리 하나씩 loop...
     print ("Starting...\n{}".format(BASEDIR))
 
+    BASEDIR = Path(BASEDIR)
+    
+    RESULTDIR = BASEDIR / DAOfinder_result
+    SOLVEDDIR = BASEDIR / solved_dir
+    MASTERDIR = BASEDIR / master_dir
+    REDUCEDDIR = BASEDIR / reduced_dir
+    MASTERDIR = BASEDIR / master_dir
+
     try : 
         #파일 목록을 DataFrame으로 만들어서 이용하자
-        summary = yfu.make_summary("{}/*.fit".format(BASEDIR))
+        summary = yfu.make_summary(REDUCEDDIR / "*.fits".format(BASEDIR))
                             #keywords = ["DATE-OBS", "FILTER", "OBJECT", "IMAGETYP"],  # header keywords; actually it is case-insensitive
                             #fname_option = 'name',  # 'file' column will contain only the name of the file (not full path)
                             #output = "{}summary.csv".format(BASEDIR),

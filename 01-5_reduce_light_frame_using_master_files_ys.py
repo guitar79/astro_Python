@@ -46,20 +46,17 @@ if not os.path.exists('{0}'.format(log_dir)):
 #######################################################
 # read all files in base directory for processing
 BASEDIR = "../RnE_2022/"
+BASEDIR = "../RnE_2022/RiLA600_STX-16803_2bin/"
 
-c_method = 'median'
+c_method = "median"
 master_dir = "master_files_ys"
 reduced_dir = "reduced"
 solved_dir = "solved"
+DAOfinder_result = "DAOfinder_result"
 
 #%%
+#%%
 BASEDIRs = sorted(Python_utilities.getFullnameListOfsubDir(BASEDIR))
-BASEDIRs = [w for w in BASEDIRs \
-        if not (w.endswith("{}/".format(master_dir)) \
-            or w.endswith("{}/".format(reduced_dir)) \
-            or w.endswith("{}/".format(solved_dir)) \
-                or w.endswith(".fits"))]
-
 print ("BASEDIRs: {}".format(BASEDIRs))
 
 #%%
@@ -67,14 +64,22 @@ for BASEDIR in BASEDIRs :
     print ("Starting...\n{}".format(BASEDIR))
 
     BASEDIR = Path(BASEDIR)
-    REDECEDDIR = BASEDIR / reduced_dir
+    
+    RESULTDIR = BASEDIR / DAOfinder_result
+    SOLVEDDIR = BASEDIR / solved_dir
+    MASTERDIR = BASEDIR / master_dir
+    REDUCEDDIR = BASEDIR / reduced_dir
+    MASTERDIR = BASEDIR / master_dir
 
-    if not REDECEDDIR.exists():
-        os.makedirs(str(REDECEDDIR))
-        print("{} is created...".format(str(REDECEDDIR)))
+    if not REDUCEDDIR.exists():
+        os.makedirs(str(REDUCEDDIR))
+        print("{} is created...".format(str(REDUCEDDIR)))
 
     #%%
     summary = yfu.make_summary(BASEDIR/"*.fit")
+    #print(summary)
+    print("len(summary):", len(summary))
+    print(summary["file"][0])
 
     df_light = summary.loc[summary["IMAGETYP"] == "LIGHT"].copy()
     df_light = df_light.reset_index(drop=True)
@@ -88,9 +93,9 @@ for BASEDIR in BASEDIRs :
             expt = ccd.header["EXPTIME"]
             red = yfu.ccdred(
                 ccd,
-                output=Path(f"{BASEDIR}/reduced/{fpath.stem}.fits"),
-                mdarkpath=str(BASEDIR/"master_files_ys/master_dark_{:.0f}sec.fits".format(expt)),
-                mflatpath=str(BASEDIR/"master_files_ys/master_flat_{}_norm.fits".format(filt.upper())),
+                output=Path(f"{REDUCEDDIR}/{fpath.stem}.fits"),
+                mdarkpath=str(MASTERDIR / "master_dark_{:.0f}sec.fits".format(expt)),
+                mflatpath=str(MASTERDIR / "master_flat_{}_norm.fits".format(filt.upper())),
                 # flat_norm_value=1,  # 1 = skip normalization, None = normalize by mean
                 overwrite=True
             )

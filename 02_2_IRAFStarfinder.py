@@ -4,7 +4,7 @@ Created on Thu Nov  8 23:15:44 2018
 
 @author: user
 
-이 파일은 DAO starfinder로 별을 찾아 정리해 줍니다.
+이 파일은 IRAF starfinder로 별을 찾아 정리해 줍니다.
 """
 #%%
 import os
@@ -68,7 +68,7 @@ c_method = 'median'
 master_dir = "master_files_ys"
 reduced_dir = "reduced"
 solved_dir = "solved"
-STARfinder_result_dir = "DAOfinder_result"
+STARfinder_result_dir = "IRAFfinder_result"
 
 #%%
 BASEDIRs = sorted(Python_utilities.getFullnameListOfsubDir(BASEDIR))
@@ -93,7 +93,7 @@ for BASEDIR in BASEDIRs :
     #%%
     n = 0
     for fname in summary["file"]:
-    #fpath = summary["file"][1]
+        #fpath = summary["file"][1]
         n += 1
         print('#'*40,
             "\n{2:.01f}%  ({0}/{1}) {3}".format(n, len(summary["file"]), 
@@ -117,63 +117,65 @@ for BASEDIR in BASEDIRs :
 
         #%%
         try:
+            
             FWHM   = 6
-
-            DAOfind = DAOStarFinder(
+            
+            IRAFfind = IRAFStarFinder(
                                     fwhm = FWHM, 
-                                    threshold = thresh, 
-                                    sharplo = 0.2, sharphi = 1.0,  # default values: sharplo=0.2, sharphi=1.0,
-                                    roundlo = -1.0, roundhi = 1.0,  # default values -1 and +1
-                                    sigma_radius = 1.5,           # default values 1.5
-                                    ratio = 1.0,                  # 1.0: circular gaussian
-                                    exclude_border = True         # To exclude sources near edges
+                                    threshold = thresh,
+                                    sigma_radius = 1.5, minsep_fwhm = 2.5,  # default values: sigma_radius=1.5, minsep_fwhm=2.5,
+                                    sharplo = 0.5, sharphi = 2.0,   # default values: sharplo=0.5, sharphi=2.0,
+                                    roundlo = 0.0, roundhi = 0.2,   # default values: roundlo=0.0, roundhi=0.2,
+                                    sky = None,                     # default values: sky=None
+                                    exclude_border = True  # default values: exclude_border=False
                                     )
-            # The DAOStarFinder object ("DAOfind") gets at least one input: the image.
+                                
+            # The IRAFStarFinder object ("IRAFfind") gets at least one input: the image.
             # Then it returns the astropy table which contains the aperture photometry results:
-            DAOfound = DAOfind(img)
-            print('{} star(s) founded by DAOStarFinder...'.format(len(DAOfound)))
+            IRAFfound = IRAFfind(img)
+            print('{} star(s) founded by IRAFStarFinder...'.format(len(IRAFfound)))
 
             #%%
-            if len(DAOfound)==0 :
-                print ('No star was founded by DAOStarFinder...\n'*3)
+            if len(IRAFfound)==0 :
+                print ('No star was founded by IRAFStarFinder...\n'*3)
             else : 
 
                 # Use the object "found" for aperture photometry:
-                N_stars = len(DAOfound)
-                print('{} star(s) founded by DAOStarFinder...'.format(N_stars))
-                DAOfound.pprint(max_width=1800)
+                N_stars = len(IRAFfound)
+                print('{} star(s) founded by IRAFStarFinder...'.format(N_stars))
+                IRAFfound.pprint(max_width=1800)
 
                 # save XY coordinates:
-                DAOfound.write("{}/{}_DAOStarfinder_fwhm{}.csv".\
+                IRAFfound.write("{}/{}_IRAFStarfinder_fwhm{}.csv".\
                                 format(RESULTDIR, fpath.stem, FWHM), 
                                 overwrite = True,
                                 format='ascii.fast_csv')
-                #%%
-                print('type(DAOfound): {}'.format(type(DAOfound)))
-                print('DAOfound: {}'.format(DAOfound))
 
-                DAOcoord = np.array([DAOfound['xcentroid'], DAOfound['ycentroid']]).T
-                print('type(DAOcoord): {}'.format(type(DAOcoord)))
-                print('DAOcoord: {}'.format(DAOcoord))
+                print('type(IRAFfound): {}'.format(type(IRAFfound)))
+                print('IRAFfound: {}'.format(IRAFfound))
+
+                IRAFcoord = np.array([IRAFfound['xcentroid'], IRAFfound['ycentroid']]).T
+                print('type(IRAFcoord): {}'.format(type(IRAFcoord)))
+                print('IRAFcoord: {}'.format(IRAFcoord))
 
                 #%%
                 # Save apertures as circular, 4 pixel radius, at each (X, Y)
-                DAOapert = CAp((DAOcoord), r=4.)  
-                print('type(DAOapert): {}'.format(type(DAOapert)))
-                print('DAOapert: {}'.format(DAOapert))
-                print('dir(DAOapert): {}'.format(dir(DAOapert)))
+                IRAFapert = CAp((IRAFcoord), r=4.)  
+                print('type(IRAFapert): {}'.format(type(IRAFapert)))
+                print('IRAFapert: {}'.format(IRAFapert))
+                print('dir(IRAFapert): {}'.format(dir(IRAFapert)))
 
-                DAOannul = CAn(positions = (DAOcoord), r_in = 4*FWHM, r_out = 6*FWHM) 
-                print('type(DAOannul): {}'.format(type(DAOannul)))
-                print('DAOannul: {}'.format(DAOannul))
-                
+                IRAFannul = CAn(positions = (IRAFcoord), r_in = 4*FWHM, r_out = 6*FWHM) 
+                print('type(IRAFannul): {}'.format(type(IRAFannul)))
+                print('IRAFannul: {}'.format(IRAFannul))
+
                 #%%
                 plt.figure(figsize=(20,20))
                 ax = plt.gca()
 
                 ###########################################################
                 # input some text for explaination. 
-                plt.title("Result of DAOStarfinder", fontsize = 28, 
+                plt.title("Result of IRAFStarfinder", fontsize = 28, 
                     ha='center')
 
                 plt.annotate('filename: {}'.format(fpath.stem), fontsize=10,
@@ -188,7 +190,7 @@ for BASEDIR in BASEDIRs :
                     xy=(1, 0), xytext=(-1100, -40), va='top', ha='left',
                     xycoords='axes fraction', textcoords='offset points')
 
-                plt.annotate('Number of star(s): {}'.format(len(DAOfound)), fontsize=10,
+                plt.annotate('Number of star(s): {}'.format(len(IRAFfound)), fontsize=10,
                     xy=(1, 0), xytext=(-1100, -50), va='top', ha='left',
                     xycoords='axes fraction', textcoords='offset points')
 
@@ -199,20 +201,21 @@ for BASEDIR in BASEDIRs :
                                 origin='lower'
                                 )
 
-                DAOannul.plot(color='red', lw=2., alpha=0.4)
+                IRAFannul.plot(color='red', lw=2., alpha=0.4)
                 
                 divider = make_axes_locatable(ax)
                 cax = divider.append_axes("right", size="3%", pad=0.05)
                 plt.colorbar(im, cax=cax)
 
                 plt.savefig(
-                            "{}/{}_DAOStarfinder_fwhm{}.png".\
+                            "{}/{}_IRAFStarfinder_fwhm{}.png".\
                                 format(RESULTDIR, fpath.stem, FWHM)
                             )
-                print("{}/{}_DAOStarfinder_fwhm{}.png is created...".\
+                print("{}/{}_IRAFStarfinder_fwhm{}.png is created...".\
                                 format(RESULTDIR, fpath.stem, FWHM))
                 #plt.show()
                 plt.close() 
 
         except Exception as err:
             print('{0} with {1} '.format(err, fpath.name))
+    

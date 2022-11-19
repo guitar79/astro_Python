@@ -38,7 +38,6 @@ import ysvisutilpy as yvu
 #%%
 #######################################################
 # for log file
-
 log_dir = "logs/"
 log_file = "{}{}.log".format(log_dir, os.path.basename(__file__)[:-3])
 err_log_file = "{}{}_err.log".format(log_dir, os.path.basename(__file__)[:-3])
@@ -47,41 +46,39 @@ print ("err_log_file: {}".format(err_log_file))
 if not os.path.exists('{0}'.format(log_dir)):
     os.makedirs('{0}'.format(log_dir))
 #######################################################
-
-
+#%%
 #######################################################
 # read all files in base directory for processing
 BASEDIR = "../RnE_2022/"
+BASEDIR = "../RnE_2022/RiLA600_STX-16803_2bin/"
 
-c_method = 'median'
+c_method = "median"
 master_dir = "master_files_ys"
 reduced_dir = "reduced"
 solved_dir = "solved"
+DAOfinder_result = "DAOfinder_result"
 
 #%%
 BASEDIRs = sorted(Python_utilities.getFullnameListOfsubDir(BASEDIR))
-print ("BASEDIRs1: {}".format(BASEDIRs))
-BASEDIRs = [w for w in BASEDIRs \
-        if not (w.endswith("{}/".format(master_dir)) \
-            or w.endswith("{}/".format(reduced_dir)) \
-            or w.endswith("{}/".format(solved_dir)) \
-                or w.endswith(".fits"))]
-print ("BASEDIRs2: {}".format(BASEDIRs))
-
-#%%
-#BASEDIR = Path("../RnE_2022/KLEOPATRA_Light_-_2022-11-04_-_RiLA600_STX-16803_-_2bin/")
-
+print ("BASEDIRs: {}".format(BASEDIRs))
 
 #%%
 for BASEDIR in BASEDIRs :
     print ("Starting...\n{}".format(BASEDIR))
 
     BASEDIR = Path(BASEDIR)
+    
+    RESULTDIR = BASEDIR / DAOfinder_result
+    SOLVEDDIR = BASEDIR / solved_dir
+    MASTERDIR = BASEDIR / master_dir
+    REDUCEDDIR = BASEDIR / reduced_dir
+    MASTERDIR = BASEDIR / master_dir
 
-    if not (BASEDIR/solved_dir).exists():
-        os.makedirs(str((BASEDIR/solved_dir)))
+    if not SOLVEDDIR.exists():
+        os.makedirs("{}".format(str(SOLVEDDIR)))
+        print("{} is created...".format(str(SOLVEDDIR)))
 
-    summary = yfu.make_summary(BASEDIR/reduced_dir/"*.fits")
+    summary = yfu.make_summary(REDUCEDDIR / "*.fits")
 
     df_light = summary.loc[summary["IMAGETYP"] == "LIGHT"].copy()
     df_light = df_light.reset_index(drop=True)
@@ -99,7 +96,7 @@ for BASEDIR in BASEDIRs :
 
         #astro_utilities.KevinSolver(row["file"], solved_dir)
         #astro_utilities.AstrometrySolver(df_light["file"][0], BASEDIR/solved_dir)
-        solved = astro_utilities.AstrometrySolver(row["file"], str(BASEDIR/solved_dir))
+        solved = astro_utilities.AstrometrySolver(row["file"], str(SOLVEDDIR))
         #astro_utilities.AstrometrySolver(row["file"], "../{}".format(solved_dir))
                 
     # #############################################################################
