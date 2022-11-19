@@ -260,5 +260,6 @@ dependencies:
     - opencv-python==4.5.4.60
     - photutils==1.4.0
     - pyvo==1.4
+    - seaborn==0.12.1
     - sep==1.2.1
 prefix: /home/guitar79/anaconda3/envs/astro_Python_ubuntu_env
