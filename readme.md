@@ -15,7 +15,7 @@ conda activate astro_Python_win_env
 deactivate
 
 ## install module
-conda install astropy pymysql
+conda install astropy pymysql seaborn
 conda install -c conda-forge ccdproc xarray
 pip install opencv-python photutils astroquery
 
@@ -51,7 +51,7 @@ conda activate astro_Python_ubuntu_env
 conda deactivate
 
 # install module
-conda install astropy pymysql
+conda install astropy pymysql seaborn
 conda install -c conda-forge ccdproc xarray
 pip install opencv-python photutils astroquery
 

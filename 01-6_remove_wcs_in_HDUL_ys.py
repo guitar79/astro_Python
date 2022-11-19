@@ -77,7 +77,7 @@ for BASEDIR in BASEDIRs :
 
     try : 
         #파일 목록을 DataFrame으로 만들어서 이용하자
-        summary = yfu.make_summary(REDUCEDDIR / "*.fits".format(BASEDIR))
+        summary = yfu.make_summary(REDUCEDDIR / "*.fits")
                             #keywords = ["DATE-OBS", "FILTER", "OBJECT", "IMAGETYP"],  # header keywords; actually it is case-insensitive
                             #fname_option = 'name',  # 'file' column will contain only the name of the file (not full path)
                             #output = "{}summary.csv".format(BASEDIR),

@@ -87,132 +87,133 @@ for BASEDIR in BASEDIRs :
 
     summary = yfu.make_summary(SOLVEDDIR / "*.fits")
     #print(summary)
-    print("len(summary):", len(summary))
-    print(summary["file"][0])
+    #print("len(summary):", len(summary))
+    #print(summary["file"][0])
 
     #%%
-    n = 0
-    for fname in summary["file"]:
-    #fpath = summary["file"][1]
-        n += 1
-        print('#'*40,
-            "\n{2:.01f}%  ({0}/{1}) {3}".format(n, len(summary["file"]), 
-                                                (n/len(summary["file"]))*100, os.path.basename(__file__)))
-        print ("Starting...\nfpath: {}".format(fpath))
-        
-        fpath = Path(fname)
-        hdul = fits.open(fpath)
-        hdr = hdul[0].header
-        img = hdul[0].data
-        print("img: {}".format(img))
-        print("img.shape: {}".format(img.shape))
+    if len(summary) != 0:
+        n = 0
+        for fname in summary["file"]:
+        #fpath = summary["file"][1]
+            n += 1
+            print('#'*40,
+                "\n{2:.01f}%  ({0}/{1}) {3}".format(n, len(summary["file"]), 
+                                                    (n/len(summary["file"]))*100, os.path.basename(__file__)))
+            print ("Starting...\nfpath: {}".format(fname))
+            
+            fpath = Path(fname)
+            hdul = fits.open(fpath)
+            hdr = hdul[0].header
+            img = hdul[0].data
+            print("img: {}".format(img))
+            print("img.shape: {}".format(img.shape))
 
-        # Set WCS and print for your information
-        w = WCS(hdr)
-        print("WCS: {}".format(w))
+            # Set WCS and print for your information
+            w = WCS(hdr)
+            print("WCS: {}".format(w))
 
-        thresh = detect_threshold(data=img, nsigma=3)
-        thresh = thresh[0][0]
-        print('detect_threshold', thresh)
-
-        #%%
-        try:
-            FWHM   = 6
-
-            DAOfind = DAOStarFinder(
-                                    fwhm = FWHM, 
-                                    threshold = thresh, 
-                                    sharplo = 0.2, sharphi = 1.0,  # default values: sharplo=0.2, sharphi=1.0,
-                                    roundlo = -1.0, roundhi = 1.0,  # default values -1 and +1
-                                    sigma_radius = 1.5,           # default values 1.5
-                                    ratio = 1.0,                  # 1.0: circular gaussian
-                                    exclude_border = True         # To exclude sources near edges
-                                    )
-            # The DAOStarFinder object ("DAOfind") gets at least one input: the image.
-            # Then it returns the astropy table which contains the aperture photometry results:
-            DAOfound = DAOfind(img)
-            print('{} star(s) founded by DAOStarFinder...'.format(len(DAOfound)))
+            thresh = detect_threshold(data=img, nsigma=3)
+            thresh = thresh[0][0]
+            print('detect_threshold', thresh)
 
             #%%
-            if len(DAOfound)==0 :
-                print ('No star was founded by DAOStarFinder...\n'*3)
-            else : 
+            try:
+                FWHM   = 6
 
-                # Use the object "found" for aperture photometry:
-                N_stars = len(DAOfound)
-                print('{} star(s) founded by DAOStarFinder...'.format(N_stars))
-                DAOfound.pprint(max_width=1800)
-
-                # save XY coordinates:
-                DAOfound.write("{}/{}_DAOStarfinder_fwhm{}.csv".\
-                                format(RESULTDIR, fpath.stem, FWHM), 
-                                overwrite = True,
-                                format='ascii.fast_csv')
-                #%%
-                print('type(DAOfound): {}'.format(type(DAOfound)))
-                print('DAOfound: {}'.format(DAOfound))
-
-                DAOcoord = np.array([DAOfound['xcentroid'], DAOfound['ycentroid']]).T
-                print('type(DAOcoord): {}'.format(type(DAOcoord)))
-                print('DAOcoord: {}'.format(DAOcoord))
+                DAOfind = DAOStarFinder(
+                                        fwhm = FWHM, 
+                                        threshold = thresh, 
+                                        sharplo = 0.2, sharphi = 1.0,  # default values: sharplo=0.2, sharphi=1.0,
+                                        roundlo = -1.0, roundhi = 1.0,  # default values -1 and +1
+                                        sigma_radius = 1.5,           # default values 1.5
+                                        ratio = 1.0,                  # 1.0: circular gaussian
+                                        exclude_border = True         # To exclude sources near edges
+                                        )
+                # The DAOStarFinder object ("DAOfind") gets at least one input: the image.
+                # Then it returns the astropy table which contains the aperture photometry results:
+                DAOfound = DAOfind(img)
+                print('{} star(s) founded by DAOStarFinder...'.format(len(DAOfound)))
 
                 #%%
-                # Save apertures as circular, 4 pixel radius, at each (X, Y)
-                DAOapert = CAp((DAOcoord), r=4.)  
-                print('type(DAOapert): {}'.format(type(DAOapert)))
-                print('DAOapert: {}'.format(DAOapert))
-                print('dir(DAOapert): {}'.format(dir(DAOapert)))
+                if len(DAOfound)==0 :
+                    print ('No star was founded by DAOStarFinder...\n'*3)
+                else : 
 
-                DAOannul = CAn(positions = (DAOcoord), r_in = 4*FWHM, r_out = 6*FWHM) 
-                print('type(DAOannul): {}'.format(type(DAOannul)))
-                print('DAOannul: {}'.format(DAOannul))
-                
-                #%%
-                plt.figure(figsize=(20,20))
-                ax = plt.gca()
+                    # Use the object "found" for aperture photometry:
+                    N_stars = len(DAOfound)
+                    print('{} star(s) founded by DAOStarFinder...'.format(N_stars))
+                    DAOfound.pprint(max_width=1800)
 
-                ###########################################################
-                # input some text for explaination. 
-                plt.title("Result of DAOStarfinder", fontsize = 28, 
-                    ha='center')
+                    # save XY coordinates:
+                    DAOfound.write("{}/{}_DAOStarfinder_fwhm{}.csv".\
+                                    format(RESULTDIR, fpath.stem, FWHM), 
+                                    overwrite = True,
+                                    format='ascii.fast_csv')
+                    #%%
+                    print('type(DAOfound): {}'.format(type(DAOfound)))
+                    print('DAOfound: {}'.format(DAOfound))
 
-                plt.annotate('filename: {}'.format(fpath.stem), fontsize=10,
-                    xy=(1, 0), xytext=(-500, -40), va='top', ha='left',
-                    xycoords='axes fraction', textcoords='offset points')
-                            
-                plt.annotate('FWHM: {}'.format(FWHM), fontsize=10,
-                    xy=(1, 0), xytext=(-1100, -30), va='top', ha='left',
-                    xycoords='axes fraction', textcoords='offset points')
+                    DAOcoord = np.array([DAOfound['xcentroid'], DAOfound['ycentroid']]).T
+                    print('type(DAOcoord): {}'.format(type(DAOcoord)))
+                    print('DAOcoord: {}'.format(DAOcoord))
+
+                    #%%
+                    # Save apertures as circular, 4 pixel radius, at each (X, Y)
+                    DAOapert = CAp((DAOcoord), r=4.)  
+                    print('type(DAOapert): {}'.format(type(DAOapert)))
+                    print('DAOapert: {}'.format(DAOapert))
+                    print('dir(DAOapert): {}'.format(dir(DAOapert)))
+
+                    DAOannul = CAn(positions = (DAOcoord), r_in = 4*FWHM, r_out = 6*FWHM) 
+                    print('type(DAOannul): {}'.format(type(DAOannul)))
+                    print('DAOannul: {}'.format(DAOannul))
                     
-                plt.annotate('Sky threshold: {:02f}'.format(thresh), fontsize=10,
-                    xy=(1, 0), xytext=(-1100, -40), va='top', ha='left',
-                    xycoords='axes fraction', textcoords='offset points')
+                    #%%
+                    plt.figure(figsize=(20,20))
+                    ax = plt.gca()
 
-                plt.annotate('Number of star(s): {}'.format(len(DAOfound)), fontsize=10,
-                    xy=(1, 0), xytext=(-1100, -50), va='top', ha='left',
-                    xycoords='axes fraction', textcoords='offset points')
+                    ###########################################################
+                    # input some text for explaination. 
+                    plt.title("Result of DAOStarfinder", fontsize = 28, 
+                        ha='center')
 
-                im = plt.imshow(img, 
-                                vmin = thresh, 
-                                vmax = thresh * 3,
-                                #zscale=True,
-                                origin='lower'
+                    plt.annotate('filename: {}'.format(fpath.stem), fontsize=10,
+                        xy=(1, 0), xytext=(-500, -40), va='top', ha='left',
+                        xycoords='axes fraction', textcoords='offset points')
+                                
+                    plt.annotate('FWHM: {}'.format(FWHM), fontsize=10,
+                        xy=(1, 0), xytext=(-1100, -30), va='top', ha='left',
+                        xycoords='axes fraction', textcoords='offset points')
+                        
+                    plt.annotate('Sky threshold: {:02f}'.format(thresh), fontsize=10,
+                        xy=(1, 0), xytext=(-1100, -40), va='top', ha='left',
+                        xycoords='axes fraction', textcoords='offset points')
+
+                    plt.annotate('Number of star(s): {}'.format(len(DAOfound)), fontsize=10,
+                        xy=(1, 0), xytext=(-1100, -50), va='top', ha='left',
+                        xycoords='axes fraction', textcoords='offset points')
+
+                    im = plt.imshow(img, 
+                                    vmin = thresh, 
+                                    vmax = thresh * 3,
+                                    #zscale=True,
+                                    origin='lower'
+                                    )
+
+                    DAOannul.plot(color='red', lw=2., alpha=0.4)
+                    
+                    divider = make_axes_locatable(ax)
+                    cax = divider.append_axes("right", size="3%", pad=0.05)
+                    plt.colorbar(im, cax=cax)
+
+                    plt.savefig(
+                                "{}/{}_DAOStarfinder_fwhm{}.png".\
+                                    format(RESULTDIR, fpath.stem, FWHM)
                                 )
+                    print("{}/{}_DAOStarfinder_fwhm{}.png is created...".\
+                                    format(RESULTDIR, fpath.stem, FWHM))
+                    #plt.show()
+                    plt.close() 
 
-                DAOannul.plot(color='red', lw=2., alpha=0.4)
-                
-                divider = make_axes_locatable(ax)
-                cax = divider.append_axes("right", size="3%", pad=0.05)
-                plt.colorbar(im, cax=cax)
-
-                plt.savefig(
-                            "{}/{}_DAOStarfinder_fwhm{}.png".\
-                                format(RESULTDIR, fpath.stem, FWHM)
-                            )
-                print("{}/{}_DAOStarfinder_fwhm{}.png is created...".\
-                                format(RESULTDIR, fpath.stem, FWHM))
-                #plt.show()
-                plt.close() 
-
-        except Exception as err:
-            print('{0} with {1} '.format(err, fpath.name))
+            except Exception as err:
+                print('{0} with {1} '.format(err, fpath.name))

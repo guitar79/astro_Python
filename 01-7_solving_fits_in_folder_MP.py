@@ -88,11 +88,13 @@ class Multiprocessor():
 #######################################################
 # read all files in base directory for processing
 BASEDIR = "../RnE_2022/"
+BASEDIR = "../RnE_2022/RiLA600_STX-16803_2bin/"
 
-c_method = 'median'
+c_method = "median"
 master_dir = "master_files_ys"
 reduced_dir = "reduced"
 solved_dir = "solved"
+DAOfinder_result = "DAOfinder_result"
 
 #%%
 BASEDIRs = sorted(Python_utilities.getFullnameListOfsubDir(BASEDIR))
@@ -110,10 +112,16 @@ for BASEDIR in BASEDIRs :
 
     BASEDIR = Path(BASEDIR)
 
-    if not (BASEDIR/solved_dir).exists():
-        os.makedirs(str(BASEDIR/solved_dir))
+    RESULTDIR = BASEDIR / DAOfinder_result
+    SOLVEDDIR = BASEDIR / solved_dir
+    MASTERDIR = BASEDIR / master_dir
+    REDUCEDDIR = BASEDIR / reduced_dir
+    MASTERDIR = BASEDIR / master_dir
 
-    summary = yfu.make_summary(BASEDIR/reduced_dir/"*.fits")
+    if not (SOLVEDDIR).exists():
+        os.makedirs(str(SOLVEDDIR))
+
+    summary = yfu.make_summary(REDUCEDDIR/"*.fits")
 
     df_light = summary.loc[summary["IMAGETYP"] == "LIGHT"].copy()
     df_light = df_light.reset_index(drop=True)
@@ -129,7 +137,7 @@ for BASEDIR in BASEDIRs :
         myMP.restart()
         for fullname  in fullnames[batch*num_batches:(batch+1)*num_batches]:
             #myMP.run(astro_utilities.KevinSolver, fullname, solved_dir)
-            myMP.run(astro_utilities.AstrometrySolver, fullname, str(BASEDIR/solved_dir))
+            myMP.run(astro_utilities.AstrometrySolver, fullname, str(SOLVEDDIR))
 
         print("Batch " + str(batch))
         #myMP.wait()

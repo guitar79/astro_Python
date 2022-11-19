@@ -257,103 +257,108 @@ for BASEDIR in BASEDIRs[:2]:
             axs.plot(*center, 'rx')
             plt.tight_layout()
             plt.savefig("{}_star_{:02d}_C.png".format(str(RESULTDIR / fpath.stem), idx))
-"""
-        #%%
-        #Putting Aperture and Annulus
-        fwhm = 4
-        r_ap = 2 * fwhm
-        r_in = 4 * fwhm
-        r_out = 6 * fwhm
-        ap = CAp(positions=center, r=r_ap)
-        an = CAn(positions=center, r_in=r_in, r_out=r_out)
 
-        fig, axs = plt.subplots(1, 1, 
-                        figsize=(6, 6), 
-                        sharex=False, 
-                        sharey=False, 
-                        gridspec_kw=None)
-        yvu.zimshow(axs, cut_hdu.data)
-        ap.plot(axs, color='r', lw=2)
-        an.plot(axs, color='w', lw=2)
-        axs.plot(*center, 'rx')
-        plt.tight_layout()
+            #%%
+            #Putting Aperture and Annulus
+            fwhm = 4
+            r_ap = 2 * fwhm
+            r_in = 4 * fwhm
+            r_out = 6 * fwhm
+            ap = CAp(positions=center, r=r_ap)
+            an = CAn(positions=center, r_in=r_in, r_out=r_out)
 
-        #%%
-        # 5. Estimating Sky
-        sky_mask = an.to_mask(method='center')
+            fig, axs = plt.subplots(2, 1, 
+                            figsize=(6, 6), 
+                            sharex=False, 
+                            sharey=False, 
+                            gridspec_kw=None)
+            yvu.zimshow(axs, cut_hdu.data)
+            ap.plot(axs, color='r', lw=2)
+            an.plot(axs, color='w', lw=2)
+            axs.plot(*center, 'rx')
+            plt.tight_layout()
+            
+            plt.savefig("{}_star_{:02d}_CAP.png".format(str(RESULTDIR / fpath.stem), idx))
 
-        try:  # prior to photutils 0.7
-            sky_vals = sky_mask[0].multiply(cut_hdu.data)
-        except TypeError:
-            sky_vals = sky_mask.multiply(cut_hdu.data)
-        #%%    
-        sky_vals = sky_vals[sky_vals > 0]
-        avg, med, std = sigma_clipped_stats(sky_vals, sigma=3, maxiters=10, std_ddof=1)
+            #%%
+            # 5. Estimating Sky
+            sky_mask = an.to_mask(method='center')
 
-        if med - avg < 0.3 * std:
-            msky = med
-        else:
-            msky = 2.5 * med - 1.5 * avg
+            try:  # prior to photutils 0.7
+                sky_vals = sky_mask[0].multiply(cut_hdu.data)
+            except TypeError:
+                sky_vals = sky_mask.multiply(cut_hdu.data)
+            #%%    
+            sky_vals = sky_vals[sky_vals > 0]
+            avg, med, std = sigma_clipped_stats(
+                                        sky_vals, 
+                                        sigma=3, 
+                                        maxiters=10, 
+                                        std_ddof=1
+                                        )
 
-        print(f"Sky estimation: {msky:.3f} +- {std:.3f}")
+            if med - avg < 0.3 * std:
+                msky = med
+            else:
+                msky = 2.5 * med - 1.5 * avg
 
-#%%    
-fig, axs = plt.subplots(1, 1, 
-                figsize=(6, 6), 
-                sharex=False, 
-                sharey=False, 
-                gridspec_kw=None)
+            print(f"Sky estimation: {msky:.3f} +- {std:.3f}")
 
-axs.hist(sky_vals, 50, histtype='step')
-axs.axvline(msky, ls=':', color='r')
-plt.tight_layout()
+            #%%    
+            fig, axs = plt.subplots(2, 2, 
+                            figsize=(6, 6), 
+                            sharex=False, 
+                            sharey=False, 
+                            gridspec_kw=None)
 
-#%%
-#%%
-fig, axs = plt.subplots(1, 1, 
-            figsize=(10, 10), 
-            sharex=False, 
-            sharey=False, 
-            gridspec_kw=None)
+            axs.hist(sky_vals, 50, histtype='step')
+            axs.axvline(msky, ls=':', color='r')
+            plt.tight_layout()
+            plt.savefig("{}_star_{:02d}_CSky.png".format(str(RESULTDIR / fpath.stem), idx))
+            
+            #%%
+            #6. Do Photometry
+            phot = apphot(
+                        data = cut_hdu.data, 
+                        apertures = ap
+                        )
+            phot["sky"] = msky
+            try:  # prior to photutils 0.7
+                phot["source_sum"] = phot["aperture_sum"] - ap.area() * phot["sky"]
+            except TypeError:
+                phot["source_sum"] = phot["aperture_sum"] - ap.area * phot["sky"]
+                
+            phot["inst_mag"] = -2.5 * np.log10(phot["source_sum"] / ccd.header["EXPTIME"])
 
-yvu.norm_imshow(axs, ccd, zscale=True)
-_phot_stars = []
+            print("phot:", phot)
 
-for i, row in df_stars.iterrows():
-    pos_star = SkyCoord(row["RAJ2000"], row["DEJ2000"], **SKYC_KW).to_pixel(ccd.wcs)
-    ap = CAp([pos_star[0], pos_star[1]], r=R_AP)
-    an = CAn([pos_star[0], pos_star[1]], r_in=R_IN, r_out=R_OUT)
-    _phot_star = ypu.apphot_annulus(ccd, ap, an, error=yfu.errormap(ccd))
-    _phot_star["Rmag"] = row["Rmag"]
-    _phot_star["e_Rmag"] = row["e_Rmag"]
-    _phot_star["grcolor"] = row["grcolor"]
-    _phot_star["e_grcolor"] = row["e_grcolor"]
-    _phot_star["id"] = i
-    _phot_star["objID"] = int(row["objID"])
-    _phot_stars.append(_phot_star)
-    axs.text(pos_star[0]+10, pos_star[1]+10, f"star {i}", fontsize=8)
-    ap.plot(axs, color="orange")
-    an.plot(axs, color="w")
+# #%%
+#             fig, axs = plt.subplots(1, 1, 
+#                         figsize=(6, 6), 
+#                         sharex=False, 
+#                         sharey=False, 
+#                         gridspec_kw=None)
 
-plt.tight_layout()
-plt.show();
+#             yvu.norm_imshow(axs, ccd, zscale=True)
+#             _phot_stars = []
+
+#             for i, row in df_stars.iterrows():
+#                 pos_star = SkyCoord(row["RAJ2000"], row["DEJ2000"], **SKYC_KW).to_pixel(ccd.wcs)
+#                 ap = CAp([pos_star[0], pos_star[1]], r=R_AP)
+#                 an = CAn([pos_star[0], pos_star[1]], r_in=R_IN, r_out=R_OUT)
+#                 _phot_star = ypu.apphot_annulus(ccd, ap, an, error=yfu.errormap(ccd))
+#                 _phot_star["Rmag"] = row["Rmag"]
+#                 _phot_star["e_Rmag"] = row["e_Rmag"]
+#                 _phot_star["grcolor"] = row["grcolor"]
+#                 _phot_star["e_grcolor"] = row["e_grcolor"]
+#                 _phot_star["id"] = i
+#                 _phot_star["objID"] = int(row["objID"])
+#                 _phot_stars.append(_phot_star)
+#                 axs.text(pos_star[0]+10, pos_star[1]+10, f"star {i}", fontsize=8)
+#                 ap.plot(axs, color="orange")
+#                 an.plot(axs, color="w")
+
+#             plt.tight_layout()
+#             plt.show()
 
 
-#%%
-#6. Do Photometry
-phot = apphot(
-            data = cut_hdu.data, 
-            apertures = ap
-            )
-phot["sky"] = msky
-try:  # prior to photutils 0.7
-    phot["source_sum"] = phot["aperture_sum"] - ap.area() * phot["sky"]
-except TypeError:
-    phot["source_sum"] = phot["aperture_sum"] - ap.area * phot["sky"]
-    
-phot["inst_mag"] = -2.5 * np.log10(phot["source_sum"] / ccd.header["EXPTIME"])
-
-print("phot:", phot)
-
-# %%
-"""
