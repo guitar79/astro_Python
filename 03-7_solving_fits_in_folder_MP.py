@@ -15,8 +15,6 @@ cd ~/Downloads/ysfitsutilpy && git pull && pip install -e .
 cd ~/Downloads/ysphouutilpy && git pull && pip install -e . 
 cd ~/Downloads/SNUO1Mpy && git pull && pip install -e . 
 
-이 파일은 base_dir 폴더 안에 있는 모든 fit 파일에 대해서 
-plate solving을 수행합니다.
 이미 solving이 완료된 파일은 건너뛰고, 
 먼조 ASTAP로 시도하고, 실패할 경우 Astrometry로 시도합니다.
 
@@ -53,6 +51,7 @@ if not os.path.exists('{0}'.format(log_dir)):
 
 #%%
 #######################################################
+# Multiprocessing
 from multiprocessing import Process, Queue
 class Multiprocessor():
     def __init__(self):
@@ -85,39 +84,44 @@ class Multiprocessor():
 #######################################################
 
 #%%
-#######################################################
-# read all files in base directory for processing
-base_dir = "../RnE_2022/"
-
 c_method = 'median'
 master_dir = "master_files_ys"
 reduced_dir = "reduced"
 solved_dir = "solved"
 
 #%%
-base_dirs = sorted(Python_utilities.getFullnameListOfsubDir(base_dir))
-print ("base_dirs1: {}".format(base_dirs))
-#base_dirs = ["{}{}".format(w, reduced_dir) for w in base_dirs]
-#print ("base_dirs2: {}".format(base_dirs))
+#######################################################
+# make list of all subdirectory 
+BASEDIR = "../RnE_2022/"
+BASEDIRs = sorted(Python_utilities.getFullnameListOfsubDir(BASEDIR))
+print ("BASEDIRs1: {}".format(BASEDIRs))
+
+#BASEDIRs = ["{}{}".format(w, reduced_dir) for w in BASEDIRs]
+#print ("BASEDIRs2: {}".format(BASEDIRs))
 
 #%%
-#base_dir = Path("../RnE_2022/KLEOPATRA_Light_-_2022-11-04_-_RiLA600_STX-16803_-_2bin/")
+#BASEDIR = Path("../RnE_2022/KLEOPATRA_Light_-_2022-11-04_-_RiLA600_STX-16803_-_2bin/")
 
 #%%
-for base_dir in base_dirs :
-    print ("Starting...\n{}".format(base_dir))
+for BASEDIR in BASEDIRs :
+    #loop of 
+    print ("Starting...\n{}".format(BASEDIR))
 
-    base_dir = Path(base_dir)
+    BASEDIR = Path(BASEDIR)
 
-    if not (base_dir/solved_dir).exists():
-        os.makedirs(str(base_dir/solved_dir))
+    # make directory if not extist...
+    if not (BASEDIR/solved_dir).exists():
+        os.makedirs(str(BASEDIR/solved_dir))
 
-    summary = yfu.make_summary(base_dir/reduced_dir/"*.fits")
-
+    # make summary of fits files
+    summary = yfu.make_summary(BASEDIR/reduced_dir/"*.fits")
+    print("type(summary):", type(summary))
+    # select subset of summary
     df_light = summary.loc[summary["IMAGETYP"] == "LIGHT"].copy()
     df_light = df_light.reset_index(drop=True)
     print("df_light:\n{}".format(df_light))
 
+    #start Multiprocessor
     myMP = Multiprocessor()
     num_cpu = 6
     values = []
@@ -128,7 +132,7 @@ for base_dir in base_dirs :
         myMP.restart()
         for fullname  in fullnames[batch*num_batches:(batch+1)*num_batches]:
             #myMP.run(astro_utilities.KevinSolver, fullname, solved_dir)
-            myMP.run(astro_utilities.AstrometrySolver, fullname, str(base_dir/solved_dir))
+            myMP.run(astro_utilities.AstrometrySolver, fullname, str(BASEDIR/solved_dir))
 
         print("Batch " + str(batch))
         #myMP.wait()
@@ -137,9 +141,9 @@ for base_dir in base_dirs :
         print("OK batch" + str(batch))  
 
     #############################################################################
-    #Check existence tmp file and rename ...
+    #Check existence solved file (*.new) and  rename to *.fits file...
     #############################################################################
-    summary_new = yfu.make_summary(base_dir/solved_dir/"*.new")
+    summary_new = yfu.make_summary(BASEDIR/solved_dir/"*.new")
     print ("summary_new: {}".format(summary_new))
 
     #%%

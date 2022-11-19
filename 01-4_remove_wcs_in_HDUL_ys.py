@@ -16,6 +16,8 @@ cd ~/Downloads/ysfitsutilpy && git pull && pip install -e .
 cd ~/Downloads/ysphouutilpy && git pull && pip install -e . 
 cd ~/Downloads/SNUO1Mpy && git pull && pip install -e . 
 
+이 파일은 fits file의 header에 있는 plate solving 관련 keyword를 삭제해 준다.
+
 """
 #%%
 from glob import glob
@@ -48,40 +50,34 @@ if not os.path.exists('{0}'.format(log_dir)):
 #%%
 #######################################################
 # read all files in base directory for processing
-base_dir = "../RnE_2022/KLEOPATRA_Light_-_2022-11-08_-_RiLA600_STX-16803_-_2bin/"
-base_dir = "../RnE_2022/"
+BASEDIR = "../RnE_2022/KLEOPATRA_Light_-_2022-11-08_-_RiLA600_STX-16803_-_2bin/"
+BASEDIR = "../RnE_2022/"
 
 master_dir = "master_files"
 
 #%%
-base_dirs = sorted(Python_utilities.getFullnameListOfsubDir(base_dir))
-base_dirs = [w for w in base_dirs \
-                if not (w.endswith("{}".format(master_dir)) \
-                or w.endswith(".fits"))]
-print ("base_dirs: {}".format(base_dirs))
+BASEDIRs = sorted(Python_utilities.getFullnameListOfsubDir(BASEDIR))
+# BASEDIRs = [w for w in BASEDIRs \
+#                 if not (w.endswith("{}".format(master_dir)) \
+#                 or w.endswith(".fits"))]
+print ("BASEDIRs: {}".format(BASEDIRs))
 
 
 #%%
-for base_dir in base_dirs :
+for BASEDIR in BASEDIRs :
     # 디렉토리 하나씩 loop...
-    print ("Starting...\n{}".format(base_dir))
+    print ("Starting...\n{}".format(BASEDIR))
 
     try : 
         #파일 목록을 DataFrame으로 만들어서 이용하자
-        summary = yfu.make_summary("{}/*.fit".format(base_dir))
+        summary = yfu.make_summary("{}/*.fit".format(BASEDIR))
                             #keywords = ["DATE-OBS", "FILTER", "OBJECT", "IMAGETYP"],  # header keywords; actually it is case-insensitive
                             #fname_option = 'name',  # 'file' column will contain only the name of the file (not full path)
-                            #output = "{}summary.csv".format(base_dir),
+                            #output = "{}summary.csv".format(BASEDIR),
                             #sort_by = "DATE-OBS"  # 'file' column will be sorted based on "DATE-OBS" value in the header
                             #)
         print("summary:\n {}".format(summary))
 
-    except Exception as err :
-        print("X"*60)
-        print('{0}'.format(err))
-
-    #%%
-    try:
         # light frame  만 선택
         df_light = summary[summary["IMAGETYP"] == "LIGHT"]
         print ("df_light: {}".format(df_light))

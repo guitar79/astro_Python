@@ -47,29 +47,29 @@ c_method = 'median'
 master_dir = "master_files_ys"
 reduce_dir = "reduced_ys"
 
-base_dir = "../RnE_2022/KLEOPATRA_Light_-_2022-11-04_-_RiLA600_STX-16803_-_2bin/"
-base_dir = "../RnE_2022/"
-#base_dir = "../Post_process/M13_Light_-_2021-04_-_TEC140x75_STL-11000M_-_1bin/"
-#base_dir = "../CCD_obs_raw/"
+BASEDIR = "../RnE_2022/KLEOPATRA_Light_-_2022-11-04_-_RiLA600_STX-16803_-_2bin/"
+BASEDIR = "../RnE_2022/RiLA600_STX-16803/"
+#BASEDIR = "../Post_process/M13_Light_-_2021-04_-_TEC140x75_STL-11000M_-_1bin/"
+#BASEDIR = "../CCD_obs_raw/"
 #%%
-base_dirs = sorted(Python_utilities.getFullnameListOfsubDir(base_dir))
-print ("base_dirs1: {}".format(base_dirs))
-base_dirs = [w for w in base_dirs \
+BASEDIRs = sorted(Python_utilities.getFullnameListOfsubDir(BASEDIR))
+print ("BASEDIRs1: {}".format(BASEDIRs))
+BASEDIRs = [w for w in BASEDIRs \
         if not (w.endswith("{}/".format(master_dir)) \
         or w.endswith("{}/".format(reduce_dir))
         or w.endswith("fits"))]
-print ("base_dirs2: {}".format(base_dirs))
+print ("BASEDIRs2: {}".format(BASEDIRs))
 
 #%%
-for base_dir in base_dirs :
-    print ("Starting...\n{}".format(base_dir))
+for BASEDIR in BASEDIRs :
+    print ("Starting...\n{}".format(BASEDIR))
     ######################################################
 
     try : 
-        summary = yfu.make_summary("{}/*.fit".format(base_dir))
+        summary = yfu.make_summary("{}/*.fit".format(BASEDIR))
         print("summary:\n {}".format(summary))
 
-        #TOPDIR = Path("{}".format(base_dir))
+        #TOPDIR = Path("{}".format(BASEDIR))
         #RAWDIR = TOPDIR
         #ARCHIVE = TOPDIR/"archive"
         #BIASDIR = TOPDIR/"BIAS"
@@ -91,7 +91,7 @@ for base_dir in base_dirs :
                         type_val = ["BIAS"],
                         group_key = ["EXPTIME"],
                         fmt = "master_bias.fits",  # output file name format
-                        outdir = "{}{}".format(base_dir, master_dir),  # output directory (will automatically be made if not exist)
+                        outdir = "{}{}".format(BASEDIR, master_dir),  # output directory (will automatically be made if not exist)
                         verbose=True
                     )
     except Exception as err :
@@ -107,7 +107,7 @@ for base_dir in base_dirs :
                         type_val = ["DARK"],
                         group_key = ["EXPTIME"],
                         fmt = "master_dark_{:.0f}sec.fits",  # output file name format
-                        outdir = "{}{}".format(base_dir, master_dir)  # output directory (will automatically be made if not exist)
+                        outdir = "{}{}".format(BASEDIR, master_dir)  # output directory (will automatically be made if not exist)
                     )
     except Exception as err :
         print("X"*60)
@@ -125,7 +125,7 @@ for base_dir in base_dirs :
                         fmt = "master_flat_{:s}_norm.fits",  # output file name format
                         scale="med_sc", #norm
                         scale_to_0th=False, #norm
-                        outdir = "{}{}".format(base_dir, master_dir)  # output directory (will automatically be made if not exist)
+                        outdir = "{}{}".format(BASEDIR, master_dir)  # output directory (will automatically be made if not exist)
                     )
 
         # Say dark frames have header OBJECT = "calib" && "IMAGE-TYP" = "DARK"
@@ -137,7 +137,7 @@ for base_dir in base_dirs :
                         fmt = "master_flat_{:s}.fits",  # output file name format
                         #scale="med_sc", #norm
                         #scale_to_0th=False, #norm
-                        outdir = "{}{}".format(base_dir, master_dir)  # output directory (will automatically be made if not exist)
+                        outdir = "{}{}".format(BASEDIR, master_dir)  # output directory (will automatically be made if not exist)
                     )
     except Exception as err :
         print("X"*60)

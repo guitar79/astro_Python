@@ -30,31 +30,31 @@ if not os.path.exists('{0}'.format(log_dir)):
 c_method = 'median'
 master_dir = "master_files/"
 
-base_dir = "../Rne_2022/KLEOPATRA_Light_-_2022-11-04_-_RiLA600_STX-16803_-_2bin/"
-base_dir = "../Rne_2022/"
-#base_dir = "../Post_process/M13_Light_-_2021-04_-_TEC140x75_STL-11000M_-_1bin/"
-#base_dir = "../CCD_obs_raw/"
+BASEDIR = "../Rne_2022/KLEOPATRA_Light_-_2022-11-04_-_RiLA600_STX-16803_-_2bin/"
+BASEDIR = "../Rne_2022/"
+#BASEDIR = "../Post_process/M13_Light_-_2021-04_-_TEC140x75_STL-11000M_-_1bin/"
+#BASEDIR = "../CCD_obs_raw/"
 
-#base_dirs = Python_utilities.getFullnameListOfsubDir(base_dir)
+#BASEDIRs = Python_utilities.getFullnameListOfsubDir(BASEDIR)
 
-base_dirs = Python_utilities.getFullnameListOfsubDir(base_dir)
-print ("base_dirs1: {}".format(base_dirs))
-#base_dirs = [w for w in base_dirs if not (w.endswith("{}".format(master_dir)) \
+BASEDIRs = Python_utilities.getFullnameListOfsubDir(BASEDIR)
+print ("BASEDIRs1: {}".format(BASEDIRs))
+#BASEDIRs = [w for w in BASEDIRs if not (w.endswith("{}".format(master_dir)) \
 #        or w.endswith("{}_ys".format(master_dir)))]
-#print ("base_dirs2: {}".format(base_dirs))
+#print ("BASEDIRs2: {}".format(BASEDIRs))
 
 
 #%%
-for base_dir in base_dirs :
-    print ("Starting...\n{}".format(base_dir))
+for BASEDIR in BASEDIRs :
+    print ("Starting...\n{}".format(BASEDIR))
     ######################################################
     ### make all fits file list...
-    fullnames = Python_utilities.getFullnameListOfallFiles("{}".format(base_dir))
+    fullnames = Python_utilities.getFullnameListOfallFiles("{}".format(BASEDIR))
     #print ("fullnames: {}".format(fullnames))
     print ("len(fullnames): {}".format(len(fullnames)))
 
-    if not os.path.exists('{0}'.format("{}{}".format(base_dir, master_dir))):
-        os.makedirs("{}{}".format(base_dir, master_dir))
+    if not os.path.exists('{0}'.format("{}{}".format(BASEDIR, master_dir))):
+        os.makedirs("{}{}".format(BASEDIR, master_dir))
 
     #%%
     fullnames_bias = [w for w in fullnames if "_bias_" in w.lower()]
@@ -62,15 +62,15 @@ for base_dir in base_dirs :
 
     try: 
         if os.path.exists('{}{}Master_Bias_{}_f32.fit'.\
-                format(base_dir, master_dir, c_method)) :
+                format(BASEDIR, master_dir, c_method)) :
 
             # Open master bias
             bias = CCDData.read('{}{}Master_Bias_{}_f32.fit'.\
-                    format(base_dir, master_dir, c_method),
+                    format(BASEDIR, master_dir, c_method),
                     unit='adu')
             
             print('{0}{1}Master_Dark_{2}_f32.fit is already exist..'.\
-                format(base_dir, master_dir, c_method))
+                format(BASEDIR, master_dir, c_method))
         else:
             bias_list = fullnames_bias
 
@@ -90,10 +90,10 @@ for base_dir in base_dirs :
 
             # Save file
             bias.write('{}{}Master_Bias_{}_f32.fit'.\
-                        format(base_dir, master_dir, c_method), 
+                        format(BASEDIR, master_dir, c_method), 
                         overwrite =True)
             print('{}{}Master_Bias_{}_f32.fit is created'.\
-                        format(base_dir, master_dir, c_method))
+                        format(BASEDIR, master_dir, c_method))
     except Exception as err :
         print("X"*60)
         print('{0}'.format(err))
@@ -104,20 +104,20 @@ for base_dir in base_dirs :
         print ("len(fullnames_dark): {}".format(len(fullnames_dark)))
 
         if os.path.exists('{}{}Master_Dark_{}_f32.fit'.\
-                format(base_dir, master_dir, c_method))\
+                format(BASEDIR, master_dir, c_method))\
                 and os.path.exists('{}{}Master_Dark0_{}_f32.fit'.\
-                format(base_dir, master_dir, c_method)) :
+                format(BASEDIR, master_dir, c_method)) :
 
             # Open master bias, dark, and flat
             dark0 = CCDData.read('{}{}Master_Dark0_{}_f32.fit'.\
-                        format(base_dir, master_dir, c_method),
+                        format(BASEDIR, master_dir, c_method),
                         unit='adu')
             dark = CCDData.read('{}{}Master_Dark_{}_f32.fit'.\
-                        format(base_dir, master_dir, c_method),
+                        format(BASEDIR, master_dir, c_method),
                         unit='adu')
 
             print('{0}{1}Master_Dark_{2}_f32.fit and {0}{1}Master_Dark0_{2}_f32.fit are already exist..'.\
-                format(base_dir, master_dir, c_method))
+                format(BASEDIR, master_dir, c_method))
         else:
             dark_list = fullnames_dark
 
@@ -134,10 +134,10 @@ for base_dir in base_dirs :
                 'dark0.data.min()', dark0.data.min(), 
                 'dark0', dark0)
             dark0.write('{}{}Master_Dark0_{}_f32.fit'.\
-                    format(base_dir, master_dir, c_method), 
+                    format(BASEDIR, master_dir, c_method), 
                     overwrite =True)
             print('{}{}Master_Dark0_{}_f32.fit is created'.\
-                    format(base_dir, master_dir, c_method))
+                    format(BASEDIR, master_dir, c_method))
 
             dark = ccd_process(dark0, master_bias=bias) 
             dark.data = np.array(dark.data, 
@@ -152,10 +152,10 @@ for base_dir in base_dirs :
 
             # Save file
             dark.write('{}{}Master_Dark_{}_f32.fit'.\
-                    format(base_dir, master_dir, c_method), 
+                    format(BASEDIR, master_dir, c_method), 
                     overwrite =True)
             print('{}{}Master_Dark_{}_f32.fit is created'.\
-                    format(base_dir, master_dir, c_method))
+                    format(BASEDIR, master_dir, c_method))
     except Exception as err :
         print("X"*60)
         print('{0}'.format(err))
@@ -169,9 +169,9 @@ for base_dir in base_dirs :
         for chl in['L', 'R', 'G', 'B', 'H', 'S', 'O'] :
             
             if os.path.exists('{}{}Master_Flat_{}_{}_f32.fit'.\
-                            format(base_dir, master_dir, chl, c_method)) :
+                            format(BASEDIR, master_dir, chl, c_method)) :
                 print('{}{}Master_Flat_{}_{}_f32.fit is already exist...'.\
-                            format(base_dir, master_dir, chl, c_method))
+                            format(BASEDIR, master_dir, chl, c_method))
             else:
 
                 flat_list = [w for w in fullnames_flat if "_{}_".format(chl) in w.upper()]
@@ -190,10 +190,10 @@ for base_dir in base_dirs :
                     'flat0.data.min()', flat0.data.min(), 
                     'flat0', flat0)
                 flat0.write('{}{}Master_Flat0_{}_{}_f32.fit'.\
-                        format(base_dir, master_dir, chl, c_method), 
+                        format(BASEDIR, master_dir, chl, c_method), 
                         overwrite =True)
                 print('{}{}Master_Flat0_{}_{}_f32.fit is created'.\
-                        format(base_dir, master_dir, chl, c_method))
+                        format(BASEDIR, master_dir, chl, c_method))
                 # This dark isn't bias subtracted yet, so let's subtract bias:               
                 # Open master bias and dark
 
@@ -212,10 +212,10 @@ for base_dir in base_dirs :
                         
                 # Save file
                 flat.write('{}{}Master_Flat_{}_{}_f32.fit'.\
-                            format(base_dir, master_dir, chl, c_method), 
+                            format(BASEDIR, master_dir, chl, c_method), 
                             overwrite =True)
                 print('{}{}Master_Flat_{}_{}_f32.fit is created'.\
-                            format(base_dir, master_dir, chl, c_method))
+                            format(BASEDIR, master_dir, chl, c_method))
     except Exception as err :
         print("X"*60)
         print('{0}'.format(err))  

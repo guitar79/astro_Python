@@ -24,10 +24,10 @@ if not os.path.exists('{0}'.format(log_dir)):
 #%%
 #######################################################
 # read all files in base directory for processing
-base_dir = "../Rne_2022/KLEOPATRA_Light_-_2022-11-04_-_RiLA600_STX-16803_-_2bin/"
+BASEDIR = "../Rne_2022/KLEOPATRA_Light_-_2022-11-04_-_RiLA600_STX-16803_-_2bin/"
 
 ### make all fits file list...
-fullnames = Python_utilities.getFullnameListOfallFiles("{}".format(base_dir))
+fullnames = Python_utilities.getFullnameListOfallFiles("{}".format(BASEDIR))
 #print ("fullnames: {}".format(fullnames))
 print ("len(fullnames): {}".format(len(fullnames)))
 
@@ -35,18 +35,18 @@ c_method = 'median'
 master_dir = "master_files/"
 reduced_dir = "readuced_files/"
 
-if not os.path.exists('{0}'.format("{}{}".format(base_dir, reduced_dir))):
-    os.makedirs("{}{}".format(base_dir, reduced_dir))
+if not os.path.exists('{0}'.format("{}{}".format(BASEDIR, reduced_dir))):
+    os.makedirs("{}{}".format(BASEDIR, reduced_dir))
 
 # Open master bias, dark, and flat
 bias = CCDData.read('{}{}Master_Bias_{}_f32.fit'.\
-            format(base_dir, master_dir, c_method),
+            format(BASEDIR, master_dir, c_method),
             unit='adu')
 dark0 = CCDData.read('{}{}Master_Dark0_{}_f32.fit'.\
-            format(base_dir, master_dir, c_method),
+            format(BASEDIR, master_dir, c_method),
             unit='adu')
 dark = CCDData.read('{}{}Master_Dark_{}_f32.fit'.\
-            format(base_dir, master_dir, c_method),
+            format(BASEDIR, master_dir, c_method),
             unit='adu')
 
 #%%
@@ -62,10 +62,10 @@ for chl in['L', 'R', 'G', 'B', 'H', 'S', 'O', 'v'] :
 
     try : 
         flat0 = CCDData.read('{}{}Master_Flat0_{}_{}_f32.fit'.\
-            format(base_dir, master_dir, chl, c_method),
+            format(BASEDIR, master_dir, chl, c_method),
             unit='adu')
         flat = CCDData.read('{}{}Master_Flat0_{}_{}_f32.fit'.\
-            format(base_dir, master_dir, chl, c_method),
+            format(BASEDIR, master_dir, chl, c_method),
             unit='adu')
 
         object_list = [w for w in fullnames_light if "_{}_".format(chl) in w.upper()]
@@ -94,9 +94,9 @@ for chl in['L', 'R', 'G', 'B', 'H', 'S', 'O', 'v'] :
                     dtype=np.float32)
             print("reduced.data.shape:{}".format(reduced.data.shape))
             reduced.write("{}{}{}_reduced_f32.fit".\
-                        format(base_dir, reduced_dir, fullname_el[-1][:-4]), overwrite =True)
+                        format(BASEDIR, reduced_dir, fullname_el[-1][:-4]), overwrite =True)
             print("{}{}{}_reduced_f32.fit is created...".\
-                        format(base_dir, reduced_dir, fullname_el[-1][:-4]))
+                        format(BASEDIR, reduced_dir, fullname_el[-1][:-4]))
             break
     except Exception as err: 
         print ('Error messgae .......')

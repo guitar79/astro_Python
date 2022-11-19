@@ -15,7 +15,7 @@ cd ~/Downloads/ysfitsutilpy && git pull && pip install -e .
 cd ~/Downloads/ysphouutilpy && git pull && pip install -e . 
 cd ~/Downloads/SNUO1Mpy && git pull && pip install -e . 
 
-이 파일은 base_dir 폴더 안에 있는 모든 fit 파일에 대해서 
+이 파일은 BASEDIR 폴더 안에 있는 모든 fit 파일에 대해서 
 plste solving을 수행합니다.
 이미 solving이 완료된 파일은 건너뛰고, 
 먼저 ASTAP로 시도하고, 실패할 경우 Astrometry로 시도합니다. 
@@ -51,7 +51,7 @@ if not os.path.exists('{0}'.format(log_dir)):
 
 #######################################################
 # read all files in base directory for processing
-base_dir = "../RnE_2022/"
+BASEDIR = "../RnE_2022/"
 
 c_method = 'median'
 master_dir = "master_files_ys"
@@ -59,29 +59,29 @@ reduced_dir = "reduced"
 solved_dir = "solved"
 
 #%%
-base_dirs = sorted(Python_utilities.getFullnameListOfsubDir(base_dir))
-print ("base_dirs1: {}".format(base_dirs))
-base_dirs = [w for w in base_dirs \
+BASEDIRs = sorted(Python_utilities.getFullnameListOfsubDir(BASEDIR))
+print ("BASEDIRs1: {}".format(BASEDIRs))
+BASEDIRs = [w for w in BASEDIRs \
         if not (w.endswith("{}/".format(master_dir)) \
             or w.endswith("{}/".format(reduced_dir)) \
             or w.endswith("{}/".format(solved_dir)) \
                 or w.endswith(".fits"))]
-print ("base_dirs2: {}".format(base_dirs))
+print ("BASEDIRs2: {}".format(BASEDIRs))
 
 #%%
-base_dir = Path("../RnE_2022/KLEOPATRA_Light_-_2022-11-04_-_RiLA600_STX-16803_-_2bin/")
+#BASEDIR = Path("../RnE_2022/KLEOPATRA_Light_-_2022-11-04_-_RiLA600_STX-16803_-_2bin/")
 
 
 #%%
-for base_dir in base_dirs :
-    print ("Starting...\n{}".format(base_dir))
+for BASEDIR in BASEDIRs :
+    print ("Starting...\n{}".format(BASEDIR))
 
-    base_dir = Path(base_dir)
+    BASEDIR = Path(BASEDIR)
 
-    if not (base_dir/solved_dir).exists():
-        os.makedirs(str((base_dir/solved_dir)))
+    if not (BASEDIR/solved_dir).exists():
+        os.makedirs(str((BASEDIR/solved_dir)))
 
-    summary = yfu.make_summary(base_dir/reduced_dir/"*.fits")
+    summary = yfu.make_summary(BASEDIR/reduced_dir/"*.fits")
 
     df_light = summary.loc[summary["IMAGETYP"] == "LIGHT"].copy()
     df_light = df_light.reset_index(drop=True)
@@ -98,27 +98,27 @@ for base_dir in base_dirs :
         print ("Starting...\nfullname: {}".format(row["file"]))
 
         #astro_utilities.KevinSolver(row["file"], solved_dir)
-        #astro_utilities.AstrometrySolver(df_light["file"][0], base_dir/solved_dir)
-        solved = astro_utilities.AstrometrySolver(row["file"], str(base_dir/solved_dir))
+        #astro_utilities.AstrometrySolver(df_light["file"][0], BASEDIR/solved_dir)
+        solved = astro_utilities.AstrometrySolver(row["file"], str(BASEDIR/solved_dir))
         #astro_utilities.AstrometrySolver(row["file"], "../{}".format(solved_dir))
                 
-    #############################################################################
-    #Check existence tmp file and rename ...
-    #############################################################################
-    summary_new = yfu.make_summary(base_dir/solved_dir/"*.new")
-    print ("summary_new: {}".format(summary_new))
+    # #############################################################################
+    # #Check existence tmp file and rename ...
+    # #############################################################################
+    # summary_new = yfu.make_summary(BASEDIR/solved_dir/"*.new")
+    # print ("summary_new: {}".format(summary_new))
 
-    #%%
-    n = 0
-    try:
-        for _, row in summary_new.iterrows():
-            n += 1
-            print('#'*40,
-                "\n{2:.01f}%  ({0}/{1}) {3}".format(n, len(summary_new), (n/len(summary_new))*100, os.path.basename(__file__)))
-            print ("Starting...\nfullname: {}".format(row["file"]))
-            shutil.move(r"{}".format(row["file"]), \
-                        r"{}.fits".format(row["file"][:-4]))
+    # #%%
+    # n = 0
+    # try:
+    #     for _, row in summary_new.iterrows():
+    #         n += 1
+    #         print('#'*40,
+    #             "\n{2:.01f}%  ({0}/{1}) {3}".format(n, len(summary_new), (n/len(summary_new))*100, os.path.basename(__file__)))
+    #         print ("Starting...\nfullname: {}".format(row["file"]))
+    #         shutil.move(r"{}".format(row["file"]), \
+    #                     r"{}.fits".format(row["file"][:-4]))
 
-    except Exception as err:
-        Python_utilities.write_log(err_log_file,
-                '{2} ::: {0} There is no {1} '.format(err, row["file"], datetime.now())) 
+    # except Exception as err:
+    #     Python_utilities.write_log(err_log_file,
+    #             '{2} ::: {0} There is no {1} '.format(err, row["file"], datetime.now())) 

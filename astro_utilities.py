@@ -16,6 +16,8 @@ import os
 from pathlib import Path
 import numpy as np
 from ccdproc import combine
+import shutil
+
 
 #%%
 #########################################
@@ -149,11 +151,88 @@ class AstrometrySolver():
                                         stdout=subprocess.PIPE) as proc :
                     print(proc.stdout.read())
                 
+                if os.path.exists('{}/{}.new'.format(self.solved_dir, self.fullname_el[-1][:-5])):
+                    print("{} is solved successful ...".format(self.fullname_el[-1]))
+                    
+                    shutil.move('{}/{}.new'.format(self.solved_dir, self.fullname_el[-1][:-5]), \
+                                '{}/{}'.format(self.solved_dir, self.fullname_el[-1]))
+                    print("{} is renamed to fits ...".format(self.fullname_el[-1]))
+                
+                else : 
+                    print("{} solving fail ...".format(self.fullname_el[-1]))
+                
             except Exception as err :
                     print('{1} ::: {2} with {0} ...'\
                             .format(self.fullname, datetime.now(), err))
 #########################################
 
+
+# #%%
+# #########################################
+# #single  Astrometry Solver1
+# #########################################
+# class AstrometrySolver1():
+#     def __init__(self, fullname, solved_dir):
+        
+#         """
+#         Parameters
+#         ----------
+#         fullname : Path-like
+#             The fullname of input file...
+
+#         solved dir: string
+#             The directory where the output file              
+#         """
+
+#         self.fullname = fullname
+#         self.solved_dir = solved_dir
+
+#         print("Starting... \n{}".format(self.fullname))
+#         self.fullname_el = self.fullname.split("/")
+#         self.filename_el = self.fullname_el[-1].split("_")
+
+#         print("self.solved_dir:", self.solved_dir)
+#         print('{}/{}'.format(self.solved_dir, self.fullname_el[-1]))
+
+#         if os.path.exists('{}/{}'.format(self.solved_dir, self.fullname_el[-1])):
+#             print("{} is already solved ...".format(self.fullname_el[-1]))
+        
+#         else: 
+
+#             try : 
+#                 # solve command.
+#                 # solve-field fullname.fit -O --cpulimit 120 --nsigma 15 -u app -L 1.2 -U 1.3 -N new_filename.fits -p --no-plots -D output_directory {0}
+#                 with subprocess.Popen(['solve-field', 
+#                                         '-O', #--overwrite: overwrite output files if they already exist
+#                                         #'--scale-low', '0.1', '--scale-high', '0.40', #pixel scale
+#                                         '-g', #--guess-scale: try to guess the image scale from the FITS headers
+#                                         '--cpulimit', '120',  #will make it give up after 30 seconds.
+#                                         '--nsigma', '15',
+#                                         #'--downsample', '4',
+#                                         '-u', 'app', #'--scale-units', 'arcsecperpix', #pixel scale
+#                                         '-L', '1.2', '-U', '1.3',
+#                                         #'-N',  '{}'.format(self.fullname[-1]), #--new-fits <filename>: output filename of the new FITS file containingthe WCS header; "none" to not create this file
+#                                         '-p', 
+#                                         '--no-plots',#: don't create any plots of the results
+#                                         '-D', '{}/'.format(solved_dir),
+#                                         '{0}'.format(self.fullname)], 
+#                                         stdout=subprocess.PIPE) as proc :
+#                     print(proc.stdout.read())
+                
+#                 if os.path.exists('{}/{}.new'.format(self.solved_dir, self.fullname_el[-1][:-5])):
+#                     print("{} is solved successful ...".format(self.fullname_el[-1]))
+                    
+#                     shutil.move('{}/{}.new'.format(self.solved_dir, self.fullname_el[-1][:-5]), \
+#                                 '{}/{}'.format(self.solved_dir, self.fullname_el[-1]))
+#                     print("{} is renamed to fits ...".format(self.fullname_el[-1]))
+                
+#                 else : 
+#                     print("{} solving fail ...".format(self.fullname_el[-1]))
+                    
+#             except Exception as err :
+#                     print('{1} ::: {2} with {0} ...'\
+#                             .format(self.fullname, datetime.now(), err))
+# #########################################
 #%%
 #########################################
 #single  ASTAPSolver
@@ -198,7 +277,7 @@ class ASTAPSolver():
                             '-update',],
                                 stdout=subprocess.PIPE) as proc :
                     print(proc.stdout.read())
-            
+                
             except Exception as err :
                     print('{1} ::: {2} with {0} ...'\
                             .format(self.fullname, datetime.now(), err))
@@ -220,6 +299,9 @@ master_file_dir_name = 'master_file_Python/'
 processing_dir_name = 'processing_Python/'
 integration_dir_name = 'integration_Python/'
 alignment_dir_name = 'alignment_Python/'
+
+
+
 
 # =============================================================================
 #     
@@ -712,7 +794,7 @@ def align_image(im1, im2):
 
 #%%
 def combine_BiasDark(file_list, c_method, 
-        base_dir_name, master_file_dir_name, current_dir_name) :
+        BASEDIR_name, master_file_dir_name, current_dir_name) :
         
     try :
         
@@ -723,12 +805,12 @@ def combine_BiasDark(file_list, c_method,
         combine_result.data = np.array(combine_result.data, dtype=np.float32)
 
         combine_result.write('{0}/{1}{2}_master_{3}_float32.fit'\
-                  .format(base_dir_name, master_file_dir_name, 
+                  .format(BASEDIR_name, master_file_dir_name, 
                   current_dir_name, c_method), overwrite =True, format='fits')
         
         ##### fits header update
         with fits.open('{0}/{1}{2}_master_{3}_float32.fit'\
-              .format(base_dir_name, master_file_dir_name, current_dir_name, c_method),
+              .format(BASEDIR_name, master_file_dir_name, current_dir_name, c_method),
               mode='update') as hdul:
             hdul[0].header.append(('COMMENT', ', '.join(file_list), 'combine file list'))
             hdul[0].header.append('COMMENT', 
@@ -737,14 +819,14 @@ def combine_BiasDark(file_list, c_method,
     
     except Exception as err :
         print('{5} ::: {4} with {0}/{1}{2}_master_{3}_float32.fit ...'\
-            .format(base_dir_name, master_file_dir_name, 
+            .format(BASEDIR_name, master_file_dir_name, 
             current_dir_name, c_method, err, datetime.now()))
 
     return 0
 
 #%%
 def combine_Flat(file_list, c_method, 
-        base_dir_name, master_file_dir_name, current_dir_name, chl) :
+        BASEDIR_name, master_file_dir_name, current_dir_name, chl) :
         
     try :
         
@@ -755,12 +837,12 @@ def combine_Flat(file_list, c_method,
         combine_result.data = np.array(combine_result.data, dtype=np.float32)
 
         combine_result.write('{0}/{1}{2}_master_{3}_{4}_float32.fit'\
-                  .format(base_dir_name, master_file_dir_name, 
+                  .format(BASEDIR_name, master_file_dir_name, 
                   current_dir_name, c_method, chl), overwrite =True, format='fits')
         
         ##### fits header update
         with fits.open('{0}/{1}{2}_master_{3}_{4}_float32.fit'\
-              .format(base_dir_name, master_file_dir_name, current_dir_name, c_method, chl),
+              .format(BASEDIR_name, master_file_dir_name, current_dir_name, c_method, chl),
               mode='update') as hdul:
             hdul[0].header.append(('COMMENT', ', '.join(file_list), 'combine file list'))
             hdul[0].header.append('COMMENT', 
@@ -769,14 +851,14 @@ def combine_Flat(file_list, c_method,
     
     except Exception as err :
         print('{6} ::: {5} with {0}/{1}{2}_master_{3}_{4}_float32.fit ...'\
-            .format(base_dir_name, master_file_dir_name, 
+            .format(BASEDIR_name, master_file_dir_name, 
             current_dir_name, c_method, chl, err, datetime.now()))
 
     return 0
 
 #%%
 def combine_master_file(file_list, c_method, 
-        base_dir_name, master_file_dir_name, current_dir_name) :
+        BASEDIR_name, master_file_dir_name, current_dir_name) :
         
     try :
         combine_result = combine(file_list,       # ccdproc does not accept numpy.ndarray, but only python list.
@@ -787,12 +869,12 @@ def combine_master_file(file_list, c_method,
         combine_result.data = np.array(combine_result.data, dtype=np.float32)
 
         combine_result.write('{0}/{1}{2}_master_{3}_float32.fit'\
-                  .format(base_dir_name, master_file_dir_name, 
+                  .format(BASEDIR_name, master_file_dir_name, 
                   current_dir_name, c_method), overwrite =True, format='fits')
         
         ##### fits header update
         with fits.open('{0}/{1}{2}_master_{3}_float32.fit'\
-              .format(base_dir_name, master_file_dir_name, current_dir_name, c_method),
+              .format(BASEDIR_name, master_file_dir_name, current_dir_name, c_method),
               mode='update') as hdul:
             hdul[0].header.append(('COMMENT', ', '.join(file_list), 'combine file list'))
             hdul[0].header.append('COMMENT', 
@@ -801,14 +883,14 @@ def combine_master_file(file_list, c_method,
     
     except Exception as err :
         print('{5} ::: {4} with {0}/{1}{2}_master_{3}_float32.fit ...'\
-            .format(base_dir_name, master_file_dir_name, 
+            .format(BASEDIR_name, master_file_dir_name, 
             current_dir_name, c_method, err, datetime.now()))
 
     return 0
 
 #%%
 def combine_master_flat_file(file_list, c_method, 
-         base_dir_name, master_file_dir_name, current_dir_name, chl) :
+         BASEDIR_name, master_file_dir_name, current_dir_name, chl) :
         
     try :
         combine_result = combine(file_list,       # ccdproc does not accept numpy.ndarray, but only python list.
@@ -819,11 +901,11 @@ def combine_master_flat_file(file_list, c_method,
         combine_result.data = np.array(combine_result.data, dtype=np.float32)
         
         combine_result.write('{0}{1}{2}_master_{3}_{4}_float32.fit'\
-                  .format(base_dir_name, master_file_dir_name, 
+                  .format(BASEDIR_name, master_file_dir_name, 
                   current_dir_name, c_method, chl), overwrite =True, format='fits')
         ##### fits header update
         with fits.open('{0}{1}{2}_master_{3}_{4}_float32.fit'\
-                  .format(base_dir_name, master_file_dir_name, 
+                  .format(BASEDIR_name, master_file_dir_name, 
                   current_dir_name, c_method, chl),
                   mode='update') as hdul:
             hdul[0].header.append(('COMMENT', ', '.join(file_list), 'combine file list'))
@@ -834,7 +916,7 @@ def combine_master_flat_file(file_list, c_method,
 
     except Exception as err :
         print('{6} ::: {5} with {0}{1}{2}_master_{3}_{4}_float32.fit ...'\
-                  .format(base_dir_name, master_file_dir_name, 
+                  .format(BASEDIR_name, master_file_dir_name, 
                   current_dir_name, c_method, chl, err, datetime.now()))
                 
     return 0

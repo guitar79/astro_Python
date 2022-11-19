@@ -14,7 +14,7 @@ from photutils import DAOStarFinder
 #from photutils import CircularAnnulus as CircAn
 #from photutils import aperture_photometry as APPHOT
 
-#base_dir = '../CCD_obs_raw/QSI683ws_1bin/Light_FSQ106ED-x73/46P-WIRTANEN_Light_-_2018-12-23_-_FSQ106ED-x73_QSI683ws_-_1bin/'
+#BASEDIR = '../CCD_obs_raw/QSI683ws_1bin/Light_FSQ106ED-x73/46P-WIRTANEN_Light_-_2018-12-23_-_FSQ106ED-x73_QSI683ws_-_1bin/'
 #filename = '46P-WIRTANEN_Light_L_2018-12-23-14-01-36_080sec_FSQ106ED-x73_QSI683ws_-30C_1bin_wcs.fit'
 
 from glob import glob
@@ -29,9 +29,9 @@ err_log_file = "{}{}_err.log".format(log_dir, os.path.basename(__file__)[:-3])
 print ("log_file: {}".format(log_file))
 print ("err_log_file: {}".format(err_log_file))
 
-base_dir = "../CCD_obs_raw/"
+BASEDIR = "../CCD_obs_raw/"
 
-fullnames = Python_utilities.getFullnameListOfallFiles(base_dir)
+fullnames = Python_utilities.getFullnameListOfallFiles(BASEDIR)
 print ("fullnames: {}".format(fullnames))
 
 n = 0

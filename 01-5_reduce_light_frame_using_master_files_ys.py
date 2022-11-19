@@ -16,6 +16,8 @@ cd ~/Downloads/ysfitsutilpy && git pull && pip install -e .
 cd ~/Downloads/ysphouutilpy && git pull && pip install -e . 
 cd ~/Downloads/SNUO1Mpy && git pull && pip install -e . 
 
+이 파일은 관측 자료를 전처리 해준다.
+
 """
 #%%
 from glob import glob
@@ -43,7 +45,7 @@ if not os.path.exists('{0}'.format(log_dir)):
 #%%
 #######################################################
 # read all files in base directory for processing
-base_dir = "../RnE_2022/"
+BASEDIR = "../RnE_2022/"
 
 c_method = 'median'
 master_dir = "master_files_ys"
@@ -51,26 +53,28 @@ reduced_dir = "reduced"
 solved_dir = "solved"
 
 #%%
-base_dirs = sorted(Python_utilities.getFullnameListOfsubDir(base_dir))
-base_dirs = [w for w in base_dirs \
+BASEDIRs = sorted(Python_utilities.getFullnameListOfsubDir(BASEDIR))
+BASEDIRs = [w for w in BASEDIRs \
         if not (w.endswith("{}/".format(master_dir)) \
             or w.endswith("{}/".format(reduced_dir)) \
             or w.endswith("{}/".format(solved_dir)) \
                 or w.endswith(".fits"))]
 
-print ("base_dirs: {}".format(base_dirs))
+print ("BASEDIRs: {}".format(BASEDIRs))
 
 #%%
-for base_dir in base_dirs :
-    print ("Starting...\n{}".format(base_dir))
+for BASEDIR in BASEDIRs :
+    print ("Starting...\n{}".format(BASEDIR))
 
-    base_dir = Path(base_dir)
+    BASEDIR = Path(BASEDIR)
+    REDECEDDIR = BASEDIR / reduced_dir
 
-    if not (base_dir/reduced_dir).exists():
-        os.makedirs(str((base_dir/reduced_dir)))
+    if not REDECEDDIR.exists():
+        os.makedirs(str(REDECEDDIR))
+        print("{} is created...".format(str(REDECEDDIR)))
 
     #%%
-    summary = yfu.make_summary(base_dir/"*.fit")
+    summary = yfu.make_summary(BASEDIR/"*.fit")
 
     df_light = summary.loc[summary["IMAGETYP"] == "LIGHT"].copy()
     df_light = df_light.reset_index(drop=True)
@@ -84,9 +88,9 @@ for base_dir in base_dirs :
             expt = ccd.header["EXPTIME"]
             red = yfu.ccdred(
                 ccd,
-                output=Path(f"{base_dir}/reduced/{fpath.stem}.fits"),
-                mdarkpath=str(base_dir/"master_files_ys/master_dark_{:.0f}sec.fits".format(expt)),
-                mflatpath=str(base_dir/"master_files_ys/master_flat_{}_norm.fits".format(filt.upper())),
+                output=Path(f"{BASEDIR}/reduced/{fpath.stem}.fits"),
+                mdarkpath=str(BASEDIR/"master_files_ys/master_dark_{:.0f}sec.fits".format(expt)),
+                mflatpath=str(BASEDIR/"master_files_ys/master_flat_{}_norm.fits".format(filt.upper())),
                 # flat_norm_value=1,  # 1 = skip normalization, None = normalize by mean
                 overwrite=True
             )

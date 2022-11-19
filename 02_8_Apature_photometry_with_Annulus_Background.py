@@ -25,12 +25,12 @@ from astropy.wcs import WCS
 import Python_utilities
 import astro_utilities
 from astropy.stats import sigma_clip, sigma_clipped_stats
+
 plt.rcParams.update({'figure.max_open_warning': 0})
 
 
 #######################################################
 # for log file
-
 log_dir = "logs/"
 log_file = "{}{}.log".format(log_dir, os.path.basename(__file__)[:-3])
 err_log_file = "{}{}_err.log".format(log_dir, os.path.basename(__file__)[:-3])
@@ -127,20 +127,20 @@ def sky_fit(all_sky, method='mode', sky_nsigma=3, sky_iter=5, \
 #######################################################
 # read all files in base directory for processing
 
-base_dir = "../Post_processing/M35_Light_-_2018-10-31_-_TMB130ss_STF-8300M_-_1bin/"
-base_dir = "../Rne_2022/AMPELLA_Light_-_2022-09-06_-_GSON300_STF-8300M_-_1bin/"
-base_dir = "../Rne_2022/INTERAMNIA_Light_-_2022-09-21_-_GSON300_STF-8300M_-_1bin/"
+BASEDIR = "../Post_processing/M35_Light_-_2018-10-31_-_TMB130ss_STF-8300M_-_1bin/"
+BASEDIR = "../Rne_2022/AMPELLA_Light_-_2022-09-06_-_GSON300_STF-8300M_-_1bin/"
+BASEDIR = "../Rne_2022/INTERAMNIA_Light_-_2022-09-21_-_GSON300_STF-8300M_-_1bin/"
 
-fullnames = Python_utilities.getFullnameListOfallFiles(base_dir)
+fullnames = Python_utilities.getFullnameListOfallFiles(BASEDIR)
 #print ("fullnames: {}".format(fullnames))
 print ("len(fullnames): {}".format(len(fullnames)))
 ######################################################
 
 Result_dir = "DAO_Annul_result/"
 
-if not os.path.exists('{0}'.format("{}{}".format(base_dir, Result_dir))):
-    os.makedirs("{}{}".format(base_dir, Result_dir))
-    print("{}{}is created".format(base_dir, Result_dir))
+if not os.path.exists('{0}'.format("{}{}".format(BASEDIR, Result_dir))):
+    os.makedirs("{}{}".format(BASEDIR, Result_dir))
+    print("{}{}is created".format(BASEDIR, Result_dir))
 
 #%%
 fullnames_light = [w for w in fullnames \
@@ -203,7 +203,7 @@ for fullname in fullnames_light[:]:
 
         # save XY coordinates:
         DAOfound.write("{}{}{}_DAOStarfinder_fwhm{}.csv".\
-                        format(base_dir, Result_dir, fullname_el[-1][:-4], FWHM), 
+                        format(BASEDIR, Result_dir, fullname_el[-1][:-4], FWHM), 
                         overwrite = True,
                         format='ascii.fast_csv')
 
@@ -273,7 +273,7 @@ for fullname in fullnames_light[:]:
             xycoords='axes fraction', textcoords='offset points')
 
         plt.savefig("{}{}{}_DAOStarfinder_fwhm{}.png".\
-                        format(base_dir, Result_dir, fullname_el[-1][:-4], FWHM))
+                        format(BASEDIR, Result_dir, fullname_el[-1][:-4], FWHM))
         #plt.show()
         plt.close()
 
@@ -315,12 +315,12 @@ for fullname in fullnames_light[:]:
             cutimg = mask_annul.cutout(img)
             df_cutimg = pd.DataFrame(cutimg)
             df_cutimg.to_csv("{}{}{}_DAOstarfinder__starID_{:04}_Star_Area_pixel_value.csv".\
-                        format(base_dir, Result_dir, fullname_el[-1][:-4], star_ID)) 
+                        format(BASEDIR, Result_dir, fullname_el[-1][:-4], star_ID)) 
             
             apert_apply = mask_apert.multiply(img)  # change from 'sky_apply  = mask_annul.apply(img)'
             df_apert_apply = pd.DataFrame(apert_apply)
             df_apert_apply.to_csv("{}{}{}_DAOstarfinder__starID_{:04}_Apeture_area_pixel_value.csv".\
-                        format(base_dir, Result_dir, fullname_el[-1][:-4], star_ID)) 
+                        format(BASEDIR, Result_dir, fullname_el[-1][:-4], star_ID)) 
             
             apert_non0   = np.nonzero(apert_apply)
             apert_pixel  = apert_apply[apert_non0]
@@ -331,7 +331,7 @@ for fullname in fullnames_light[:]:
             sky_apply = mask_annul.multiply(img)  # change from 'sky_apply  = mask_annul.apply(img)'
             df_sky_apply = pd.DataFrame(sky_apply)
             df_sky_apply.to_csv("{}{}{}_DAOstarfinder__starID_{:04}_Sky_Annulus_pixel_value.csv".\
-                        format(base_dir, Result_dir, fullname_el[-1][:-4], star_ID)) 
+                        format(BASEDIR, Result_dir, fullname_el[-1][:-4], star_ID)) 
             
             sky_non0   = np.nonzero(sky_apply)
             sky_pixel  = sky_apply[sky_non0]
@@ -408,7 +408,7 @@ for fullname in fullnames_light[:]:
             #plt.colorbar(size="5%", pad=0.05)                        
             
             plt.savefig("{}{}{}_DAOstarfinder__starID_{:04}_Annulus_result.png".\
-                            format(base_dir, Result_dir, fullname_el[-1][:-4], star_ID),
+                            format(BASEDIR, Result_dir, fullname_el[-1][:-4], star_ID),
                             overwrite=True)
 
             print('{0!s}_DAOstarfinder_starID_{1:04}_Annulus_result.png is saved'\

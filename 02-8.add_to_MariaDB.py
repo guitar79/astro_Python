@@ -76,10 +76,10 @@ else :
 
 #%%
 #########################################
-base_dirs = ['../CCD_obs_raw/']
+BASEDIRs = ['../CCD_obs_raw/']
 
 fullnames = []
-for dirName in base_dirs :
+for dirName in BASEDIRs :
     try :
         fullnames.extend(Python_utilities.getFullnameListOfallFiles("{}".format(dirName)))
     except Exception as err :

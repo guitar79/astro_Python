@@ -21,11 +21,11 @@ print ("err_log_file: {}".format(err_log_file))
 if not os.path.exists('{0}'.format(log_dir)):
     os.makedirs('{0}'.format(log_dir))
 
-base_dir = "../CCD_new_files/"
-#base_dir = "../CCD_wcs_one/"
-base_dir = "../CCD_obs_raw/"
+BASEDIR = "../CCD_new_files/"
+#BASEDIR = "../CCD_wcs_one/"
+BASEDIR = "../CCD_obs_raw/"
 
-fullnames = Python_utilities.getFullnameListOfallFiles(base_dir)
+fullnames = Python_utilities.getFullnameListOfallFiles(BASEDIR)
 print ("fullnames: {}".format(fullnames))
 
 fullnames_wcs = [w for w in fullnames if ".wcs" in w]

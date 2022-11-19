@@ -18,10 +18,10 @@ if not os.path.exists('{0}'.format(log_dir)):
     os.makedirs('{0}'.format(log_dir))
 
 
-base_dir = "../CCD_obs_raw/"
+BASEDIR = "../CCD_obs_raw/"
 
 #####################################################################
-fullnames = Python_utilities.getFullnameListOfallFiles(base_dir)
+fullnames = Python_utilities.getFullnameListOfallFiles(BASEDIR)
 print ("fullnames: {}".format(fullnames))
 
 fullnames_tmp = [w for w in fullnames if ".tmp" in w]

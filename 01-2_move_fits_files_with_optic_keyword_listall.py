@@ -4,9 +4,9 @@
 Created on Thu Nov 22 01:00:19 2018
 @author: guitar79@naver.com
 
-이 파일은 base_dir 폴더 안에 있는 모든 fit 파일에 대해서 
+이 파일은 BASEDIR 폴더 안에 있는 모든 fit 파일에 대해서 
 fits header에 있는 정보를 바탕으로  
-destination_base_dir_name 안에 규칙적으로 폴더를 만들어서 저장합니다. 
+destination_BASEDIR_name 안에 규칙적으로 폴더를 만들어서 저장합니다. 
 
 """
 #%%
@@ -30,20 +30,20 @@ if not os.path.exists('{0}'.format(log_dir)):
 
 #######################################################
 # read all files in base directory for processing
-base_dir = "../CCD_new_files/"
+BASEDIR = "../CCD_new_files/"
 
-destination_base_dir_name = "../CCD_obs_raw/"
+destination_BASEDIR_name = "../CCD_obs_raw/"
 target_duplicate_files_dir = "../CCD_duplicate_files/"
 
 
 if not os.path.exists('{0}'.format(target_duplicate_files_dir)):
     os.makedirs('{0}'.format(target_duplicate_files_dir))
 
-if not os.path.exists('{0}'.format(destination_base_dir_name)):
-    os.makedirs('{0}'.format(destination_base_dir_name))
+if not os.path.exists('{0}'.format(destination_BASEDIR_name)):
+    os.makedirs('{0}'.format(destination_BASEDIR_name))
                 
 ### make all file list...
-fullnames = astro_utilities.getFullnameListOfallFiles(base_dir)
+fullnames = astro_utilities.getFullnameListOfallFiles(BASEDIR)
 #print ("fullnames: {}".format(fullnames))
 print ("len(fullnames): {}".format(len(fullnames)))
 
@@ -84,7 +84,7 @@ for fullname in fullnames[:]:
             new_filename = astro_utilities.get_new_filename(fullname)
             new_foldername = astro_utilities.get_new_foldername_from_filename(new_filename)
             print ("new_filename: {}".format(new_filename))
-            new_foldername = "{}{}".format(destination_base_dir_name, new_foldername)
+            new_foldername = "{}{}".format(destination_BASEDIR_name, new_foldername)
             print ("new_foldername: {}".format(new_foldername))
             
             if not os.path.exists('{0}'.format(new_foldername)):
@@ -127,7 +127,7 @@ for fullname in fullnames[:]:
 master_file_dir_name = 'master_file_Python/'
 
 for i in range(4) : 
-    fullnames = Python_utilities.getFullnameListOfallsubDirs(base_dir)
+    fullnames = Python_utilities.getFullnameListOfallsubDirs(BASEDIR)
     print ("fullnames: {}".format(fullnames))
     
     for fullname in fullnames[:] :

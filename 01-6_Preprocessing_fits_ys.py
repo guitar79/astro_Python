@@ -48,10 +48,10 @@ if not os.path.exists('{0}'.format(log_dir)):
 #%%
 #######################################################
 # read all files in base directory for processing
-base_dir = "../Post_process/M13_Light_-_2021-04_-_TEC140x75_STL-11000M_-_1bin/"
-base_dir = "../RnE_2022/KLEOPATRA_Light_-_2022-11-08_-_RiLA600_STX-16803_-_2bin_work/"
-#base_dir = "../RnE_2022/"
-#base_dir = "../CCD_obs_raw/"
+BASEDIR = "../Post_process/M13_Light_-_2021-04_-_TEC140x75_STL-11000M_-_1bin/"
+BASEDIR = "../RnE_2022/KLEOPATRA_Light_-_2022-11-08_-_RiLA600_STX-16803_-_2bin_work/"
+#BASEDIR = "../RnE_2022/"
+#BASEDIR = "../CCD_obs_raw/"
 
 master_dir = "master_files/"
 
@@ -64,7 +64,7 @@ dark_kw = dict(dark_type_key=["IMAGETYP"], dark_type_val=["DARK"], dark_group_ke
 flat_kw = dict(flat_type_key=["IMAGETYP"], flat_type_val=["FLAT"], flat_group_key=["FILTER"])
 
 #%%
-TOPDIR = Path("{}".format(base_dir))
+TOPDIR = Path("{}".format(BASEDIR))
 RAWDIR = TOPDIR
 ARCHIVE = TOPDIR/"archive"
 CALIBDIR = TOPDIR/"calib"

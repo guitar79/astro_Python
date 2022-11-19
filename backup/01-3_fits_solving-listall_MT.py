@@ -34,20 +34,20 @@ if not os.path.exists('{0}'.format(log_dir)):
 #######################################################
 # read all files in base directory for processing
 
-base_dir = "../CCD_new_files/"
-base_dir = "../CCD_obs_raw/STX-16803_2bin/"
+BASEDIR = "../CCD_new_files/"
+BASEDIR = "../CCD_obs_raw/STX-16803_2bin/"
 
-destination_base_dir_name = "../CCD_obs_raw/"
+destination_BASEDIR_name = "../CCD_obs_raw/"
 target_duplicate_files_dir = "../CCD_duplicate_files/"
 
 if not os.path.exists('{0}'.format(target_duplicate_files_dir)):
     os.makedirs('{0}'.format(target_duplicate_files_dir))
 
-if not os.path.exists('{0}'.format(destination_base_dir_name)):
-    os.makedirs('{0}'.format(destination_base_dir_name))
+if not os.path.exists('{0}'.format(destination_BASEDIR_name)):
+    os.makedirs('{0}'.format(destination_BASEDIR_name))
 
 # make all fits file list...
-fullnames = Python_utilities.getFullnameListOfallFiles(base_dir)
+fullnames = Python_utilities.getFullnameListOfallFiles(BASEDIR)
 #print ("fullnames: {}".format(fullnames))
 print ("len(fullnames): {}".format(len(fullnames)))
 
@@ -93,7 +93,7 @@ for thr in range(n_threads):
 #############################################################################
 #Check existence tmp file and rename ...
 #############################################################################
-fullnames = Python_utilities.getFullnameListOfallFiles(base_dir)
+fullnames = Python_utilities.getFullnameListOfallFiles(BASEDIR)
 print ("fullnames: {}".format(fullnames))
 
 fullnames_wcs = [w for w in fullnames if ((w.endswith(".tmp")) or (w.endswith(".new")))]
@@ -126,7 +126,7 @@ for fullname in fullnames_wcs[:] :
             new_filename = astro_utilities.get_new_filename(fullname)
             new_foldername = astro_utilities.get_new_foldername_from_filename(new_filename)
             print ("new_filename: {}".format(new_filename))
-            new_foldername = "{}{}".format(destination_base_dir_name, new_foldername)
+            new_foldername = "{}{}".format(destination_BASEDIR_name, new_foldername)
             print ("new_foldername: {}".format(new_foldername))
             
             if not os.path.exists('{0}'.format(new_foldername)):

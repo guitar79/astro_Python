@@ -67,11 +67,11 @@ if not os.path.exists('{0}'.format(log_dir)):
     os.makedirs('{0}'.format(log_dir))
 #######################################################
 
-base_dir = "../Post_processing/M35_Light_-_2018-10-31_-_TMB130ss_STF-8300M_-_1bin/"
-base_dir = "../RnE_2022/KLEOPATRA_Light_-_2022-10-07_-_GSON300_STF-8300M_-_1bin/"
+BASEDIR = "../Post_processing/M35_Light_-_2018-10-31_-_TMB130ss_STF-8300M_-_1bin/"
+BASEDIR = "../RnE_2022/KLEOPATRA_Light_-_2022-10-07_-_GSON300_STF-8300M_-_1bin/"
 
 ### make all fits file list...
-fullnames = Python_utilities.getFullnameListOfallFiles("{}/input".format(base_dir))
+fullnames = Python_utilities.getFullnameListOfallFiles("{}/input".format(BASEDIR))
 #print ("fullnames: {}".format(fullnames))
 print ("len(fullnames): {}".format(len(fullnames)))
 
@@ -80,9 +80,9 @@ master_dir = "master_files/"
 reduced_dir = "readuced_files/"
 result_dir = "result_files/"
 
-if not os.path.exists('{0}'.format("{}{}".format(base_dir, result_dir))):
-    os.makedirs("{}{}".format(base_dir, result_dir))
-    print("{}{}is created".format(base_dir, result_dir))
+if not os.path.exists('{0}'.format("{}{}".format(BASEDIR, result_dir))):
+    os.makedirs("{}{}".format(BASEDIR, result_dir))
+    print("{}{}is created".format(BASEDIR, result_dir))
 
 fullnames_light = [w for w in fullnames \
             if ("_bias_" not in w.lower()) \

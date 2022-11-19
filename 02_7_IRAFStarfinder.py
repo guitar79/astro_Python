@@ -41,21 +41,21 @@ if not os.path.exists('{0}'.format(log_dir)):
 #######################################################
 # read all files in base directory for processing
 
-base_dir = "../Post_processing/M35_Light_-_2018-10-31_-_TMB130ss_STF-8300M_-_1bin/"
-base_dir = "../Rne_2022/AMPELLA_Light_-_2022-09-06_-_GSON300_STF-8300M_-_1bin/"
-base_dir = "../Rne_2022/INTERAMNIA_Light_-_2022-09-21_-_GSON300_STF-8300M_-_1bin/"
-base_dir = "../Rne_2022/KLEOPATRA_Light_-_2022-10-11_-_GSON300_STF-8300M_-_1bin/result_PI/calibrated/Light_BIN-1_EXPOSURE-20.00s_FILTER-L_Mono_fit/"
+BASEDIR = "../Post_processing/M35_Light_-_2018-10-31_-_TMB130ss_STF-8300M_-_1bin/"
+BASEDIR = "../Rne_2022/AMPELLA_Light_-_2022-09-06_-_GSON300_STF-8300M_-_1bin/"
+BASEDIR = "../Rne_2022/INTERAMNIA_Light_-_2022-09-21_-_GSON300_STF-8300M_-_1bin/"
+BASEDIR = "../Rne_2022/KLEOPATRA_Light_-_2022-10-11_-_GSON300_STF-8300M_-_1bin/result_PI/calibrated/Light_BIN-1_EXPOSURE-20.00s_FILTER-L_Mono_fit/"
 
-fullnames = Python_utilities.getFullnameListOfallFiles(base_dir)
+fullnames = Python_utilities.getFullnameListOfallFiles(BASEDIR)
 #print ("fullnames: {}".format(fullnames))
 print ("len(fullnames): {}".format(len(fullnames)))
 ######################################################
 
 Result_dir = "IRAFfinder_result/"
 
-if not os.path.exists('{0}'.format("{}{}".format(base_dir, Result_dir))):
-    os.makedirs("{}{}".format(base_dir, Result_dir))
-    print("{}{}is created".format(base_dir, Result_dir))
+if not os.path.exists('{0}'.format("{}{}".format(BASEDIR, Result_dir))):
+    os.makedirs("{}{}".format(BASEDIR, Result_dir))
+    print("{}{}is created".format(BASEDIR, Result_dir))
 
 #%%
 fullnames_light = [w for w in fullnames \
@@ -117,7 +117,7 @@ for fullname in fullnames_light[:]:
 
         # save XY coordinates:
         IRAFfound.write("{}{}{}_IRAFStarFinder_fwhm{}.csv".\
-                        format(base_dir, Result_dir, fullname_el[-1][:-4], FWHM), 
+                        format(BASEDIR, Result_dir, fullname_el[-1][:-4], FWHM), 
                         overwrite = True,
                         format='ascii.fast_csv')
 
@@ -184,7 +184,7 @@ for fullname in fullnames_light[:]:
             xycoords='axes fraction', textcoords='offset points')
 
         plt.savefig("{}{}{}_IRAFStarFinder_fwhm{}.png".\
-                        format(base_dir, Result_dir, fullname_el[-1][:-4], FWHM))
+                        format(BASEDIR, Result_dir, fullname_el[-1][:-4], FWHM))
         #plt.show()
         plt.close()
   

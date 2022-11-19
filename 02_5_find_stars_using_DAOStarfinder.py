@@ -27,10 +27,10 @@ print ("err_log_file: {}".format(err_log_file))
 if not os.path.exists('{0}'.format(log_dir)):
     os.makedirs('{0}'.format(log_dir))
 
-base_dir = "../Post_processing/M35_Light_-_2018-10-31_-_TMB130ss_STF-8300M_-_1bin/"
+BASEDIR = "../Post_processing/M35_Light_-_2018-10-31_-_TMB130ss_STF-8300M_-_1bin/"
 
 ### make all fits file list...
-fullnames = Python_utilities.getFullnameListOfallFiles("{}/input".format(base_dir))
+fullnames = Python_utilities.getFullnameListOfallFiles("{}/input".format(BASEDIR))
 #print ("fullnames: {}".format(fullnames))
 print ("len(fullnames): {}".format(len(fullnames)))
 
@@ -39,9 +39,9 @@ master_dir = "master_files/"
 reduced_dir = "readuced_files/"
 result_dir = "result_files/"
 
-if not os.path.exists('{0}'.format("{}{}".format(base_dir, result_dir))):
-    os.makedirs("{}{}".format(base_dir, result_dir))
-    print("{}{}is created".format(base_dir, result_dir))
+if not os.path.exists('{0}'.format("{}{}".format(BASEDIR, result_dir))):
+    os.makedirs("{}{}".format(BASEDIR, result_dir))
+    print("{}{}is created".format(BASEDIR, result_dir))
 
 fullnames_light = [w for w in fullnames \
             if ("_bias_" not in w.lower()) \
@@ -95,7 +95,7 @@ for fullname in fullnames_light[:]:
         
         # save XY coordinates:
         DAOfound.write("{}{}{}_DAOStarfinder_fwhm{}.csv".\
-                        format(base_dir, result_dir, fullname_el[-1][:-4], FWHM), 
+                        format(BASEDIR, result_dir, fullname_el[-1][:-4], FWHM), 
                         overwrite = True,
                         format='ascii.fast_csv')
         
@@ -163,7 +163,7 @@ for fullname in fullnames_light[:]:
             xycoords='axes fraction', textcoords='offset points')
         
         plt.savefig("{}{}{}_DAOStarfinder_fwhm{}.png".\
-                        format(base_dir, result_dir, fullname_el[-1][:-4], FWHM))
+                        format(BASEDIR, result_dir, fullname_el[-1][:-4], FWHM))
         #plt.show()
         plt.close()
         break

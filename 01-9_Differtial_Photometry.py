@@ -18,26 +18,30 @@ cd ~/Downloads/SNUO1Mpy && git pull && pip install -e .
 
 """
 #%%
+import os
 from glob import glob
 from pathlib import Path
+
 import numpy as np
-import os
+import pandas as pd
+import matplotlib.pyplot as plt
+
 import astropy.units as u
 from ccdproc import CCDData, ccd_process
-import Python_utilities
 
 from astropy.time import Time
 from astropy.table import Table, vstack
 from astropy.coordinates import SkyCoord
 from astropy.wcs import WCS
 from photutils.aperture import CircularAnnulus, CircularAperture
-import pandas as pd
-import matplotlib.pyplot as plt
 
 import ysfitsutilpy as yfu
 import ysphotutilpy as ypu
 import ysvisutilpy as yvu
 
+import Python_utilities
+
+#%%
 #######################################################
 # for log file
 log_dir = "logs/"
@@ -51,34 +55,15 @@ if not os.path.exists('{0}'.format(log_dir)):
 #%%
 #######################################################
 # 
-base_dir = "../RnE_2022/"
-#base_dir = Path("..\RnE_2022\KLEOPATRA_Light_-_2022-11-04_-_RiLA600_STX-16803_-_2bin\reduced\solved\")
-base_dir = Path("../RnE_2022/KLEOPATRA_Light_-_2022-11-04_-_RiLA600_STX-16803_-_2bin/reduced/solved/")
-base_dir = "../RnE_2022/KLEOPATRA_Light_-_2022-11-04_-_RiLA600_STX-16803_-_2bin/reduced/solved/"
+BASEDIR = "../RnE_2022/"
+#BASEDIR = Path("..\RnE_2022\KLEOPATRA_Light_-_2022-11-04_-_RiLA600_STX-16803_-_2bin\reduced\solved\")
+BASEDIR = Path("../RnE_2022/KLEOPATRA_Light_-_2022-11-04_-_RiLA600_STX-16803_-_2bin/reduced/solved/")
+BASEDIR = "../RnE_2022/KLEOPATRA_Light_-_2022-11-04_-_RiLA600_STX-16803_-_2bin/"
 
 c_method = 'median'
 master_dir = "master_files_ys"
 reduced_dir = "reduced"
 solved_dir = "solved"
-
-#%%
-base_dirs = sorted(Python_utilities.getFullnameListOfsubDir(base_dir))
-base_dirs = [w for w in base_dirs \
-        if not (w.endswith("{}/".format(master_dir)) \
-            or w.endswith("{}/".format(reduced_dir)) \
-            or w.endswith("{}/".format(solved_dir)) \
-                or w.endswith(".fits"))]
-
-print ("base_dirs: {}".format(base_dirs))
-
-#%%
-# for base_dir in base_dirs :
-#     print ("Starting...\n{}".format(base_dir))
-
-#     base_dir = Path(base_dir)
-
-#     if not (base_dir/reduced_dir).exists():
-#         os.makedirs(str((base_dir/reduced_dir)))
 
 #%%
 #####################################################################
@@ -104,28 +89,45 @@ R_OUT = 6*FWHM_INIT  # Outer radius of annulus
 #####################################################################
 
 #%%
-base_dir = "../RnE_2022/KLEOPATRA_Light_-_2022-11-04_-_RiLA600_STX-16803_-_2bin"
-print ("Starting...\n{}".format(base_dir))
-base_dir = Path(base_dir)
+# BASEDIRs = sorted(Python_utilities.getFullnameListOfsubDir(BASEDIR))
+# print ("BASEDIRs: {}".format(BASEDIRs))
 
-summary = yfu.make_summary(base_dir/reduced_dir/solved_dir/"*.fits")
+# for BASEDIR in BASEDIRs :
+#     print ("Starting...\n{}".format(BASEDIR))
+
+#     BASEDIR = Path(BASEDIR)
+
+#     if not (BASEDIR/solved).exists():
+#         os.makedirs(str((BASEDIR/reduced_dir)))
+
+#%%
+
+print ("Starting...\n{}".format(BASEDIR))
+BASEDIR = Path("../RnE_2022/KLEOPATRA_Light_-_2022-11-04_-_RiLA600_STX-16803_-_2bin/")
+SOLVEDDIR = BASEDIR / solved_dir
+
+summary = yfu.make_summary(SOLVEDDIR/"*.fits")
 #print(summary)
 print(summary["file"][0])
 
-ccd = yfu.load_ccd(summary["file"][0], 
-                   unit="adu")
-
+fname = summary["file"][0]
 #%%
-_, eph, _ = ypu.horizons_query(OBJID, epochs=Time(ccd.header["DATE-OBS"]).jd, location=LOCATION)
-eph
+# load as ccd
+ccd = yfu.load_ccd(fname, 
+                   unit="adu")
+#%%
+_, eph, _ = ypu.horizons_query(
+                            OBJID, 
+                            epochs=Time(ccd.header["DATE-OBS"]).jd, 
+                            location=LOCATION)
+print("eph:", eph)
 
 #%%
 pos_targ_init = SkyCoord(eph["RA"], eph["DEC"], **SKYC_KW).to_pixel(ccd.wcs)
 ap = CircularAperture([pos_targ_init[0][0], pos_targ_init[1][0]], r=R_AP)
 an = CircularAnnulus([pos_targ_init[0][0], pos_targ_init[1][0]], r_in=R_IN, r_out=R_OUT)
 
-pos_targ_init
-
+print("pos_targ_init:", pos_targ_init)
 
 #%%
 phot_targ = ypu.apphot_annulus(ccd, ap, an, error=yfu.errormap(ccd))
@@ -145,8 +147,7 @@ isnear = ypu.organize_ps1_and_isnear(
 )
 df_stars = ps1.queried.to_pandas()
 
-#%%
-df_stars
+print("df_stars:", df_stars)
 
 #%%
 fig, axs = plt.subplots(1, 1, figsize=(8, 5), sharex=False, sharey=False, gridspec_kw=None)

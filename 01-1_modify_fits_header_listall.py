@@ -5,7 +5,7 @@ Created on Thu Nov 22 01:00:19 2018
 @author: guitar79@naver.com
 
 이 파일은 fits 파일의 헤더에 누락된 정보를 넣어주는 것입니다.
-base_dir 폴더 안에 있는 모든 fit 파일에 대해서 바로 상위 디렉토리 명을 참조하여 
+BASEDIR 폴더 안에 있는 모든 fit 파일에 대해서 바로 상위 디렉토리 명을 참조하여 
 OPTIC, CCDNAME 등의 정보를 줍니다.
 """
 #%%
@@ -29,11 +29,11 @@ if not os.path.exists('{0}'.format(log_dir)):
 
 #######################################################
 # read all files in base directory for processing
-base_dir = "../CCD_new_files/"
-#base_dir = "../Rne_2022/"
-#base_dir = "../CCD_obs_raw/"
+BASEDIR = "../CCD_new_files/"
+#BASEDIR = "../Rne_2022/"
+#BASEDIR = "../CCD_obs_raw/"
 
-fullnames = astro_utilities.getFullnameListOfallFiles(base_dir)
+fullnames = astro_utilities.getFullnameListOfallFiles(BASEDIR)
 
 print ("fullnames: {}".format(fullnames))
 #######################################################
@@ -44,17 +44,18 @@ print ("fullnames: {}".format(fullnames))
 gain = 0
 rdnoise = 0
 binning = 1
-gains = {"STF-8300M": 0.37, 
+
+GAINDIC = {"STF-8300M": 0.37, 
         "STX-16803": 1.27, 
         "STL-11000": 0.8, 
         "QSI683ws": 0.13 } 
 
-rdnoises = {"STF-8300M": 9.3, 
+RDNOISEDIC = {"STF-8300M": 9.3, 
             "STX-16803": 9.0, 
             "STL-11000": 9.6, 
             "QSI683ws": 8.0 } 
 
-pixscale = {"STF-8300M": None, 
+PIXSCALEDIC = {"STF-8300M": None, 
             "RiLA600_STX-16803_1bin": 0.512, 
             "RiLA600_STX-16803_2bin": 1.024, 
             "STL-11000": None, 
@@ -132,18 +133,18 @@ for fullname in fullnames[:] :
                                       'change HEADER CCDNAME {0}'.format(ccd_name))
 
                 if "-8300" in hdul[0].header['INSTRUME'] :
-                    hdul[0].header['GAIN'] = gains["STF-8300M"]
+                    hdul[0].header['GAIN'] = GAINDIC["STF-8300M"]
                     hdul[0].header.append('COMMENT',
-                                      'change HEADER GAIN {0}'.format(gains["STF-8300M"]),
-                                      'change HEADER GAIN {0}'.format(gains["STF-8300M"]))
-                    hdul[0].header['EGAIN'] = gains["STF-8300M"]
+                                      'change HEADER GAIN {0}'.format(GAINDIC["STF-8300M"]),
+                                      'change HEADER GAIN {0}'.format(GAINDIC["STF-8300M"]))
+                    hdul[0].header['EGAIN'] = GAINDIC["STF-8300M"]
                     hdul[0].header.append('COMMENT',
-                                      'change HEADER EGAIN {0}'.format(gains["STF-8300M"]),
-                                      'change HEADER EGAIN {0}'.format(gains["STF-8300M"]))
-                    hdul[0].header['RDNOISE'] = rdnoises["STF-8300M"]
+                                      'change HEADER EGAIN {0}'.format(GAINDIC["STF-8300M"]),
+                                      'change HEADER EGAIN {0}'.format(GAINDIC["STF-8300M"]))
+                    hdul[0].header['RDNOISE'] = RDNOISEDIC["STF-8300M"]
                     hdul[0].header.append('COMMENT',
-                                      'change HEADER RDNOISE {0}'.format(rdnoises["STF-8300M"]),
-                                      'change HEADER RDNOISE {0}'.format(rdnoises["STF-8300M"]))
+                                      'change HEADER RDNOISE {0}'.format(RDNOISEDIC["STF-8300M"]),
+                                      'change HEADER RDNOISE {0}'.format(RDNOISEDIC["STF-8300M"]))
                     hdul[0].header['XBINNING'] = int(hdul[0].header['XPIXSZ'] / 5.4)
                     hdul[0].header.append('COMMENT',
                                       'change HEADER XBINNING {0}'.format(int(hdul[0].header['XPIXSZ'] / 5.4)),
@@ -157,19 +158,19 @@ for fullname in fullnames[:] :
 
                 elif "16803" in hdul[0].header['INSTRUME'] \
                     or "16803" in hdul[0].header['CCDNAME']:
-                    hdul[0].header['GAIN'] = gains["STX-16803"]
+                    hdul[0].header['GAIN'] = GAINDIC["STX-16803"]
                     hdul[0].header.append('COMMENT',
-                                      'change HEADER GAIN {0}'.format(gains["STX-16803"]),
-                                      'change HEADER GAIN {0}'.format(gains["STX-16803"]))
-                    hdul[0].header['EGAIN'] = gains["STX-16803"]
+                                      'change HEADER GAIN {0}'.format(GAINDIC["STX-16803"]),
+                                      'change HEADER GAIN {0}'.format(GAINDIC["STX-16803"]))
+                    hdul[0].header['EGAIN'] = GAINDIC["STX-16803"]
                     hdul[0].header.append('COMMENT',
-                                      'change HEADER EGAIN {0}'.format(gains["STX-16803"]),
-                                      'change HEADER EGAIN {0}'.format(gains["STX-16803"]))
+                                      'change HEADER EGAIN {0}'.format(GAINDIC["STX-16803"]),
+                                      'change HEADER EGAIN {0}'.format(GAINDIC["STX-16803"]))
                     
-                    hdul[0].header['RDNOISE'] = rdnoises["STX-16803"]
+                    hdul[0].header['RDNOISE'] = RDNOISEDIC["STX-16803"]
                     hdul[0].header.append('COMMENT',
-                                      'change HEADER RDNOISE {0}'.format(rdnoises["STX-16803"]),
-                                      'change HEADER RDNOISE {0}'.format(rdnoises["STX-16803"]))
+                                      'change HEADER RDNOISE {0}'.format(RDNOISEDIC["STX-16803"]),
+                                      'change HEADER RDNOISE {0}'.format(RDNOISEDIC["STX-16803"]))
 
                     if 'XPIXSZ' in hdul[0].header :
                         binning = int(hdul[0].header['XPIXSZ'] / 9)
@@ -191,19 +192,19 @@ for fullname in fullnames[:] :
                                         'change HEADER YBINNING {0}'.format(binning))
 
                 elif "11000" in hdul[0].header['INSTRUME'] :
-                    hdul[0].header['GAIN'] = gains["STL-11000"]
+                    hdul[0].header['GAIN'] = GAINDIC["STL-11000"]
                     hdul[0].header.append('COMMENT',
-                                      'change HEADER GAIN {0}'.format(gains["STL-11000"]),
-                                      'change HEADER GAIN {0}'.format(gains["STL-11000"]))
-                    hdul[0].header['EGAIN'] = gains["STL-11000"]
+                                      'change HEADER GAIN {0}'.format(GAINDIC["STL-11000"]),
+                                      'change HEADER GAIN {0}'.format(GAINDIC["STL-11000"]))
+                    hdul[0].header['EGAIN'] = GAINDIC["STL-11000"]
                     hdul[0].header.append('COMMENT',
-                                      'change HEADER EGAIN {0}'.format(gains["STL-11000"]),
-                                      'change HEADER EGAIN {0}'.format(gains["STL-11000"]))
+                                      'change HEADER EGAIN {0}'.format(GAINDIC["STL-11000"]),
+                                      'change HEADER EGAIN {0}'.format(GAINDIC["STL-11000"]))
                     
-                    hdul[0].header['RDNOISE'] = rdnoises["STX-16803"]
+                    hdul[0].header['RDNOISE'] = RDNOISEDIC["STX-16803"]
                     hdul[0].header.append('COMMENT',
-                                      'change HEADER RDNOISE {0}'.format(rdnoises["STL-11000"]),
-                                      'change HEADER RDNOISE {0}'.format(rdnoises["STL-11000"]))
+                                      'change HEADER RDNOISE {0}'.format(RDNOISEDIC["STL-11000"]),
+                                      'change HEADER RDNOISE {0}'.format(RDNOISEDIC["STL-11000"]))
                     hdul[0].header['XBINNING'] = int(hdul[0].header['XPIXSZ'] / 9)
                     hdul[0].header.append('COMMENT',
                                       'change HEADER XBINNING {0}'.format(int(hdul[0].header['XPIXSZ'] / 9)),
@@ -215,19 +216,19 @@ for fullname in fullnames[:] :
                                       'change HEADER YBINNING {0}'.format(int(hdul[0].header['YPIXSZ'] / 9)))
                 
                 elif "683" in hdul[0].header['INSTRUME'] :
-                    hdul[0].header['GAIN'] = gains["QSI683ws"]
+                    hdul[0].header['GAIN'] = GAINDIC["QSI683ws"]
                     hdul[0].header.append('COMMENT',
-                                      'change HEADER GAIN {0}'.format(gains["QSI683ws"]),
-                                      'change HEADER GAIN {0}'.format(gains["QSI683ws"]))
-                    hdul[0].header['EGAIN'] = gains["QSI683ws"]
+                                      'change HEADER GAIN {0}'.format(GAINDIC["QSI683ws"]),
+                                      'change HEADER GAIN {0}'.format(GAINDIC["QSI683ws"]))
+                    hdul[0].header['EGAIN'] = GAINDIC["QSI683ws"]
                     hdul[0].header.append('COMMENT',
-                                      'change HEADER EGAIN {0}'.format(gains["QSI683ws"]),
-                                      'change HEADER EGAIN {0}'.format(gains["QSI683ws"]))
+                                      'change HEADER EGAIN {0}'.format(GAINDIC["QSI683ws"]),
+                                      'change HEADER EGAIN {0}'.format(GAINDIC["QSI683ws"]))
                     
-                    hdul[0].header['RDNOISE'] = rdnoises["STX-16803"]
+                    hdul[0].header['RDNOISE'] = RDNOISEDIC["STX-16803"]
                     hdul[0].header.append('COMMENT',
-                                      'change HEADER RDNOISE {0}'.format(rdnoises["QSI683ws"]),
-                                      'change HEADER RDNOISE {0}'.format(rdnoises["QSI683ws"]))
+                                      'change HEADER RDNOISE {0}'.format(RDNOISEDIC["QSI683ws"]),
+                                      'change HEADER RDNOISE {0}'.format(RDNOISEDIC["QSI683ws"]))
                     hdul[0].header['XBINNING'] = int(hdul[0].header['XPIXSZ'] / 5.4)
                     hdul[0].header.append('COMMENT',
                                       'change HEADER XBINNING {0}'.format(int(hdul[0].header['XPIXSZ'] / 5.4)),

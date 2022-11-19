@@ -7,9 +7,25 @@ ModuleNotFoundError: No module named 'ccdproc'
 conda install -c condaforge ccdproc
 """
 
+#%%
 from datetime import datetime
+import os
+import shutil
+from pathlib import Path
 
 #from astropy.io import fits
+
+#%%
+# =============================================================================
+# mkdir
+# =============================================================================
+
+def mkdir(fpath, mode=0o777, exist_ok=True):
+    ''' Convenience function for Path.mkdir()
+    '''
+    fpath = Path(fpath)
+    Path.mkdir(fpath, mode=mode, exist_ok=exist_ok)
+
 
 #%%
 # =============================================================================
@@ -30,7 +46,8 @@ def write_log2(log_file, log_str):
         log_f.write("{}, {}\n".format(os.path.basename(__file__), log_str))
     return print ("{}, {}\n".format(os.path.basename(__file__), log_str))
 
-        
+
+#%%        
 # =============================================================================
 # for checking time
 # =============================================================================
@@ -45,6 +62,38 @@ integration_dir_name = 'integration_Python/'
 alignment_dir_name = 'alignment_Python/'
 
 
+
+#%%
+# =============================================================================
+#     
+# =============================================================================
+def removeAllEmptyDirs(fpath):
+    """
+    Parameters
+    ----------
+    fullname : fpath
+        The fullname of input directory...
+
+    """
+    
+    del_N = 0
+    for i in range(10) : 
+        fullnames = getFullnameListOfallsubDirs(fpath)
+        #print ("fullnames: {}".format(fullnames))
+        print ("{} directories were found... ".format(len(fullnames)))
+        
+        for fullname in fullnames[:] :
+            # Check is empty..
+            print('Check directory {} is empty or not...'.format(fullname))
+            if len(os.listdir(fullname)) == 0 :
+                # Delete..
+                shutil.rmtree(r"{}".format(fullname)) 
+                del_N =+1
+                print ("rmtree {}\n".format(fullname))
+    
+    return print("Total {} directories deleted...".format(del_N))
+
+#%%
 # =============================================================================
 # getFullnameListOfallFiles
 # =============================================================================
