@@ -19,6 +19,8 @@ cd ~/Downloads/SNUO1Mpy && git pull && pip install -e .
 #%%
 from glob import glob
 from pathlib import Path
+from datetime import datetime, timedelta, date
+import pandas as pd
 import os
 import numpy as np
 import astropy.units as u
@@ -46,96 +48,62 @@ if not os.path.exists('{0}'.format(log_dir)):
 # read all files in base directory for processing
 BASEDIR = "../RnE_2022/"
 BASEDIR = "../RnE_2022/RiLA600_STX-16803_2bin/"
+BASEDIR = "../RnE_2022/GSON300_STF-8300M/"
 
 c_method = "median"
 master_dir = "master_files_ys"
 reduced_dir = "reduced"
 solved_dir = "solved"
-DAOfinder_result = "DAOfinder_result"
+DAOfinder_result_dir = "DAOfinder_result"
+CCD_obs_dir = "../CCD_obs_raw/"
 
 #%%
 BASEDIRs = sorted(Python_utilities.getFullnameListOfsubDir(BASEDIR))
 print ("BASEDIRs: {}".format(BASEDIRs))
 
-for BASEDIR in BASEDIRs :
+for BASEDIR in BASEDIRs[:2] :
     print ("Starting...\n{}".format(BASEDIR))
 
     BASEDIR = Path(BASEDIR)
     
-    RESULTDIR = BASEDIR / DAOfinder_result
+    RESULTDIR = BASEDIR / DAOfinder_result_dir
     SOLVEDDIR = BASEDIR / solved_dir
     MASTERDIR = BASEDIR / master_dir
     REDUCEDDIR = BASEDIR / reduced_dir
     MASTERDIR = BASEDIR / master_dir
 
-    if not MASTERDIR.exists():
-        os.makedirs("{}".format(str(MASTERDIR)))
-        print("{} is created...".format(str(MASTERDIR)))
-
     #%%
     summary = yfu.make_summary(BASEDIR/"*.fit*")
-    #print(summary)
-    print("len(summary):", len(summary))
-    print(summary["file"][0])
+    if summary.empty:
+        pass
+    else:
+        print(summary)
+        print("len(summary):", len(summary))
+        print(summary["file"][0])
+        
+        #%%
+        light_fits = summary[summary["IMAGETYP"] == "LIGHT"]
+        if light_fits.empty :
+            pass
+        else:
+            print("len(light_fits):", len(light_fits))
+            print("light_fits", light_fits)
+            #%%
+            light_fits["DATE-LOC-DT"] = pd.to_datetime(light_fits["DATE-LOC"])
+            print("light_fits", light_fits)
+            obs_date = light_fits["DATE-LOC-DT"].median().to_pydatetime().date()
+            obs_date.strftime("%Y-%m-%d")
+            print("BASEDIR.parts:", BASEDIR.parts)
+            "{}_{}".format(BASEDIR.parts[-1].split("_")[5], BASEDIR.parts[-1].split("_")[6])
+            
+            calBDDIR = Path("../CCD_obs_raw/") /  \
+                                "{}_{}".format(BASEDIR.parts[-1].split("_")[6], 
+                                            BASEDIR.parts[-1].split("_")[8]) / "cal" 
+            print("calBDDIR: ", calBDDIR)
+            calBDDIRs = sorted(Python_utilities.getFullnameListOfallsubDirs(calBDDIR))
+            print("calBDDIRs: ", calBDDIRs)
 
-    try: 
-        bias_fits = summary[summary["IMAGETYP"] == "BIAS"]["file"]
-        bias_comb = yfu.group_combine(
-                        bias_fits.tolist(),
-                        type_key = ["IMAGETYP"],
-                        type_val = ["BIAS"],
-                        group_key = ["EXPTIME"],
-                        fmt = "master_bias.fits",  # output file name format
-                        outdir = MASTERDIR,  # output directory (will automatically be made if not exist)
-                        verbose=True
-                    )
-    except Exception as err :
-        print("X"*60)
-        print('{0}'.format(err))
-
-    try: 
-        dark_fits = summary[summary["IMAGETYP"] == "DARK"]["file"]
-        # Say dark frames have header OBJECT = "calib" && "IMAGE-TYP" = "DARK"
-        dark_comb = yfu.group_combine(
-                        dark_fits.tolist(),
-                        type_key = ["IMAGETYP"],
-                        type_val = ["DARK"],
-                        group_key = ["EXPTIME"],
-                        fmt = "master_dark_{:.0f}sec.fits",  # output file name format
-                        outdir = MASTERDIR  # output directory (will automatically be made if not exist)
-                    )
-    except Exception as err :
-        print("X"*60)
-        print('{0}'.format(err))
+            #CCDOBSDIRs = sorted(Python_utilities.getFullnameListOfallsubDirs(CCD_obs_dir))
 
 
-    try:
-        flat_fits = summary[summary["IMAGETYP"] == "FLAT"]["file"] 
-        # Say dark frames have header OBJECT = "calib" && "IMAGE-TYP" = "DARK"
-        flat_comb_norm = yfu.group_combine(
-                        flat_fits.tolist(),
-                        type_key = ["IMAGETYP"],
-                        type_val = ["FLAT"],
-                        group_key = ["FILTER"],
-                        fmt = "master_flat_{:s}_norm.fits",  # output file name format
-                        scale="med_sc", #norm
-                        scale_to_0th=False, #norm
-                        outdir = MASTERDIR  # output directory (will automatically be made if not exist)
-                    )
-
-        # Say dark frames have header OBJECT = "calib" && "IMAGE-TYP" = "DARK"
-        flat_comb_norm = yfu.group_combine(
-                        flat_fits.tolist(),
-                        type_key = ["IMAGETYP"],
-                        type_val = ["FLAT"],
-                        group_key = ["FILTER"],
-                        fmt = "master_flat_{:s}.fits",  # output file name format
-                        #scale="med_sc", #norm
-                        #scale_to_0th=False, #norm
-                        outdir = MASTERDIR  # output directory (will automatically be made if not exist)
-                    )
-    except Exception as err :
-        print("X"*60)
-        print('{0}'.format(err))
-    
-# %%
+       
