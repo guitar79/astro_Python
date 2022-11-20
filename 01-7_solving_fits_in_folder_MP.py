@@ -92,7 +92,7 @@ BASEDIR = "../RnE_2022/RiLA600_STX-16803_2bin/"
 
 c_method = "median"
 master_dir = "master_files_ys"
-reduced_dir = "reduced"
+reduced_dir = "reduced2"
 solved_dir = "solved"
 DAOfinder_result = "DAOfinder_result"
 
@@ -107,7 +107,7 @@ print ("len(BASEDIRs1): {}".format(len(BASEDIRs)))
 #BASEDIR = Path("../RnE_2022/KLEOPATRA_Light_-_2022-11-04_-_RiLA600_STX-16803_-_2bin/")
 
 #%%
-for BASEDIR in BASEDIRs :
+for BASEDIR in BASEDIRs [4:5]:
     print ("Starting...\n{}".format(BASEDIR))
 
     BASEDIR = Path(BASEDIR)

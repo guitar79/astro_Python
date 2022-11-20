@@ -77,7 +77,7 @@ BASEDIR = "../RnE_2022/RiLA600_STX-16803_2bin/"
 
 c_method = 'median'
 master_dir = "master_files_ys"
-reduced_dir = "reduced"
+reduced_dir = "reduced2"
 solved_dir = "solved"
 phot_result_dir = "annul_phot_result"
 
@@ -108,12 +108,13 @@ R_OUT = 6*FWHM_INIT  # Outer radius of annulus
 BASEDIRs = sorted(Python_utilities.getFullnameListOfsubDir(BASEDIR))
 print ("BASEDIRs: {}".format(BASEDIRs))
 
-for BASEDIR in BASEDIRs[:]:
+for BASEDIR in BASEDIRs[4:5]:
     print ("Starting...\n{}".format(BASEDIR))
 
     BASEDIR = Path(BASEDIR)
     RESULTDIR = BASEDIR / phot_result_dir
     SOLVEDDIR = BASEDIR / solved_dir
+    REDUCEDDIR = BASEDIR / solved_dir
 
     if not RESULTDIR.exists():
         os.makedirs("{}".format(str(RESULTDIR)))
@@ -128,7 +129,7 @@ for BASEDIR in BASEDIRs[:]:
 
     #%%
     n = 0
-    for fname in summary["file"][:]:
+    for fname in summary["file"][:1]:
         #fpath = summary["file"][1]
         n += 1
         print('#'*40,
@@ -142,13 +143,12 @@ for BASEDIR in BASEDIRs[:]:
             ccd = yfu.load_ccd(fpath, 
                             unit="adu")
 
-            #%%
             r_fov = yfu.fov_radius(ccd.header+ccd.wcs.to_header())
             print(r_fov)
             ps1 = ypu.PanSTARRS1(ccd.wcs.wcs.crval[0]*u.deg, 
                                 ccd.wcs.wcs.crval[1]*u.deg, 
                                 radius = r_fov,
-                                column_filters = {"rmag":"7.0..15.0", 
+                                column_filters = {"rmag":"12.0..14.0", 
                                                 "e_rmag":"<0.10", 
                                                 "nr":">5"})
 
@@ -163,7 +163,6 @@ for BASEDIR in BASEDIRs[:]:
             df_stars.to_csv("{}_stars.csv".format(str(RESULTDIR / fpath.stem)))
             print("df_stars:", df_stars)
 
-            #%%
             fig, axs = plt.subplots(1, 1, 
                         figsize=(10, 10), 
                         sharex=False, 
@@ -198,7 +197,6 @@ for BASEDIR in BASEDIRs[:]:
         except Exception as err:
             print('{0} with {1} '.format(err, fpath.name))
 
-        #%%
         for idx, row in df_stars.iterrows():
             try:
                 pos_star = SkyCoord(
@@ -208,7 +206,6 @@ for BASEDIR in BASEDIRs[:]:
                 print("pos_star:", pos_star)
                 print("pos_star[0], pos_star[1] :", pos_star[0], pos_star[1])
 
-                #%%
                 #2. Loading and Cut Data
                 # star = df_stars.iloc[22]
                 # print("star:", star)
@@ -220,14 +217,14 @@ for BASEDIR in BASEDIRs[:]:
 
                 # print("pos_targ_init:", pos_targ_init)
                 # print("pos_targ_init[0], pos_targ_init[1] :", pos_targ_init[0], pos_targ_init[1])
-                #%%
+    
                 cut_hdu = Cutout2D(
                             data = ccd, 
                             position = ([pos_star[0], pos_star[1]]), 
-                            size=(100,100)
+                            size=(30,30)
                             )
 
-                #%%
+    
                 avg, med, std = sigma_clipped_stats(cut_hdu.data)  # by default, 3-sigma 5-iteration.
                 thresh_3sig = med + 3 * std
                 mask_3sig = (cut_hdu.data < thresh_3sig)
@@ -237,7 +234,6 @@ for BASEDIR in BASEDIRs[:]:
                             )
                 print("center:", center)
 
-                #%%
                 #Putting Aperture and Annulus
                 fwhm = 4
                 r_ap = 2 * fwhm
@@ -250,7 +246,7 @@ for BASEDIR in BASEDIRs[:]:
                 print("an", an)
                 print("type(an)", type(an))
 
-                #%%
+
                 # 5. Estimating Sky
                 sky_mask = an.to_mask(method='center')
 
@@ -258,7 +254,7 @@ for BASEDIR in BASEDIRs[:]:
                     sky_vals = sky_mask[0].multiply(cut_hdu.data)
                 except TypeError:
                     sky_vals = sky_mask.multiply(cut_hdu.data)
-                #%%    
+
                 sky_vals = sky_vals[sky_vals > 0]
                 avg, med, std = sigma_clipped_stats(
                                             sky_vals, 
@@ -288,7 +284,6 @@ for BASEDIR in BASEDIRs[:]:
                 phot["inst_mag"] = -2.5 * np.log10(phot["source_sum"] / ccd.header["EXPTIME"])
                 print("phot:", phot)
 
-                #%%
                 fig = plt.figure(figsize=(14, 14))
                 
                 ax1 = plt.subplot(2, 2, 1)
@@ -330,8 +325,8 @@ for BASEDIR in BASEDIRs[:]:
 
                 ax2.grid(ls=':')
                 ax2.set_title('The center of Star')
-                ax2.imshow(mask_3sig.astype(int))
-                ax2.imshow(cut_hdu.data, alpha=0.4)
+                ax2.imshow(mask_3sig.astype(int), origin="lower")
+                ax2.imshow(cut_hdu.data, alpha=0.4, origin="lower")
                 ax2.plot(*center, 'rx')
                 ax2.text(0, 107, 
                         'center: {0:.01f}, {1:.1f}'\
@@ -384,3 +379,5 @@ for BASEDIR in BASEDIRs[:]:
             except Exception as err:
                 print('{0} with {1}: {2}th stars '.format(err, fpath.name, idx))
 
+
+# %%

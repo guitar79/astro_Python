@@ -54,7 +54,7 @@ BASEDIR = "../RnE_2022/RiLA600_STX-16803_2bin/"
 
 c_method = "median"
 master_dir = "master_files_ys"
-reduced_dir = "reduced"
+reduced_dir = "reduced2"
 solved_dir = "solved"
 DAOfinder_result = "DAOfinder_result"
 
@@ -63,7 +63,7 @@ BASEDIRs = sorted(Python_utilities.getFullnameListOfsubDir(BASEDIR))
 print ("BASEDIRs: {}".format(BASEDIRs))
 
 #%%
-for BASEDIR in BASEDIRs :
+for BASEDIR in BASEDIRs[4:5] :
     print ("Starting...\n{}".format(BASEDIR))
 
     BASEDIR = Path(BASEDIR)
