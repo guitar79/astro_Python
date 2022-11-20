@@ -33,6 +33,12 @@ solved_dir = "solved"
 solved_dir2 = "solved2"
 DAOfinder_result_dir = "DAOfinder_result"
 
+#
+master_file_dir = 'master_file_Python/'
+processing_dir = 'processing_Python/'
+integration_dir = 'integration_Python/'
+alignment_dir = 'alignment_Python/'
+
 
 #######################################################
 # OBS instruments information 
@@ -361,57 +367,102 @@ def AstrometrySolver(fullname, solved_dir):
 #                             .format(self.fullname, datetime.now(), err))
 # #########################################
 #%%
-#########################################
-#single  ASTAPSolver
-#########################################
-class ASTAPSolver():
-    def __init__(self, fullname, solved_dir):
-        self.fullname = fullname
-        self.solved_dir = solved_dir
-        """
-        Parameters
-        ----------
-        fullname : string
-            The fullname of input file...
+# #########################################
+# #single ASTAPSolver
+# #########################################
+# class ASTAPSolver():
+#     def __init__(self, fullname, solved_dir):
+#         self.fullname = fullname
+#         self.solved_dir = solved_dir
+#         """
+#         Parameters
+#         ----------
+#         fullname : string
+#             The fullname of input file...
 
-        solved dir: string
-            The directory where the output file              
-        """
+#         solved dir: string
+#             The directory where the output file              
+#         """
 
-        print("Starting... \n{}".format(self.fullname))
-        self.fullname_el = self.fullname.split("/")
-        self.filename_el = self.fullname_el[-1].split("_")
+#         print("Starting... \n{}".format(self.fullname))
+#         self.fullname_el = self.fullname.split("/")
+#         self.filename_el = self.fullname_el[-1].split("_")
 
-        print("self.solved_dir:", self.solved_dir)
-        print('{}/{}'.format(self.solved_dir, self.fullname_el[-1]))
+#         print("self.solved_dir:", self.solved_dir)
+#         print('{}/{}'.format(self.solved_dir, self.fullname_el[-1]))
 
-        if os.path.exists('{}/{}'.format(self.solved_dir, self.fullname_el[-1])):
-            print("{} is already solved ...".format(self.fullname_el[-1]))
+#         if os.path.exists('{}/{}'.format(self.solved_dir, self.fullname_el[-1])):
+#             print("{} is already solved ...".format(self.fullname_el[-1]))
         
-        else : 
+#         else : 
 
-            try:
-                # solve command.
-                # astap -f fullname.fit -o output_file.fits -wcs -analyse2 -update
-                #astap -f ../RnE_2022/KLEOPATRA_Light_-_2022-11-04_-_RiLA600_STX-16803_-_2bin/KLEOPATRA_Light_v_2022-11-04-11-48-17_160sec_RiLA600_STX-16803_-20C_2bin.fit -o ../RnE_2022/KLEOPATRA_Light_-_2022-11-04_-_RiLA600_STX-16803_-_2bin/solved1/11.fit -update
-                with subprocess.Popen(['astap', 
-                            '-f', '{0}'.format(self.fullname), 
-                            '-o', 
-                            '{}/{}'.format(self.solved_dir, 
-                                    self.fullname_el[-1]), 
-                            '-wcs',
-                            '-analyse2',
-                            '-update',],
-                                stdout=subprocess.PIPE) as proc :
-                    print(proc.stdout.read())
+#             try:
+#                 # solve command.
+#                 # astap -f fullname.fit -o output_file.fits -wcs -analyse2 -update
+#                 #astap -f ../RnE_2022/KLEOPATRA_Light_-_2022-11-04_-_RiLA600_STX-16803_-_2bin/KLEOPATRA_Light_v_2022-11-04-11-48-17_160sec_RiLA600_STX-16803_-20C_2bin.fit -o ../RnE_2022/KLEOPATRA_Light_-_2022-11-04_-_RiLA600_STX-16803_-_2bin/solved1/11.fit -update
+#                 with subprocess.Popen(['astap', 
+#                             '-f', '{0}'.format(self.fullname), 
+#                             '-o', 
+#                             '{}/{}'.format(self.solved_dir, 
+#                                     self.fullname_el[-1]), 
+#                             '-wcs',
+#                             '-analyse2',
+#                             '-update',],
+#                                 stdout=subprocess.PIPE) as proc :
+#                     print(proc.stdout.read())
                 
-            except Exception as err :
-                    print('{1} ::: {2} with {0} ...'\
-                            .format(self.fullname, datetime.now(), err))
+#             except Exception as err :
+#                     print('{1} ::: {2} with {0} ...'\
+#                             .format(self.fullname, datetime.now(), err))
                
 
 #########################################
 
+#########################################
+#single ASTAPSolver
+#########################################
+def ASTAPSolver(fullname, solved_dir):
+
+    """
+    Parameters
+    ----------
+    fullname : string
+        The fullname of input file...
+
+    solved dir: string
+        The directory where the output file              
+    """
+
+    print("Starting... \n{}".format(fullname))
+    fullname_el = fullname.split("/")
+    filename_el = fullname_el[-1].split("_")
+
+    print("solved_dir:", solved_dir)
+    print('{}/{}'.format(solved_dir, fullname_el[-1]))
+
+    if os.path.exists('{}/{}'.format(solved_dir, fullname_el[-1])):
+        print("{} is already solved ...".format(fullname_el[-1]))
+    
+    else : 
+
+        try:
+            # solve command.
+            # astap -f fullname.fit -o output_file.fits -wcs -analyse2 -update
+            #astap -f ../RnE_2022/KLEOPATRA_Light_-_2022-11-04_-_RiLA600_STX-16803_-_2bin/KLEOPATRA_Light_v_2022-11-04-11-48-17_160sec_RiLA600_STX-16803_-20C_2bin.fit -o ../RnE_2022/KLEOPATRA_Light_-_2022-11-04_-_RiLA600_STX-16803_-_2bin/solved1/11.fit -update
+            with subprocess.Popen(['astap', 
+                        '-f', '{0}'.format(fullname), 
+                        '-o', 
+                        '{}/{}'.format(solved_dir, 
+                                fullname_el[-1]), 
+                        '-wcs',
+                        '-analyse2',
+                        '-update',],
+                            stdout=subprocess.PIPE) as proc :
+                print(proc.stdout.read())
+            
+        except Exception as err :
+            print('{1} ::: {2} with {0} ...'\
+                        .format(fullname, datetime.now(), err))
 
 #%%        
 # =============================================================================
@@ -421,13 +472,6 @@ cht_start_time = datetime.now()
 def print_working_time(cht_start_time):
     working_time = (datetime.now() - cht_start_time) #total days for downloading
     return print('working time ::: %s' % (working_time))
-
-master_file_dir_name = 'master_file_Python/'
-processing_dir_name = 'processing_Python/'
-integration_dir_name = 'integration_Python/'
-alignment_dir_name = 'alignment_Python/'
-
-
 
 
 # =============================================================================
