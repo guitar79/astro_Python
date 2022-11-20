@@ -18,7 +18,18 @@ import numpy as np
 from ccdproc import combine
 import shutil
 
+import Python_utilities
 
+#%%
+#########################################
+#directory variables
+#########################################
+c_method = "median"
+master_dir = "master_files_ys"
+reduced_dir = "reduced"
+solved_dir = "solved"
+DAOfinder_result_dir = "DAOfinder_result"
+CCD_obs_dir = "../CCD_obs_raw/"
 
 
 #%%
@@ -98,74 +109,136 @@ class KevinSolver():
                             .format(self.fullname, datetime.now(), err))
 #########################################
 
-
-
-
 #%%
 #########################################
-#single  Astrometry Solver
+# Astrometry Solver
 #########################################
-class AstrometrySolver():
-    def __init__(self, fullname, solved_dir):
-        
-        """
-        Parameters
-        ----------
-        fullname : string
-            The fullname of input file...
+def AstrometrySolver(fullname, solved_dir, **kargs):        
+    """
+    Parameters
+    ----------
+    fullname : string
+        The fullname of input file...
 
-        solved dir: string
-            The directory where the output file              
-        """
+    solved dir: string
+        The directory where the output file              
+    """
 
-        self.fullname = fullname
-        self.solved_dir = solved_dir
+    fullname = fullname
+    solved_dir = solved_dir
 
-        print("Starting... \n{}".format(self.fullname))
-        self.fullname_el = self.fullname.split("/")
-        self.filename_el = self.fullname_el[-1].split("_")
+    print("Starting... \n{}".format(fullname))
+    fullname_el = fullname.split("/")
+    filename_el = fullname_el[-1].split("_")
 
-        print("self.solved_dir:", self.solved_dir)
-        print('{}/{}'.format(self.solved_dir, self.fullname_el[-1]))
+    print("solved_dir:", solved_dir)
+    print('{}/{}'.format(solved_dir, fullname_el[-1]))
 
-        if os.path.exists('{}/{}'.format(self.solved_dir, self.fullname_el[-1])):
-            print("{} is already solved ...".format(self.fullname_el[-1]))
-        
-        else: 
+    if os.path.exists('{}/{}'.format(solved_dir, fullname_el[-1])):
+        print("{} is already solved ...".format(fullname_el[-1]))
+    
+    else: 
 
-            try : 
-                # solve command.
-                # solve-field fullname.fit -O --cpulimit 120 --nsigma 15 -u app -L 1.2 -U 1.3 -N new_filename.fits -p --no-plots -D output_directory {0}
-                with subprocess.Popen(['solve-field', 
-                                        '-O', #--overwrite: overwrite output files if they already exist
-                                        #'--scale-low', '0.1', '--scale-high', '0.40', #pixel scale
-                                        '-g', #--guess-scale: try to guess the image scale from the FITS headers
-                                        '--cpulimit', '120',  #will make it give up after 30 seconds.
-                                        '--nsigma', '15',
-                                        #'--downsample', '4',
-                                        '-u', 'app', #'--scale-units', 'arcsecperpix', #pixel scale
-                                        '-L', '1.2', '-U', '1.3',
-                                        #'-N',  '{}'.format(self.fullname[-1]), #--new-fits <filename>: output filename of the new FITS file containingthe WCS header; "none" to not create this file
-                                        '-p', 
-                                        '--no-plots',#: don't create any plots of the results
-                                        '-D', '{}/'.format(solved_dir),
-                                        '{0}'.format(self.fullname)], 
-                                        stdout=subprocess.PIPE) as proc :
-                    print(proc.stdout.read())
+        try : 
+            # solve command.
+            # solve-field fullname.fit -O --cpulimit 120 --nsigma 15 -u app -L 1.2 -U 1.3 -N new_filename.fits -p --no-plots -D output_directory {0}
+            with subprocess.Popen(['solve-field', 
+                                    '-O', #--overwrite: overwrite output files if they already exist
+                                    #'--scale-low', '0.1', '--scale-high', '0.40', #pixel scale
+                                    '-g', #--guess-scale: try to guess the image scale from the FITS headers
+                                    '--cpulimit', '120',  #will make it give up after 30 seconds.
+                                    '--nsigma', '15',
+                                    #'--downsample', '4',
+                                    '-u', 'app', #'--scale-units', 'arcsecperpix', #pixel scale
+                                    '-L', '1.2', '-U', '1.3',
+                                    #'-N',  '{}'.format(fullname[-1]), #--new-fits <filename>: output filename of the new FITS file containingthe WCS header; "none" to not create this file
+                                    '-p', 
+                                    '--no-plots',#: don't create any plots of the results
+                                    '-D', '{}/'.format(solved_dir),
+                                    '{0}'.format(fullname)], 
+                                    stdout=subprocess.PIPE) as proc :
+                print(proc.stdout.read())
+            
+            if os.path.exists('{}/{}.new'.format(solved_dir, fullname_el[-1][:-5])):
+                print("{} is solved successful ...".format(fullname_el[-1]))
                 
-                if os.path.exists('{}/{}.new'.format(self.solved_dir, self.fullname_el[-1][:-5])):
-                    print("{} is solved successful ...".format(self.fullname_el[-1]))
+                shutil.move('{}/{}.new'.format(solved_dir, fullname_el[-1][:-5]), \
+                            '{}/{}'.format(solved_dir, fullname_el[-1]))
+                print("{} is renamed to fits ...".format(fullname_el[-1]))
+            
+            else : 
+                print("{} solving fail ...".format(fullname_el[-1]))
+            
+        except Exception as err :
+                print('{1} ::: {2} with {0} ...'\
+                        .format(fullname, datetime.now(), err))
+
+
+# #%%
+# #########################################
+# #single calss Astrometry Solver
+# #########################################
+# class AstrometrySolver():
+#     def __init__(self, fullname, solved_dir):
+        
+#         """
+#         Parameters
+#         ----------
+#         fullname : string
+#             The fullname of input file...
+
+#         solved dir: string
+#             The directory where the output file              
+#         """
+
+#         self.fullname = fullname
+#         self.solved_dir = solved_dir
+
+#         print("Starting... \n{}".format(self.fullname))
+#         self.fullname_el = self.fullname.split("/")
+#         self.filename_el = self.fullname_el[-1].split("_")
+
+#         print("self.solved_dir:", self.solved_dir)
+#         print('{}/{}'.format(self.solved_dir, self.fullname_el[-1]))
+
+#         if os.path.exists('{}/{}'.format(self.solved_dir, self.fullname_el[-1])):
+#             print("{} is already solved ...".format(self.fullname_el[-1]))
+        
+#         else: 
+
+#             try : 
+#                 # solve command.
+#                 # solve-field fullname.fit -O --cpulimit 120 --nsigma 15 -u app -L 1.2 -U 1.3 -N new_filename.fits -p --no-plots -D output_directory {0}
+#                 with subprocess.Popen(['solve-field', 
+#                                         '-O', #--overwrite: overwrite output files if they already exist
+#                                         #'--scale-low', '0.1', '--scale-high', '0.40', #pixel scale
+#                                         '-g', #--guess-scale: try to guess the image scale from the FITS headers
+#                                         '--cpulimit', '120',  #will make it give up after 30 seconds.
+#                                         '--nsigma', '15',
+#                                         #'--downsample', '4',
+#                                         '-u', 'app', #'--scale-units', 'arcsecperpix', #pixel scale
+#                                         '-L', '1.2', '-U', '1.3',
+#                                         #'-N',  '{}'.format(self.fullname[-1]), #--new-fits <filename>: output filename of the new FITS file containingthe WCS header; "none" to not create this file
+#                                         '-p', 
+#                                         '--no-plots',#: don't create any plots of the results
+#                                         '-D', '{}/'.format(solved_dir),
+#                                         '{0}'.format(self.fullname)], 
+#                                         stdout=subprocess.PIPE) as proc :
+#                     print(proc.stdout.read())
+                
+#                 if os.path.exists('{}/{}.new'.format(self.solved_dir, self.fullname_el[-1][:-5])):
+#                     print("{} is solved successful ...".format(self.fullname_el[-1]))
                     
-                    shutil.move('{}/{}.new'.format(self.solved_dir, self.fullname_el[-1][:-5]), \
-                                '{}/{}'.format(self.solved_dir, self.fullname_el[-1]))
-                    print("{} is renamed to fits ...".format(self.fullname_el[-1]))
+#                     shutil.move('{}/{}.new'.format(self.solved_dir, self.fullname_el[-1][:-5]), \
+#                                 '{}/{}'.format(self.solved_dir, self.fullname_el[-1]))
+#                     print("{} is renamed to fits ...".format(self.fullname_el[-1]))
                 
-                else : 
-                    print("{} solving fail ...".format(self.fullname_el[-1]))
+#                 else : 
+#                     print("{} solving fail ...".format(self.fullname_el[-1]))
                 
-            except Exception as err :
-                    print('{1} ::: {2} with {0} ...'\
-                            .format(self.fullname, datetime.now(), err))
+#             except Exception as err :
+#                     print('{1} ::: {2} with {0} ...'\
+#                             .format(self.fullname, datetime.now(), err))
 #########################################
 
 

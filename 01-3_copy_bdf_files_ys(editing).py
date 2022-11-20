@@ -32,7 +32,9 @@ import ysphotutilpy as ypu
 import ysvisutilpy as yvu
 
 import Python_utilities
+import astro_utilities
 
+#%%
 #######################################################
 # for log file
 log_dir = "logs/"
@@ -50,27 +52,22 @@ BASEDIR = "../RnE_2022/"
 BASEDIR = "../RnE_2022/RiLA600_STX-16803_2bin/"
 BASEDIR = "../RnE_2022/GSON300_STF-8300M/"
 
-c_method = "median"
-master_dir = "master_files_ys"
-reduced_dir = "reduced"
-solved_dir = "solved"
-DAOfinder_result_dir = "DAOfinder_result"
-CCD_obs_dir = "../CCD_obs_raw/"
-
 #%%
 BASEDIRs = sorted(Python_utilities.getFullnameListOfsubDir(BASEDIR))
 print ("BASEDIRs: {}".format(BASEDIRs))
+print ("len(BASEDIRs): {}".format(len(BASEDIRs)))
+
 
 for BASEDIR in BASEDIRs[:2] :
     print ("Starting...\n{}".format(BASEDIR))
 
     BASEDIR = Path(BASEDIR)
     
-    RESULTDIR = BASEDIR / DAOfinder_result_dir
-    SOLVEDDIR = BASEDIR / solved_dir
-    MASTERDIR = BASEDIR / master_dir
-    REDUCEDDIR = BASEDIR / reduced_dir
-    MASTERDIR = BASEDIR / master_dir
+    MASTERDIR = BASEDIR / astro_utilities.master_dir
+    REDUCEDDIR = BASEDIR / astro_utilities.reduced_dir
+    SOLVEDDIR = BASEDIR / astro_utilities.solved_dir
+    RESULTDIR = BASEDIR / astro_utilities.DAOfinder_result_dir
+    OBSRAWDIR = BASEDIR / astro_utilities.CCD_obs_dir
 
     #%%
     summary = yfu.make_summary(BASEDIR/"*.fit*")
