@@ -113,7 +113,7 @@ class KevinSolver():
 #########################################
 # Astrometry Solver
 #########################################
-def AstrometrySolver(fullname, solved_dir, **kargs):        
+def AstrometrySolver(fullname, solved_dir): 
     """
     Parameters
     ----------
@@ -134,7 +134,7 @@ def AstrometrySolver(fullname, solved_dir, **kargs):
     print("solved_dir:", solved_dir)
     print('{}/{}'.format(solved_dir, fullname_el[-1]))
 
-    if os.path.exists('{}/{}'.format(solved_dir, fullname_el[-1])):
+    if os.path.exists('{}/{}'.format(solved_dir, fullname_el[-1])) and False :
         print("{} is already solved ...".format(fullname_el[-1]))
     
     else: 

@@ -31,12 +31,14 @@ import numpy as np
 import shutil
 from datetime import datetime 
 from astropy.io import fits
-import Python_utilities
-import astro_utilities
 
 import ysfitsutilpy as yfu
 import ysphotutilpy as ypu
 import ysvisutilpy as yvu
+
+import Python_utilities
+import astro_utilities
+
 
 #%%
 #######################################################
@@ -90,16 +92,10 @@ class Multiprocessor():
 BASEDIR = "../RnE_2022/"
 BASEDIR = "../RnE_2022/RiLA600_STX-16803_2bin/"
 
-c_method = "median"
-master_dir = "master_files_ys"
-reduced_dir = "reduced2"
-solved_dir = "solved"
-DAOfinder_result = "DAOfinder_result"
-
 #%%
 BASEDIRs = sorted(Python_utilities.getFullnameListOfsubDir(BASEDIR))
-print ("BASEDIRs1: {}".format(BASEDIRs))
-print ("len(BASEDIRs1): {}".format(len(BASEDIRs)))
+print ("BASEDIRs: {}".format(BASEDIRs))
+print ("len(BASEDIRs): {}".format(len(BASEDIRs)))
 #BASEDIRs = ["{}{}".format(w, reduced_dir) for w in BASEDIRs]
 #print ("BASEDIRs2: {}".format(BASEDIRs))
 
@@ -107,16 +103,17 @@ print ("len(BASEDIRs1): {}".format(len(BASEDIRs)))
 #BASEDIR = Path("../RnE_2022/KLEOPATRA_Light_-_2022-11-04_-_RiLA600_STX-16803_-_2bin/")
 
 #%%
-for BASEDIR in BASEDIRs [4:5]:
+for BASEDIR in BASEDIRs [:]:
     print ("Starting...\n{}".format(BASEDIR))
 
     BASEDIR = Path(BASEDIR)
 
-    RESULTDIR = BASEDIR / DAOfinder_result
-    SOLVEDDIR = BASEDIR / solved_dir
-    MASTERDIR = BASEDIR / master_dir
-    REDUCEDDIR = BASEDIR / reduced_dir
-    MASTERDIR = BASEDIR / master_dir
+    MASTERDIR = BASEDIR / astro_utilities.master_dir
+    REDUCEDDIR = BASEDIR / astro_utilities.reduced_dir
+    SOLVEDDIR = BASEDIR / astro_utilities.solved_dir    
+    RESULTDIR = BASEDIR / astro_utilities.DAOfinder_result_dir
+    #REDUCEDDIR = BASEDIR / "reduce2"
+    #SOLVEDDIR = BASEDIR / "solved2"
 
     if not (SOLVEDDIR).exists():
         os.makedirs(str(SOLVEDDIR))
@@ -135,7 +132,7 @@ for BASEDIR in BASEDIRs [4:5]:
 
     for batch in range(num_batches):
         myMP.restart()
-        for fullname  in fullnames[batch*num_batches:(batch+1)*num_batches]:
+        for fullname in fullnames[batch*num_batches:(batch+1)*num_batches]:
             #myMP.run(astro_utilities.KevinSolver, fullname, solved_dir)
             myMP.run(astro_utilities.AstrometrySolver, fullname, str(SOLVEDDIR))
 

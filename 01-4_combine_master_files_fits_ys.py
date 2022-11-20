@@ -29,7 +29,9 @@ import ysfitsutilpy as yfu
 import ysphotutilpy as ypu
 import ysvisutilpy as yvu
 
+import astro_utilities
 import Python_utilities
+
 #%%
 #######################################################
 # for log file
@@ -57,16 +59,16 @@ DAOfinder_result = "DAOfinder_result"
 BASEDIRs = sorted(Python_utilities.getFullnameListOfsubDir(BASEDIR))
 print ("BASEDIRs: {}".format(BASEDIRs))
 
-for BASEDIR in BASEDIRs :
+for BASEDIR in BASEDIRs[7:] :
     print ("Starting...\n{}".format(BASEDIR))
 
     BASEDIR = Path(BASEDIR)
     
-    RESULTDIR = BASEDIR / DAOfinder_result
-    SOLVEDDIR = BASEDIR / solved_dir
-    MASTERDIR = BASEDIR / master_dir
-    REDUCEDDIR = BASEDIR / reduced_dir
-    MASTERDIR = BASEDIR / master_dir
+    OBSRAWDIR = BASEDIR / astro_utilities.CCD_obs_dir
+    MASTERDIR = BASEDIR / astro_utilities.master_dir
+    REDUCEDDIR = BASEDIR / astro_utilities.reduced_dir
+    SOLVEDDIR = BASEDIR / astro_utilities.solved_dir
+    RESULTDIR = BASEDIR / astro_utilities.DAOfinder_result_dir
 
     if not MASTERDIR.exists():
         os.makedirs("{}".format(str(MASTERDIR)))

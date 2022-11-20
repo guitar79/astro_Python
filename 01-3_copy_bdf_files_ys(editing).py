@@ -31,8 +31,8 @@ import ysfitsutilpy as yfu
 import ysphotutilpy as ypu
 import ysvisutilpy as yvu
 
-import Python_utilities
 import astro_utilities
+import Python_utilities
 
 #%%
 #######################################################
@@ -57,17 +57,16 @@ BASEDIRs = sorted(Python_utilities.getFullnameListOfsubDir(BASEDIR))
 print ("BASEDIRs: {}".format(BASEDIRs))
 print ("len(BASEDIRs): {}".format(len(BASEDIRs)))
 
-
 for BASEDIR in BASEDIRs[:2] :
     print ("Starting...\n{}".format(BASEDIR))
 
     BASEDIR = Path(BASEDIR)
     
+    OBSRAWDIR = BASEDIR / astro_utilities.CCD_obs_dir
     MASTERDIR = BASEDIR / astro_utilities.master_dir
     REDUCEDDIR = BASEDIR / astro_utilities.reduced_dir
     SOLVEDDIR = BASEDIR / astro_utilities.solved_dir
     RESULTDIR = BASEDIR / astro_utilities.DAOfinder_result_dir
-    OBSRAWDIR = BASEDIR / astro_utilities.CCD_obs_dir
 
     #%%
     summary = yfu.make_summary(BASEDIR/"*.fit*")

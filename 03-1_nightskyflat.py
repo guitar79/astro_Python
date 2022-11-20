@@ -36,21 +36,23 @@ print ("BASEDIRs: {}".format(BASEDIRs))
 print ("len(BASEDIRs): {}".format(len(BASEDIRs)))
 
 #%%
-for BASEDIR in BASEDIRs[:] :
+for BASEDIR in BASEDIRs[7:] :
     print ("Starting...\n{}".format(BASEDIR))
 
     BASEDIR = Path(BASEDIR)
     
     MASTERDIR = BASEDIR / astro_utilities.master_dir
     REDUCEDDIR = BASEDIR / astro_utilities.reduced_dir
-    REDUCEDDIR2 = BASEDIR / "reduced2"
     SOLVEDDIR = BASEDIR / astro_utilities.solved_dir
     RESULTDIR = BASEDIR / astro_utilities.DAOfinder_result_dir
     OBSRAWDIR = BASEDIR / astro_utilities.CCD_obs_dir
+    REDUCEDDIR2 = BASEDIR / "reduced2"
+    
+    #REDUCEDDIR = BASEDIR / "reduced2"
 
-    if not REDUCEDDIR2.exists():
-        os.makedirs("{}".format(str(REDUCEDDIR2)))
-        print("{} is created...".format(str(REDUCEDDIR2)))
+    if not REDUCEDDIR.exists():
+        os.makedirs("{}".format(str(REDUCEDDIR)))
+        print("{} is created...".format(str(REDUCEDDIR)))
         
     #%%
     summary = yfu.make_summary(BASEDIR/"*.fit*")
@@ -73,11 +75,11 @@ for BASEDIR in BASEDIRs[:] :
                 combine="med",
                 scale="avg", 
                 scale_to_0th=False, 
-                reject="sc", 
-                sigma=2.5,
+                #reject="sc", 
+                #sigma=2.5,
                 verbose=2
                 )
-            ccd.write(MASTERDIR /f"nightskyflat-{filt}.fits", overwrite=True)
+            ccd.write(MASTERDIR / f"nightskyflat-{filt}.fits", overwrite=True)
 
 
         # %%
