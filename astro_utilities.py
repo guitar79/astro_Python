@@ -51,11 +51,23 @@ RDNOISEDIC = {"STF-8300M": 9.3,
             "STL-11000": 9.6, 
             "QSI683ws": 8.0 } 
 
-PIXSCALEDIC = {"STF-8300M": None, 
+PIXSIZEEDIC = {"STF-8300M": 5.4, 
+            "STX-16803": 9.0, 
+            "STL-11000": 9.0, 
+            "QSI683ws": 5.4 } 
+
+PIXSCALEDIC = {"FSQ106ED_STF-8300M": 2.1, 
+            "FSQ106ED-x72_STF-8300M": 2.1/0.72, 
+            "FSQ106ED-x73_STF-8300M": 2.1/0.73, 
+            "FS60CB_STF-8300M": 3.14, 
             "RiLA600_STX-16803_1bin": 0.512, 
-            "RiLA600_STX-16803_2bin": 1.024, 
-            "STL-11000": None, 
-            "QSI683ws": None } 
+            "FSQ106ED_STL-11000": 3.5, 
+            "FSQ106ED-x72_STL-11000": 3.5/0.72, 
+            "FSQ106ED-x73_STL-11000": 3.5/0.73, 
+            "FSQ106ED-_QSI683ws": 2.1,
+            "FSQ106ED-x72_QSI683ws": 2.1/0.72,
+            "FSQ106ED-x73_QSI683ws": 2.1/0.73
+             } 
 
 FOCALLENDIC = {"TMB130ss": 910, 
             "TMB130ss-x75": 910*0.75, 
@@ -64,9 +76,9 @@ FOCALLENDIC = {"TMB130ss": 910,
             "FS-60CB": 355, 
             "SVX080T": 480, 
             "SVX080T-x80": 480*0.8, 
-            "FSQ-106ED": 530, 
-            "FSQ-106ED-x72": 530*0.72,
-            "FSQ-106ED-x73": 530*0.73} 
+            "FSQ106ED": 530, 
+            "FSQ106ED-x72": 530*0.72,
+            "FSQ106ED-x73": 530*0.73} 
 
 #######################################################
 
