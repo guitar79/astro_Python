@@ -25,11 +25,51 @@ import Python_utilities
 #directory variables
 #########################################
 c_method = "median"
+CCD_obs_dir = "../CCD_obs_raw/"
 master_dir = "master_files_ys"
 reduced_dir = "reduced"
+reduced_dir2 = "reduced2"
 solved_dir = "solved"
+solved_dir2 = "solved2"
 DAOfinder_result_dir = "DAOfinder_result"
-CCD_obs_dir = "../CCD_obs_raw/"
+
+
+#######################################################
+# OBS instruments information 
+#######################################################
+gain = 0
+rdnoise = 0
+binning = 1
+
+GAINDIC = {"STF-8300M": 0.37, 
+        "STX-16803": 1.27, 
+        "STL-11000": 0.8, 
+        "QSI683ws": 0.13 } 
+
+RDNOISEDIC = {"STF-8300M": 9.3, 
+            "STX-16803": 9.0, 
+            "STL-11000": 9.6, 
+            "QSI683ws": 8.0 } 
+
+PIXSCALEDIC = {"STF-8300M": None, 
+            "RiLA600_STX-16803_1bin": 0.512, 
+            "RiLA600_STX-16803_2bin": 1.024, 
+            "STL-11000": None, 
+            "QSI683ws": None } 
+
+FOCALLENDIC = {"TMB130ss": 910, 
+            "TMB130ss-x75": 910*0.75, 
+            "RiLA600": 3000, 
+            "GSON300": 1200, 
+            "FS-60CB": 355, 
+            "SVX080T": 480, 
+            "SVX080T-x80": 480*0.8, 
+            "FSQ-106ED": 530, 
+            "FSQ-106ED-x72": 530*0.72,
+            "FSQ-106ED-x73": 530*0.73} 
+
+#######################################################
+
 
 
 #%%

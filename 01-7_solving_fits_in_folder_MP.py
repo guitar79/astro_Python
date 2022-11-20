@@ -112,8 +112,8 @@ for BASEDIR in BASEDIRs [:]:
     REDUCEDDIR = BASEDIR / astro_utilities.reduced_dir
     SOLVEDDIR = BASEDIR / astro_utilities.solved_dir    
     RESULTDIR = BASEDIR / astro_utilities.DAOfinder_result_dir
-    #REDUCEDDIR = BASEDIR / "reduce2"
-    #SOLVEDDIR = BASEDIR / "solved2"
+    REDUCEDDIR = BASEDIR / astro_utilities.reduced_dir2
+    SOLVEDDIR = BASEDIR / astro_utilities.solved_dir2    
 
     if not (SOLVEDDIR).exists():
         os.makedirs(str(SOLVEDDIR))
@@ -141,27 +141,3 @@ for BASEDIR in BASEDIRs [:]:
 
         values.append(myMP.wait())
         print("OK batch" + str(batch))  
-
-    # #############################################################################
-    # #Check existence tmp file and rename ...
-    # #############################################################################
-    # summary_new = yfu.make_summary(BASEDIR/solved_dir/"*.new")
-    # print ("summary_new: {}".format(summary_new))
-
-    # #%%
-    # if summary_new is not None :
-    #     n = 0
-    
-    #     for _, row in summary_new.iterrows():
-    #         n += 1
-    #         print('#'*40,
-    #             "\n{2:.01f}%  ({0}/{1}) {3}".format(n, len(summary_new), (n/len(summary_new))*100, os.path.basename(__file__)))
-    #         print ("Starting...\nfullname: {}".format(row["file"]))
-
-    #         try:
-    #             shutil.move(r"{}".format(row["file"]), \
-    #                             r"{}.fits".format(row["file"][:-4]))
-
-    #         except Exception as err:
-    #             Python_utilities.write_log(err_log_file,
-    #                     '{2} ::: {0} There is no {1} '.format(err, row["file"], datetime.now())) 

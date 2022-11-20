@@ -6,6 +6,8 @@ from astropy.nddata import CCDData
 from pathlib import Path
 
 import ysfitsutilpy as yfu
+import ysphotutilpy as ypu
+import ysvisutilpy as yvu
 
 import Python_utilities
 import astro_utilities
@@ -36,7 +38,7 @@ print ("BASEDIRs: {}".format(BASEDIRs))
 print ("len(BASEDIRs): {}".format(len(BASEDIRs)))
 
 #%%
-for BASEDIR in BASEDIRs[7:] :
+for BASEDIR in BASEDIRs[:] :
     print ("Starting...\n{}".format(BASEDIR))
 
     BASEDIR = Path(BASEDIR)
@@ -46,16 +48,14 @@ for BASEDIR in BASEDIRs[7:] :
     SOLVEDDIR = BASEDIR / astro_utilities.solved_dir
     RESULTDIR = BASEDIR / astro_utilities.DAOfinder_result_dir
     OBSRAWDIR = BASEDIR / astro_utilities.CCD_obs_dir
-    REDUCEDDIR2 = BASEDIR / "reduced2"
-    
-    #REDUCEDDIR = BASEDIR / "reduced2"
+    REDUCEDDIR2 = BASEDIR / astro_utilities.reduced_dir2
 
-    if not REDUCEDDIR.exists():
-        os.makedirs("{}".format(str(REDUCEDDIR)))
-        print("{} is created...".format(str(REDUCEDDIR)))
+    if not REDUCEDDIR2.exists():
+        os.makedirs("{}".format(str(REDUCEDDIR2)))
+        print("{} is created...".format(str(REDUCEDDIR2)))
         
     #%%
-    summary = yfu.make_summary(BASEDIR/"*.fit*")
+    summary = yfu.make_summary(REDUCEDDIR/"*.fit*")
     if summary.empty:
         pass
     else:
@@ -64,6 +64,7 @@ for BASEDIR in BASEDIRs[7:] :
         print(summary["file"][0])
 
         # %%
+        #light_fits = summary[summary["IMAGETYP"] == "LIGHT"]["file"]
         fpaths = list((REDUCEDDIR).glob("*.fits"))
         fpaths.sort()
         summary = yfu.make_summary(fpaths)
