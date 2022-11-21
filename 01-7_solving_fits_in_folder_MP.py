@@ -96,8 +96,6 @@ BASEDIR = "../RnE_2022/RiLA600_STX-16803_2bin/"
 BASEDIRs = sorted(Python_utilities.getFullnameListOfsubDir(BASEDIR))
 print ("BASEDIRs: {}".format(BASEDIRs))
 print ("len(BASEDIRs): {}".format(len(BASEDIRs)))
-#BASEDIRs = ["{}{}".format(w, reduced_dir) for w in BASEDIRs]
-#print ("BASEDIRs2: {}".format(BASEDIRs))
 
 #%%
 #BASEDIR = Path("../RnE_2022/KLEOPATRA_Light_-_2022-11-04_-_RiLA600_STX-16803_-_2bin/")

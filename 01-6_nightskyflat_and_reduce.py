@@ -42,12 +42,11 @@ for BASEDIR in BASEDIRs[:] :
     print ("Starting...\n{}".format(BASEDIR))
 
     BASEDIR = Path(BASEDIR)
-    
+
+    OBSRAWDIR = BASEDIR / astro_utilities.CCD_obs_dir
     MASTERDIR = BASEDIR / astro_utilities.master_dir
     REDUCEDDIR = BASEDIR / astro_utilities.reduced_dir
     SOLVEDDIR = BASEDIR / astro_utilities.solved_dir
-    RESULTDIR = BASEDIR / astro_utilities.DAOfinder_result_dir
-    OBSRAWDIR = BASEDIR / astro_utilities.CCD_obs_dir
     REDUCEDDIR2 = BASEDIR / astro_utilities.reduced_dir2
 
     if not REDUCEDDIR2.exists():

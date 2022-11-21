@@ -12,12 +12,12 @@ OPTIC, CCDNAME 등의 정보를 줍니다.
 from datetime import datetime
 from astropy.io import fits
 import os
+
 import Python_utilities
 import astro_utilities
-
+#%%
 #######################################################
 # for log file
-
 log_dir = "logs/"
 log_file = "{}{}.log".format(log_dir, os.path.basename(__file__)[:-3])
 err_log_file = "{}{}_err.log".format(log_dir, os.path.basename(__file__)[:-3])
@@ -26,7 +26,7 @@ print ("err_log_file: {}".format(err_log_file))
 if not os.path.exists('{0}'.format(log_dir)):
     os.makedirs('{0}'.format(log_dir))
 #######################################################
-
+#%%
 #######################################################
 # read all files in base directory for processing
 BASEDIR = "../CCD_new_files/"
@@ -36,9 +36,10 @@ BASEDIR = "../CCD_new_files/"
 fullnames = astro_utilities.getFullnameListOfallFiles(BASEDIR)
 
 print ("fullnames: {}".format(fullnames))
+print ("len(fullnames): {}".format(len(fullnames)))
 #######################################################
 
-
+#%%
 #######################################################
 # set gain and readout noise 
 gain = 0
@@ -71,7 +72,7 @@ checkKEYs = ["OPTIC", "OBJECT", "FLIPSTAT", "CCDNAME",
 changeKEYs = ["OPTIC", "OBJECT", "FLIPSTAT", "CCDNAME", 
             "GAIN", "EGAIN", "RDNOISE",
             "XBINNING", "YBINNING"]
-
+#%%
 n = 0    
 for fullname in fullnames[:] :
 #fullname = fullnames[0]
@@ -251,3 +252,4 @@ for fullname in fullnames[:] :
             Python_utilities.write_log(err_log_file,
                 '{2} ::: \n{1} with {0} ...'\
                 .format(fullname, err, datetime.now()))
+# %%

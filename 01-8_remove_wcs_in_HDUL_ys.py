@@ -13,29 +13,34 @@ cd ~/Downloads/ && git clone https://github.com/ysBach/SNUO1Mpy && cd SNUO1Mpy &
 # second time...
 cd ~/Downloads/ysvisutilpy && git pull && pip install -e . 
 cd ~/Downloads/ysfitsutilpy && git pull && pip install -e . 
-cd ~/Downloads/ysphouutilpy && git pull && pip install -e . 
+cd ~/Downloads/ysphotutilpy && git pull && pip install -e . 
 cd ~/Downloads/SNUO1Mpy && git pull && pip install -e . 
 
 이 파일은 fits file의 header에 있는 plate solving 관련 keyword를 삭제해 준다.
-
+필요할때만 사용하면 된다.
 """
 #%%
-from glob import glob
-import numpy as np
 import os
+from glob import glob
+from pathlib import Path
+
+import numpy as np
+
 import astropy.units as u
 from astropy.stats import sigma_clip
-from ccdproc import combine, ccd_process, CCDData
 from astropy.io import fits
-import Python_utilities
+from ccdproc import combine, ccd_process, CCDData
+
 import ysfitsutilpy as yfu
 import ysphotutilpy as ypu
 import ysvisutilpy as yvu
 
-from pathlib import Path
 from snuo1mpy import Preprocessor
-import numpy as np
 
+import astro_utilities
+import Python_utilities
+
+#%%
 #######################################################
 # for log file
 log_dir = "logs/"
@@ -69,11 +74,10 @@ for BASEDIR in BASEDIRs :
 
     BASEDIR = Path(BASEDIR)
     
-    RESULTDIR = BASEDIR / DAOfinder_result
-    SOLVEDDIR = BASEDIR / solved_dir
-    MASTERDIR = BASEDIR / master_dir
-    REDUCEDDIR = BASEDIR / reduced_dir
-    MASTERDIR = BASEDIR / master_dir
+    OBSRAWDIR = BASEDIR / astro_utilities.CCD_obs_dir
+    MASTERDIR = BASEDIR / astro_utilities.master_dir
+    REDUCEDDIR = BASEDIR / astro_utilities.reduced_dir
+    SOLVEDDIR = BASEDIR / astro_utilities.solved_dir
 
     try : 
         #파일 목록을 DataFrame으로 만들어서 이용하자

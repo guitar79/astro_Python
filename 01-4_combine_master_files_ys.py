@@ -12,7 +12,7 @@ cd ~/Downloads/ && git clone https://github.com/ysBach/SNUO1Mpy && cd SNUO1Mpy &
 # second time...
 cd ~/Downloads/ysvisutilpy && git pull && pip install -e . 
 cd ~/Downloads/ysfitsutilpy && git pull && pip install -e . 
-cd ~/Downloads/ysphouutilpy && git pull && pip install -e . 
+cd ~/Downloads/ysphotutilpy && git pull && pip install -e . 
 cd ~/Downloads/SNUO1Mpy && git pull && pip install -e . 
 
 """
@@ -49,26 +49,18 @@ if not os.path.exists('{0}'.format(log_dir)):
 BASEDIR = "../RnE_2022/"
 BASEDIR = "../RnE_2022/RiLA600_STX-16803_2bin/"
 
-c_method = "median"
-master_dir = "master_files_ys"
-reduced_dir = "reduced"
-solved_dir = "solved"
-DAOfinder_result = "DAOfinder_result"
-
 #%%
 BASEDIRs = sorted(Python_utilities.getFullnameListOfsubDir(BASEDIR))
 print ("BASEDIRs: {}".format(BASEDIRs))
-
-for BASEDIR in BASEDIRs[7:] :
+print ("len(BASEDIRs): {}".format(len(BASEDIRs)))
+#%%
+for BASEDIR in BASEDIRs[:] :
     print ("Starting...\n{}".format(BASEDIR))
 
     BASEDIR = Path(BASEDIR)
     
-    OBSRAWDIR = BASEDIR / astro_utilities.CCD_obs_dir
+    #OBSRAWDIR = BASEDIR / astro_utilities.CCD_obs_dir
     MASTERDIR = BASEDIR / astro_utilities.master_dir
-    REDUCEDDIR = BASEDIR / astro_utilities.reduced_dir
-    SOLVEDDIR = BASEDIR / astro_utilities.solved_dir
-    RESULTDIR = BASEDIR / astro_utilities.DAOfinder_result_dir
 
     if not MASTERDIR.exists():
         os.makedirs("{}".format(str(MASTERDIR)))
@@ -78,8 +70,10 @@ for BASEDIR in BASEDIRs[7:] :
     summary = yfu.make_summary(BASEDIR/"*.fit*")
     #print(summary)
     print("len(summary):", len(summary))
+    print("summary:", summary)
     print(summary["file"][0])
 
+    #%%
     try: 
         bias_fits = summary[summary["IMAGETYP"] == "BIAS"]["file"]
         bias_comb = yfu.group_combine(

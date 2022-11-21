@@ -13,7 +13,7 @@ cd ~/Downloads/ && git clone https://github.com/ysBach/SNUO1Mpy && cd SNUO1Mpy &
 # second time...
 cd ~/Downloads/ysvisutilpy && git pull && pip install -e . 
 cd ~/Downloads/ysfitsutilpy && git pull && pip install -e . 
-cd ~/Downloads/ysphouutilpy && git pull && pip install -e . 
+cd ~/Downloads/ysphotutilpy && git pull && pip install -e . 
 cd ~/Downloads/SNUO1Mpy && git pull && pip install -e . 
 
 이 파일은 관측 자료를 전처리 해준다.
@@ -34,7 +34,7 @@ import ysvisutilpy as yvu
 import astro_utilities
 import Python_utilities
 
-
+#%%
 #######################################################
 # for log file
 log_dir = "logs/"
@@ -56,7 +56,7 @@ BASEDIRs = sorted(Python_utilities.getFullnameListOfsubDir(BASEDIR))
 print ("BASEDIRs: {}".format(BASEDIRs))
 
 #%%
-for BASEDIR in BASEDIRs[:] :
+for BASEDIR in BASEDIRs[4:] :
     print ("Starting...\n{}".format(BASEDIR))
 
     BASEDIR = Path(BASEDIR)
@@ -64,8 +64,6 @@ for BASEDIR in BASEDIRs[:] :
     OBSRAWDIR = BASEDIR / astro_utilities.CCD_obs_dir
     MASTERDIR = BASEDIR / astro_utilities.master_dir
     REDUCEDDIR = BASEDIR / astro_utilities.reduced_dir
-    SOLVEDDIR = BASEDIR / astro_utilities.solved_dir
-    RESULTDIR = BASEDIR / astro_utilities.DAOfinder_result_dir
 
     if not REDUCEDDIR.exists():
         os.makedirs(str(REDUCEDDIR))
@@ -75,7 +73,6 @@ for BASEDIR in BASEDIRs[:] :
     summary = yfu.make_summary(BASEDIR/"*.fit")
     #print(summary)
     print("len(summary):", len(summary))
-    print(summary["file"][0])
 
     df_light = summary.loc[summary["IMAGETYP"] == "LIGHT"].copy()
     df_light = df_light.reset_index(drop=True)

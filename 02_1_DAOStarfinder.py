@@ -64,12 +64,6 @@ if not os.path.exists('{0}'.format(log_dir)):
 BASEDIR = "../RnE_2022/"
 BASEDIR = "../RnE_2022/RiLA600_STX-16803_2bin/"
 
-c_method = 'median'
-master_dir = "master_files_ys"
-reduced_dir = "reduced"
-solved_dir = "solved"
-STARfinder_result_dir = "DAOfinder_result"
-
 #%%
 BASEDIRs = sorted(Python_utilities.getFullnameListOfsubDir(BASEDIR))
 print ("BASEDIRs: {}".format(BASEDIRs))
@@ -78,12 +72,12 @@ for BASEDIR in BASEDIRs :
     print ("Starting...\n{}".format(BASEDIR))
 
     BASEDIR = Path(BASEDIR)
-    RESULTDIR = BASEDIR / STARfinder_result_dir
-    SOLVEDDIR = BASEDIR / solved_dir
-
-    if not RESULTDIR.exists():
-        os.makedirs("{}".format(str(RESULTDIR)))
-        print("{} is created...".format(str(RESULTDIR)))
+    SOLVEDDIR = BASEDIR / astro_utilities.solved_dir2
+    DAORESULTDIR = BASEDIR / astro_utilities.DAOfinder_result_dir
+    
+    if not DAORESULTDIR.exists():
+        os.makedirs("{}".format(str(DAORESULTDIR)))
+        print("{} is created...".format(str(DAORESULTDIR)))
 
     summary = yfu.make_summary(SOLVEDDIR / "*.fits")
     #print(summary)
@@ -146,7 +140,7 @@ for BASEDIR in BASEDIRs :
 
                     # save XY coordinates:
                     DAOfound.write("{}/{}_DAOStarfinder_fwhm{}.csv".\
-                                    format(RESULTDIR, fpath.stem, FWHM), 
+                                    format(DAORESULTDIR, fpath.stem, FWHM), 
                                     overwrite = True,
                                     format='ascii.fast_csv')
                     #%%
@@ -208,10 +202,10 @@ for BASEDIR in BASEDIRs :
 
                     plt.savefig(
                                 "{}/{}_DAOStarfinder_fwhm{}.png".\
-                                    format(RESULTDIR, fpath.stem, FWHM)
+                                    format(DAORESULTDIR, fpath.stem, FWHM)
                                 )
                     print("{}/{}_DAOStarfinder_fwhm{}.png is created...".\
-                                    format(RESULTDIR, fpath.stem, FWHM))
+                                    format(DAORESULTDIR, fpath.stem, FWHM))
                     #plt.show()
                     plt.close() 
 

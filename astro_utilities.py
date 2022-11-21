@@ -32,6 +32,9 @@ reduced_dir2 = "reduced2"
 solved_dir = "solved"
 solved_dir2 = "solved2"
 DAOfinder_result_dir = "DAOfinder_result"
+IRAFfinder_result_dir = "IRAFfinder_result"
+APh_result_dir = "APh_result"
+Asteroid_result_dir = "Asteroid_result"
 
 #
 master_file_dir = 'master_file_Python/'
