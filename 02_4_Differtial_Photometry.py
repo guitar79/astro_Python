@@ -13,7 +13,7 @@ cd ~/Downloads/ && git clone https://github.com/ysBach/SNUO1Mpy && cd SNUO1Mpy &
 # second time...
 cd ~/Downloads/ysvisutilpy && git pull && pip install -e . 
 cd ~/Downloads/ysfitsutilpy && git pull && pip install -e . 
-cd ~/Downloads/ysphttutilpy && git pull && pip install -e . 
+cd ~/Downloads/ysphotutilpy && git pull && pip install -e . 
 cd ~/Downloads/SNUO1Mpy && git pull && pip install -e . 
 
 """
@@ -40,6 +40,7 @@ import ysphotutilpy as ypu
 import ysvisutilpy as yvu
 
 import Python_utilities
+import astro_utilities
 
 #%%
 #######################################################
@@ -57,13 +58,6 @@ if not os.path.exists('{0}'.format(log_dir)):
 # 
 BASEDIR = "../RnE_2022/"
 BASEDIR = "../RnE_2022/RiLA600_STX-16803_2bin/"
-
-c_method = 'median'
-master_dir = "master_files_ys"
-reduced_dir = "reduced"
-solved_dir = "solved"
-phot_result_dir = "diff_phot_result"
-
 
 #%%
 #####################################################################
@@ -96,12 +90,13 @@ for BASEDIR in BASEDIRs[:1]:
     print ("Starting...\n{}".format(BASEDIR))
 
     BASEDIR = Path(BASEDIR)
-    RESULTDIR = BASEDIR / phot_result_dir
-    SOLVEDDIR = BASEDIR / solved_dir
 
-    if not RESULTDIR.exists():
-        os.makedirs("{}".format(str(RESULTDIR)))
-        print("{} is created...".format(str(RESULTDIR)))
+    SOLVEDDIR = BASEDIR / astro_utilities.solved_dir2
+    AsteroidRESULTDIR = BASEDIR / astro_utilities.Asteroid_result_dir
+
+    if not AsteroidRESULTDIR.exists():
+        os.makedirs("{}".format(str(AsteroidRESULTDIR)))
+        print("{} is created...".format(str(AsteroidRESULTDIR)))
 
 
     #%%
@@ -112,8 +107,8 @@ for BASEDIR in BASEDIRs[:1]:
 
     #%%
     n = 0
-    for fname in summary["file"][:1]:
-        #fpath = summary["file"][1]
+    for fname in summary["file"][:]:
+
         n += 1
         print('#'*40,
             "\n{2:.01f}%  ({0}/{1}) {3}".format(n, len(summary["file"]), 
@@ -134,7 +129,7 @@ for BASEDIR in BASEDIRs[:1]:
                                     location=LOCATION)
         print("eph:", eph)
         #%%
-        eph.write("{}_eph-{}.csv".format(str(RESULTDIR / fpath.stem), OBJID),
+        eph.write("{}_eph-{}.csv".format(str(AsteroidRESULTDIR / fpath.stem), OBJID),
                 overwrite = True)
 
         #%%
@@ -170,7 +165,7 @@ for BASEDIR in BASEDIRs[:1]:
         df_stars = ps1.queried.to_pandas()
 
         print("df_stars:", df_stars)
-        df_stars.to_csv("{}_stars.csv".format(str(RESULTDIR / fpath.stem)))
+        df_stars.to_csv("{}_stars.csv".format(str(AsteroidRESULTDIR / fpath.stem)))
 
         #%%
         
@@ -207,14 +202,14 @@ for BASEDIR in BASEDIRs[:1]:
         plt.title("{} and {} stars".format(eph["targetname"][0], len(df_stars)),
                     fontsize = 16)
         plt.tight_layout()
-        plt.savefig("{}_stars.png".format(str(RESULTDIR / fpath.stem)))
+        plt.savefig("{}_stars.png".format(str(AsteroidRESULTDIR / fpath.stem)))
         #plt.show()
         #%%
         phot_stars = pd.concat(_phot_stars)
         # phot_stars = phot_stars.loc[phot_stars["objID"] != 110823405221754720].copy()  # star 15
         # SEE THE LAST CELL IN THIS FILE FOR DESCRIPTION
         print("phot_stars: ", phot_stars)
-        phot_stars.to_csv("{}_phot_stars.csv".format(str(RESULTDIR / fpath.stem)))
+        phot_stars.to_csv("{}_phot_stars.csv".format(str(AsteroidRESULTDIR / fpath.stem)))
 
         # %%
         # Standardization Plots
@@ -265,7 +260,7 @@ for BASEDIR in BASEDIRs[:1]:
 
         plt.tight_layout()
         #plt.show()
-        plt.savefig("{}_R_mag.png".format(str(RESULTDIR / fpath.stem)))
+        plt.savefig("{}_R_mag.png".format(str(AsteroidRESULTDIR / fpath.stem)))
         
         # %%
         fig, axs = plt.subplots(1, 2, 
@@ -293,7 +288,7 @@ for BASEDIR in BASEDIRs[:1]:
         axs[1].grid(ls=':')
         plt.tight_layout()
         #plt.show()
-        plt.savefig("{}_result.png".format(str(RESULTDIR / fpath.stem)))
+        plt.savefig("{}_result.png".format(str(AsteroidRESULTDIR / fpath.stem)))
 
         
 # %%

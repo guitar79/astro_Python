@@ -15,7 +15,7 @@ cd ~/Downloads/ && git clone https://github.com/ysBach/SNUO1Mpy && cd SNUO1Mpy &
 # second time...
 cd ~/Downloads/ysvisutilpy && git pull && pip install -e . 
 cd ~/Downloads/ysfitsutilpy && git pull && pip install -e . 
-cd ~/Downloads/ysphttutilpy && git pull && pip install -e . 
+cd ~/Downloads/ysphotutilpy && git pull && pip install -e . 
 cd ~/Downloads/SNUO1Mpy && git pull && pip install -e . 
 
 """
@@ -23,6 +23,7 @@ cd ~/Downloads/SNUO1Mpy && git pull && pip install -e .
 import os
 from glob import glob
 from pathlib import Path
+
 import numpy as np
 import pandas as pd
 import matplotlib.pyplot as plt
@@ -33,13 +34,6 @@ import astropy.units as u
 from astropy.io import fits
 from astropy.wcs import WCS
 from astropy.stats import sigma_clip, sigma_clipped_stats
-
-import ysfitsutilpy as yfu
-import ysphotutilpy as ypu
-import ysvisutilpy as yvu
-
-import Python_utilities
-import astro_utilities
 
 from astropy.nddata import Cutout2D
 
@@ -55,6 +49,13 @@ from ccdproc import CCDData, ccd_process
 from astropy.time import Time
 from astropy.table import Table, vstack
 from astropy.coordinates import SkyCoord
+
+import ysfitsutilpy as yfu
+import ysphotutilpy as ypu
+import ysvisutilpy as yvu
+
+import Python_utilities
+import astro_utilities
 
 plt.rcParams.update({'figure.max_open_warning': 0})
 
@@ -75,11 +76,6 @@ if not os.path.exists('{0}'.format(log_dir)):
 BASEDIR = "../RnE_2022/"
 BASEDIR = "../RnE_2022/RiLA600_STX-16803_2bin/"
 
-c_method = 'median'
-master_dir = "master_files_ys"
-reduced_dir = "reduced2"
-solved_dir = "solved"
-phot_result_dir = "annul_phot_result"
 
 #%%
 #####################################################################
@@ -108,17 +104,17 @@ R_OUT = 6*FWHM_INIT  # Outer radius of annulus
 BASEDIRs = sorted(Python_utilities.getFullnameListOfsubDir(BASEDIR))
 print ("BASEDIRs: {}".format(BASEDIRs))
 
-for BASEDIR in BASEDIRs[4:5]:
+for BASEDIR in BASEDIRs[:1]:
     print ("Starting...\n{}".format(BASEDIR))
 
     BASEDIR = Path(BASEDIR)
-    RESULTDIR = BASEDIR / phot_result_dir
-    SOLVEDDIR = BASEDIR / solved_dir
-    REDUCEDDIR = BASEDIR / solved_dir
+    
+    SOLVEDDIR = BASEDIR / astro_utilities.solved_dir2
+    APhRESULTDIR = BASEDIR / astro_utilities.APh_result_dir
 
-    if not RESULTDIR.exists():
-        os.makedirs("{}".format(str(RESULTDIR)))
-        print("{} is created...".format(str(RESULTDIR)))
+    if not APhRESULTDIR.exists():
+        os.makedirs("{}".format(str(APhRESULTDIR)))
+        print("{} is created...".format(str(APhRESULTDIR)))
 
 
     #%%
@@ -129,7 +125,7 @@ for BASEDIR in BASEDIRs[4:5]:
 
     #%%
     n = 0
-    for fname in summary["file"][:1]:
+    for fname in summary["file"][:]:
         #fpath = summary["file"][1]
         n += 1
         print('#'*40,
@@ -145,13 +141,15 @@ for BASEDIR in BASEDIRs[4:5]:
 
             r_fov = yfu.fov_radius(ccd.header+ccd.wcs.to_header())
             print(r_fov)
+            # 별의 목록을 가져옴.
             ps1 = ypu.PanSTARRS1(ccd.wcs.wcs.crval[0]*u.deg, 
                                 ccd.wcs.wcs.crval[1]*u.deg, 
                                 radius = r_fov,
                                 column_filters = {"rmag":"12.0..14.0", 
                                                 "e_rmag":"<0.10", 
                                                 "nr":">5"})
-
+            
+            # 가까이 붙어 있는 별은 지우자.
             isnear = ypu.organize_ps1_and_isnear(
                                 ps1, 
                                 header = ccd.header+ccd.wcs.to_header(), 
@@ -159,8 +157,10 @@ for BASEDIR in BASEDIRs[4:5]:
                                 nearby_obj_minsep= 5 *FWHM_INIT*PIX2ARCSEC.value,
                                 group_crit_separation = 6*FWHM_INIT
                             )
+            
+            # 별의 목록
             df_stars = ps1.queried.to_pandas()
-            df_stars.to_csv("{}_stars.csv".format(str(RESULTDIR / fpath.stem)))
+            df_stars.to_csv("{}_stars.csv".format(str(APhRESULTDIR / fpath.stem)))
             print("df_stars:", df_stars)
 
             fig, axs = plt.subplots(1, 1, 
@@ -171,11 +171,14 @@ for BASEDIR in BASEDIRs[4:5]:
                         )
 
             yvu.norm_imshow(axs, ccd, zscale=True)
-            _phot_stars = []
-
-            for i, row in df_stars.iterrows():
             
+            # 각 별의 측광을 수행
+            _phot_stars = []
+            
+            for i, row in df_stars.iterrows():
+                #별의 적경, 적위를 이미지 안에서의 픽셀 값으로 
                 pos_star = SkyCoord(row["RAJ2000"], row["DEJ2000"], **SKYC_KW).to_pixel(ccd.wcs)
+
                 ap = CAp([pos_star[0], pos_star[1]], r=R_AP)
                 an = CAn([pos_star[0], pos_star[1]], r_in=R_IN, r_out=R_OUT)
                 _phot_star = ypu.apphot_annulus(ccd, ap, an, error=yfu.errormap(ccd))
@@ -191,7 +194,7 @@ for BASEDIR in BASEDIRs[4:5]:
                 an.plot(axs, color="w")
 
                 plt.tight_layout()
-                plt.savefig("{}_stars.png".format(str(RESULTDIR / fpath.stem)))
+                plt.savefig("{}_stars.png".format(str(APhRESULTDIR / fpath.stem)))
                 #plt.show()
 
         except Exception as err:
@@ -221,7 +224,7 @@ for BASEDIR in BASEDIRs[4:5]:
                 cut_hdu = Cutout2D(
                             data = ccd, 
                             position = ([pos_star[0], pos_star[1]]), 
-                            size=(30,30)
+                            size=(30, 30) #cut ccd
                             )
 
     
@@ -301,7 +304,7 @@ for BASEDIR in BASEDIRs[4:5]:
                 ax1.set_ylabel('pixels')
                 ax1.grid(ls=':')
                 ax1.set_title('Star area image')
-                ax1.text( 0, -7, 
+                ax1.text( 0, -2, 
                         'sum: {0:.01f}, mean: {1:.01f}, std: {2:.01f} \nmax: {3:.01f}, min: {4:.01f} \nNumber of Pixel: {5:.0f}x{6:.0f}'\
                         .format(np.sum(cut_hdu.data), 
                                 np.mean(cut_hdu.data), 
@@ -325,10 +328,12 @@ for BASEDIR in BASEDIRs[4:5]:
 
                 ax2.grid(ls=':')
                 ax2.set_title('The center of Star')
-                ax2.imshow(mask_3sig.astype(int), origin="lower")
-                ax2.imshow(cut_hdu.data, alpha=0.4, origin="lower")
+                ax2.imshow(mask_3sig.astype(int), 
+                            origin="lower")
+                ax2.imshow(cut_hdu.data, alpha=0.4, 
+                            origin="lower")
                 ax2.plot(*center, 'rx')
-                ax2.text(0, 107, 
+                ax2.text(0, -2, 
                         'center: {0:.01f}, {1:.1f}'\
                         .format(center[0], center[1]),
                         va = 'top'
@@ -347,11 +352,12 @@ for BASEDIR in BASEDIRs[4:5]:
 
                 ax2.grid(ls=':')
                 ax3.set_title('The result of photometry')
-                ax3.imshow(cut_hdu.data)
+                ax3.imshow(cut_hdu.data,
+                           origin='lower' )
                 ap.plot(ax3, color='r', lw=2)
                 an.plot(ax3, color='w', lw=2)
                 ax3.plot(*center, 'rx')
-                ax3.text(0, 107, 
+                ax3.text(0, -2, 
                         'aperture sum: {0:.01f}, sky: {1:.01f}, source sum: {2:.01f}\n initrument magnitude: {3:.01f}'\
                         .format(float(phot["aperture_sum"]),
                                 float(phot["sky"]),
@@ -374,7 +380,7 @@ for BASEDIR in BASEDIRs[4:5]:
                 ax4.axvline(msky, ls=':', color='r')
 
                 plt.tight_layout()
-                plt.savefig("{}_star_{:02d}.png".format(str(RESULTDIR / fpath.stem), idx))
+                plt.savefig("{}_star_{:02d}.png".format(str(APhRESULTDIR / fpath.stem), idx))
 
             except Exception as err:
                 print('{0} with {1}: {2}th stars '.format(err, fpath.name, idx))

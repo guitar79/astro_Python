@@ -26,12 +26,16 @@ import Python_utilities
 #########################################
 c_method = "median"
 CCD_obs_dir = "../CCD_obs_raw/"
+base_dir = "../Post_process/RiLA600_STX-16803_2bin/"
 master_dir = "master_files_ys"
 reduced_dir = "reduced"
 reduced_dir2 = "reduced2"
 solved_dir = "solved"
 solved_dir2 = "solved2"
 DAOfinder_result_dir = "DAOfinder_result"
+IRAFfinder_result_dir = "IRAFfinder_result"
+APh_result_dir = "APh_result"
+Asteroid_result_dir = "Asteroid_result"
 
 #
 master_file_dir = 'master_file_Python/'
@@ -86,8 +90,39 @@ FOCALLENDIC = {"TMB130ss": 910,
             "FSQ106ED-x72": 530*0.72,
             "FSQ106ED-x73": 530*0.73} 
 
+#CCDNAME, PIXSIZE, GAIN, RENOISE    
+CCDDIC = {"STF-8300M": [5.4, 0.37, 9.3], 
+        "QSI683ws": [5.4, 0.13, 8.0],
+        "STL-11000": [9.0, 0.8, 9.6],
+        "STX-16803": [9.0, 1.27, 9.0]}
+        
+OPTICDIC = {"TMB130ss": [910], 
+            "RiLA600": [3000], 
+            "GSON300": [1200], 
+            "FS-60CB": [355], 
+            "SVX080T": [480], 
+            "FSQ106ED": [530]} 
+
+OPTICDIC = {"TMB130ss": [910, 130], 
+            "RiLA600": [3000, 600], 
+            "GSON300": [1200, 300], 
+            "FS-60CB": [355, 60], 
+            "SVX080T": [480, 80], 
+            "FSQ106ED": [530, 106]}
+
+OptAccDIC = {"x80": 0.8, 
+            "x72": 0.72, 
+            "x73": 0.73, 
+            "x75": 0.75} 
 #######################################################
 
+def calPixScale (F_length, O_acc, Pix_size) :
+    # Pixel Size   /   Telescope Focal Length   )   X 206.265  
+    # Pixel Size : um, 
+    # Telescope Focal Length: mm
+    # PixScale: arcsec / pixel
+    PixScale = Pix_size / (F_length * O_acc) *  206.265
+    return PixScale
 
 
 #%%

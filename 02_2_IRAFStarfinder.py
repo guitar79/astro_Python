@@ -64,12 +64,6 @@ if not os.path.exists('{0}'.format(log_dir)):
 BASEDIR = "../RnE_2022/"
 BASEDIR = "../RnE_2022/RiLA600_STX-16803_2bin/"
 
-c_method = 'median'
-master_dir = "master_files_ys"
-reduced_dir = "reduced"
-solved_dir = "solved"
-STARfinder_result_dir = "IRAFfinder_result"
-
 #%%
 BASEDIRs = sorted(Python_utilities.getFullnameListOfsubDir(BASEDIR))
 print ("BASEDIRs: {}".format(BASEDIRs))
@@ -78,12 +72,12 @@ for BASEDIR in BASEDIRs :
     print ("Starting...\n{}".format(BASEDIR))
 
     BASEDIR = Path(BASEDIR)
-    RESULTDIR = BASEDIR / STARfinder_result_dir
-    SOLVEDDIR = BASEDIR / solved_dir
+    IRAFRESULTDIR = BASEDIR / astro_utilities.IRAFfinder_result_dir
+    SOLVEDDIR = BASEDIR / astro_utilities.solved_dir2
 
-    if not RESULTDIR.exists():
-        os.makedirs("{}".format(str(RESULTDIR)))
-        print("{} is created...".format(str(RESULTDIR)))
+    if not IRAFRESULTDIR.exists():
+        os.makedirs("{}".format(str(IRAFRESULTDIR)))
+        print("{} is created...".format(str(IRAFRESULTDIR)))
 
     summary = yfu.make_summary(SOLVEDDIR / "*.fits")
     #print(summary)
@@ -148,7 +142,7 @@ for BASEDIR in BASEDIRs :
 
                     # save XY coordinates:
                     IRAFfound.write("{}/{}_IRAFStarfinder_fwhm{}.csv".\
-                                    format(RESULTDIR, fpath.stem, FWHM), 
+                                    format(IRAFRESULTDIR, fpath.stem, FWHM), 
                                     overwrite = True,
                                     format='ascii.fast_csv')
 
@@ -210,10 +204,10 @@ for BASEDIR in BASEDIRs :
 
                     plt.savefig(
                                 "{}/{}_IRAFStarfinder_fwhm{}.png".\
-                                    format(RESULTDIR, fpath.stem, FWHM)
+                                    format(IRAFRESULTDIR, fpath.stem, FWHM)
                                 )
                     print("{}/{}_IRAFStarfinder_fwhm{}.png is created...".\
-                                    format(RESULTDIR, fpath.stem, FWHM))
+                                    format(IRAFRESULTDIR, fpath.stem, FWHM))
                     #plt.show()
                     plt.close() 
 
