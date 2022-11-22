@@ -12,7 +12,7 @@ cd ~/Downloads/ && git clone https://github.com/ysBach/SNUO1Mpy && cd SNUO1Mpy &
 # second time...
 cd ~/Downloads/ysvisutilpy && git pull && pip install -e . 
 cd ~/Downloads/ysfitsutilpy && git pull && pip install -e . 
-cd ~/Downloads/ysphouutilpy && git pull && pip install -e . 
+cd ~/Downloads/ysphotutilpy && git pull && pip install -e . 
 cd ~/Downloads/SNUO1Mpy && git pull && pip install -e . 
 
 이 파일은 BASEDIR 폴더 안에 있는 모든 fit 파일에 대해서 
@@ -91,25 +91,22 @@ class Multiprocessor():
 # read all files in base directory for processing
 BASEDIR = "../RnE_2022/"
 BASEDIR = "../RnE_2022/RiLA600_STX-16803_2bin/"
+BASEDIR = astro_utilities.base_dir
 
+OBSRAWDIR = astro_utilities.CCD_obs_dir
 #%%
 BASEDIRs = sorted(Python_utilities.getFullnameListOfsubDir(BASEDIR))
 print ("BASEDIRs: {}".format(BASEDIRs))
 print ("len(BASEDIRs): {}".format(len(BASEDIRs)))
 
 #%%
-#BASEDIR = Path("../RnE_2022/KLEOPATRA_Light_-_2022-11-04_-_RiLA600_STX-16803_-_2bin/")
-
-#%%
-for BASEDIR in BASEDIRs [:]:
+for BASEDIR in BASEDIRs [4:5]:
     print ("Starting...\n{}".format(BASEDIR))
 
     BASEDIR = Path(BASEDIR)
 
-    MASTERDIR = BASEDIR / astro_utilities.master_dir
     REDUCEDDIR = BASEDIR / astro_utilities.reduced_dir
     SOLVEDDIR = BASEDIR / astro_utilities.solved_dir    
-    RESULTDIR = BASEDIR / astro_utilities.DAOfinder_result_dir
     REDUCEDDIR = BASEDIR / astro_utilities.reduced_dir2
     SOLVEDDIR = BASEDIR / astro_utilities.solved_dir2    
 
@@ -118,24 +115,34 @@ for BASEDIR in BASEDIRs [:]:
 
     summary = yfu.make_summary(REDUCEDDIR/"*.fits")
 
-    df_light = summary.loc[summary["IMAGETYP"] == "LIGHT"].copy()
-    df_light = df_light.reset_index(drop=True)
-    print("df_light:\n{}".format(df_light))
+    if summary.empty:
+        print("The dataframe(summary) is empty")
+        pass
+    else:
+        df_light = summary.loc[summary["IMAGETYP"] == "LIGHT"].copy()
 
-    myMP = Multiprocessor()
-    num_cpu = 6
-    values = []
-    fullnames = df_light["file"].tolist()
-    num_batches = len(fullnames) // num_cpu + 1
+        if df_light.empty:
+            print("The dataframe(df_light) is empty")
+            pass
+        else:
 
-    for batch in range(num_batches):
-        myMP.restart()
-        for fullname in fullnames[batch*num_batches:(batch+1)*num_batches]:
-            #myMP.run(astro_utilities.KevinSolver, fullname, solved_dir)
-            myMP.run(astro_utilities.AstrometrySolver, fullname, str(SOLVEDDIR))
+            df_light = df_light.reset_index(drop=True)
+            print("df_light:\n{}".format(df_light))
 
-        print("Batch " + str(batch))
-        #myMP.wait()
+            myMP = Multiprocessor()
+            num_cpu = 6
+            values = []
+            fullnames = df_light["file"].tolist()
+            num_batches = len(fullnames) // num_cpu + 1
 
-        values.append(myMP.wait())
-        print("OK batch" + str(batch))  
+            for batch in range(num_batches):
+                myMP.restart()
+                for fullname in fullnames[batch*num_batches:(batch+1)*num_batches]:
+                    #myMP.run(astro_utilities.KevinSolver, fullname, solved_dir)
+                    myMP.run(astro_utilities.AstrometrySolver, fullname, str(SOLVEDDIR))
+
+                print("Batch " + str(batch))
+                #myMP.wait()
+
+                values.append(myMP.wait())
+                print("OK batch" + str(batch))  

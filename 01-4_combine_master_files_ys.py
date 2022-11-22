@@ -48,18 +48,18 @@ if not os.path.exists('{0}'.format(log_dir)):
 # read all files in base directory for processing
 BASEDIR = "../RnE_2022/"
 BASEDIR = "../RnE_2022/RiLA600_STX-16803_2bin/"
+BASEDIR = astro_utilities.base_dir
 
 #%%
 BASEDIRs = sorted(Python_utilities.getFullnameListOfsubDir(BASEDIR))
 print ("BASEDIRs: {}".format(BASEDIRs))
 print ("len(BASEDIRs): {}".format(len(BASEDIRs)))
 #%%
-for BASEDIR in BASEDIRs[:] :
+for BASEDIR in BASEDIRs[5:] :
     print ("Starting...\n{}".format(BASEDIR))
 
     BASEDIR = Path(BASEDIR)
     
-    #OBSRAWDIR = BASEDIR / astro_utilities.CCD_obs_dir
     MASTERDIR = BASEDIR / astro_utilities.master_dir
 
     if not MASTERDIR.exists():
@@ -71,7 +71,7 @@ for BASEDIR in BASEDIRs[:] :
     #print(summary)
     print("len(summary):", len(summary))
     print("summary:", summary)
-    print(summary["file"][0])
+    #print(summary["file"][0])
 
     #%%
     try: 
@@ -83,7 +83,7 @@ for BASEDIR in BASEDIRs[:] :
                         group_key = ["EXPTIME"],
                         fmt = "master_bias.fits",  # output file name format
                         outdir = MASTERDIR,  # output directory (will automatically be made if not exist)
-                        verbose=True
+                        verbose = True
                     )
     except Exception as err :
         print("X"*60)
@@ -98,7 +98,8 @@ for BASEDIR in BASEDIRs[:] :
                         type_val = ["DARK"],
                         group_key = ["EXPTIME"],
                         fmt = "master_dark_{:.0f}sec.fits",  # output file name format
-                        outdir = MASTERDIR  # output directory (will automatically be made if not exist)
+                        outdir = MASTERDIR,  # output directory (will automatically be made if not exist)
+                        verbose=True
                     )
     except Exception as err :
         print("X"*60)
@@ -116,7 +117,8 @@ for BASEDIR in BASEDIRs[:] :
                         fmt = "master_flat_{:s}_norm.fits",  # output file name format
                         scale="med_sc", #norm
                         scale_to_0th=False, #norm
-                        outdir = MASTERDIR  # output directory (will automatically be made if not exist)
+                        outdir = MASTERDIR,  # output directory (will automatically be made if not exist)
+                        verbose=True
                     )
 
         # Say dark frames have header OBJECT = "calib" && "IMAGE-TYP" = "DARK"
@@ -128,7 +130,8 @@ for BASEDIR in BASEDIRs[:] :
                         fmt = "master_flat_{:s}.fits",  # output file name format
                         #scale="med_sc", #norm
                         #scale_to_0th=False, #norm
-                        outdir = MASTERDIR  # output directory (will automatically be made if not exist)
+                        outdir = MASTERDIR,  # output directory (will automatically be made if not exist)
+                        verbose=True
                     )
     except Exception as err :
         print("X"*60)

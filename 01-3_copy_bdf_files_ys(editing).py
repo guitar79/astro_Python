@@ -51,17 +51,71 @@ if not os.path.exists('{0}'.format(log_dir)):
 BASEDIR = "../RnE_2022/"
 BASEDIR = "../RnE_2022/RiLA600_STX-16803_2bin/"
 BASEDIR = "../RnE_2022/GSON300_STF-8300M/"
+BASEDIR = astro_utilities.base_dir
+OBSRAWDIR = Path(astro_utilities.CCD_obs_dir)
+
+PostBASEDIR = Path("../Post_process/")
 
 #%%
-BASEDIRs = sorted(Python_utilities.getFullnameListOfsubDir(BASEDIR))
-print ("BASEDIRs: {}".format(BASEDIRs))
-print ("len(BASEDIRs): {}".format(len(BASEDIRs)))
 
-for BASEDIR in BASEDIRs[:2] :
+Object_name = "KLEOPATRA"   #"M45"
+Optic_name = "GSON300"  #"FSQ106ED" #"FS60-CB" #"TMB130ss" #"FS60-CB"
+OptAcc_name = ""    #"x80"
+Ccd_name = "STF-8300M"
+Bin_name = "1bin"
+
+SCRAWLIGHT = Path(OBSRAWDIR / f"{Ccd_name}_{Bin_name}")
+print(SCRAWLIGHT)
+
+#%%
+OBSRAWDIRs = sorted(Python_utilities.getFullnameListOfallsubDirs(SCRAWLIGHT))
+OBSRAWDIRs = [w for w in OBSRAWDIRs if ((Object_name) in w
+                                    or (".tmp") in w)]
+
+print ("OBSRAWDIRs: {}".format(OBSRAWDIRs))
+
+#%%
+for BASEDIR in OBSRAWDIRs[4:5] :
+    print ("Starting...\n{}".format(BASEDIR))
+
+    BASEDIR = Path(BASEDIR)
+    #print(BASEDIR.parts[-1])
+    PostDIR = PostBASEDIR /BASEDIR.parts[-1]
+    #%%
+    summary = yfu.make_summary(BASEDIR/"*.fit*")
+    if summary.empty:
+        pass
+    else:
+        print(summary)
+        print("len(summary):", len(summary))
+        print(summary["file"][0])
+
+#%%
+    if not REDUCEDDIR.exists():
+        os.makedirs(str(REDUCEDDIR))
+        print("{} is created...".format(str(REDUCEDDIR)))
+
+
+#%%
+for BASEDIR in BASEDIRs[4:] :
     print ("Starting...\n{}".format(BASEDIR))
 
     BASEDIR = Path(BASEDIR)
     
+    MASTERDIR = BASEDIR / astro_utilities.master_dir
+    REDUCEDDIR = BASEDIR / astro_utilities.reduced_dir
+
+    if not REDUCEDDIR.exists():
+        os.makedirs(str(REDUCEDDIR))
+        print("{} is created...".format(str(REDUCEDDIR)))
+
+
+
+BASEDIRs = sorted(Python_utilities.getFullnameListOfsubDir(BASEDIR))
+print ("BASEDIRs: {}".format(BASEDIRs))
+print ("len(BASEDIRs): {}".format(len(BASEDIRs)))
+
+   
     OBSRAWDIR = BASEDIR / astro_utilities.CCD_obs_dir
     MASTERDIR = BASEDIR / astro_utilities.master_dir
     REDUCEDDIR = BASEDIR / astro_utilities.reduced_dir

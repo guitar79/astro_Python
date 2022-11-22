@@ -31,6 +31,9 @@ if not os.path.exists('{0}'.format(log_dir)):
 BASEDIR = "../RnE_2022/"
 BASEDIR = "../RnE_2022/RiLA600_STX-16803_2bin/"
 #BASEDIR = "../RnE_2022/GSON300_STF-8300M/"
+BASEDIR = astro_utilities.base_dir
+
+OBSRAWDIR = astro_utilities.CCD_obs_dir
 
 #%%
 BASEDIRs = sorted(Python_utilities.getFullnameListOfsubDir(BASEDIR))
@@ -38,15 +41,13 @@ print ("BASEDIRs: {}".format(BASEDIRs))
 print ("len(BASEDIRs): {}".format(len(BASEDIRs)))
 
 #%%
-for BASEDIR in BASEDIRs[:] :
+for BASEDIR in BASEDIRs[4:5] :
     print ("Starting...\n{}".format(BASEDIR))
 
     BASEDIR = Path(BASEDIR)
 
-    OBSRAWDIR = BASEDIR / astro_utilities.CCD_obs_dir
     MASTERDIR = BASEDIR / astro_utilities.master_dir
     REDUCEDDIR = BASEDIR / astro_utilities.reduced_dir
-    SOLVEDDIR = BASEDIR / astro_utilities.solved_dir
     REDUCEDDIR2 = BASEDIR / astro_utilities.reduced_dir2
 
     if not REDUCEDDIR2.exists():
@@ -56,30 +57,41 @@ for BASEDIR in BASEDIRs[:] :
     #%%
     summary = yfu.make_summary(REDUCEDDIR/"*.fit*")
     if summary.empty:
+        print("The dataframe(summary) is empty")
         pass
     else:
         print(summary)
         print("len(summary):", len(summary))
-        print(summary["file"][0])
 
         # %%
         #light_fits = summary[summary["IMAGETYP"] == "LIGHT"]["file"]
-        fpaths = list((REDUCEDDIR).glob("*.fits"))
-        fpaths.sort()
-        summary = yfu.make_summary(fpaths)
-        #%%
+        #fpaths = list((REDUCEDDIR).glob("*.fit*"))
+        #fpaths.sort()
+        #summary = yfu.make_summary(fpaths)
+        #if summary.empty:
+        #    print("The dataframe(summary) is empty")
+        #    pass
+        #else:
         for filt in ["b", "v", "r"]:
-            df = summary.loc[summary["FILTER"] == filt].copy()
-            ccd = yfu.imcombine(
-                df["file"].tolist(), 
-                combine="med",
-                scale="avg", 
-                scale_to_0th=False, 
-                #reject="sc", 
-                #sigma=2.5,
-                verbose=2
-                )
-            ccd.write(MASTERDIR / f"nightskyflat-{filt}.fits", overwrite=True)
+            summary_filt = summary.loc[summary["FILTER"] == filt].copy()
+            
+            if summary_filt.empty:
+                print("The dataframe(summary_filt) is empty")
+                pass
+            else:
+                print("len(summary_filt):", len(summary_filt))
+                print("summary_filt:", summary_filt)
+
+                ccd = yfu.imcombine(
+                    summary_filt["file"].tolist(), 
+                    combine="med",
+                    scale="avg", 
+                    scale_to_0th=False, 
+                    #reject="sc", 
+                    #sigma=2.5,
+                    verbose=2
+                    )
+                ccd.write(MASTERDIR / f"nightskyflat-{filt}.fits", overwrite=True)
 
 
         # %%
