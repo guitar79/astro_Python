@@ -3,15 +3,14 @@
 Created on Thu Nov 22 01:00:19 2018
 @author: guitar79@naver.com
 
-ModuleNotFoundError: No module named 'ccdproc'
-conda install -c condaforge ccdproc
 """
 
 #%%
-from datetime import datetime
+from datetime import datetime, timedelta
 import os
 import shutil
 from pathlib import Path
+import numpy as np
 
 #from astropy.io import fits
 
@@ -56,12 +55,19 @@ def print_working_time(cht_start_time):
     working_time = (datetime.now() - cht_start_time) #total days for downloading
     return print('working time ::: %s' % (working_time))
 
-master_file_dir_name = 'master_file_Python/'
-processing_dir_name = 'processing_Python/'
-integration_dir_name = 'integration_Python/'
-alignment_dir_name = 'alignment_Python/'
+#%%
+# =============================================================================
+#     
+# =============================================================================
+def nearest_date(items, pivot) :
+    nearest = min(items, 
+                key=lambda x: abs(x - pivot))
+    timedelta = abs(nearest - pivot)
+    return nearest, timedelta
 
-
+def nearest_ind(items, pivot) :
+    time_diff = np.abs([date - pivot for date in items])
+    return time_diff.argmin(0)
 
 #%%
 # =============================================================================
@@ -160,3 +166,4 @@ def getFullnameListOfsubDir(dirName):
             allFiles.append(it.path)
     allFiles = [w+"/" for w in allFiles]
     return allFiles
+# %%

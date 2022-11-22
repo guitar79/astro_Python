@@ -52,22 +52,60 @@ if not os.path.exists('{0}'.format(log_dir)):
 # read all files in base directory for processing
 BASEDIR = "../RnE_2022/"
 BASEDIR = "../RnE_2022/RiLA600_STX-16803_2bin/"
-BASEDIR = "../RnE_2022/GSON300_STF-8300M/"
-BASEDIR = astro_utilities.base_dir
+BASEDIR = "../Post_process/GSON300_STF-8300M_1bin/"
 OBSRAWDIR = Path(astro_utilities.CCD_obs_dir)
 
-PostBASEDIR = Path("../Post_process/")
+#%%
+BASEDIRs = sorted(Python_utilities.getFullnameListOfsubDir(BASEDIR))
+print ("BASEDIRs: {}".format(BASEDIRs))
 
 #%%
+for BASEDIR in BASEDIRs[:] :
+    print ("Starting...\n{}".format(BASEDIR))
 
-Object_name = "KLEOPATRA"   #"M45"
-Optic_name = "GSON300"  #"FSQ106ED" #"FS60-CB" #"TMB130ss" #"FS60-CB"
-OptAcc_name = ""    #"x80"
-Ccd_name = "STF-8300M"
-Bin_name = "1bin"
+    BASEDIR = Path(BASEDIR)
+    folder_el = BASEDIR.parts[-1].split("_")
+    #print(folder_el)    
+    Object_name = folder_el[0]
+    if folder_el[5].find("-") == -1 :
+        Optic_name = folder_el[5]
+        OptAcc_name = ""
+    else : 
+        Optic_name = folder_el[5].split("-")[0]
+        OptAcc_name = folder_el[5].split("-")[1]
+    #print(Optic_name)
+    #print(OptAcc_name)
+    Ccd_name = folder_el[6]
+    Bin_name = folder_el[8]
 
-SCRAWLIGHT = Path(OBSRAWDIR / f"{Ccd_name}_{Bin_name}")
-print(SCRAWLIGHT)
+    Obs_date = datetime.strptime('2020-07-18', '%Y-%m-%d')
+    print(Obs_date)
+
+    #%%
+    SearchRAWCAL = OBSRAWDIR / f"{Ccd_name}_{Bin_name}" / "cal"
+    bdRAWDIRs = sorted(Python_utilities.getFullnameListOfallsubDirs(SearchRAWCAL))
+    #print("bdRAWDIRs: ", bdRAWDIRs)
+    print("len(bdRAWDIRs): ", len(bdRAWDIRs))
+
+    bRAWDIRs = [w for w in bdRAWDIRs if "bias" in w.lower()]
+    print("bRAWDIRs: ", bRAWDIRs)
+    print("len(bRAWDIRs): ", len(bRAWDIRs))
+
+    b_date = []
+    for bRAWDIR in bRAWDIRs :
+        bRAWDIR = Path(bRAWDIR)
+        bfolder_el = bRAWDIR.parts[-1].split("_")
+        b_date.append(datetime.strptime(bfolder_el[3], '%Y-%m-%d'))
+    #%%
+    #print(b_date)
+    #print(type(Obs_date))
+    #print(Obs_date)
+    #print(b_date[0]-Obs_date)
+    near_idx = Python_utilities.nearest_ind(b_date, Obs_date)
+    print(near_idx)
+    
+    
+        
 
 #%%
 OBSRAWDIRs = sorted(Python_utilities.getFullnameListOfallsubDirs(SCRAWLIGHT))
