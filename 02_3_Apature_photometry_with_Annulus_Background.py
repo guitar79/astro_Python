@@ -96,9 +96,9 @@ SKYC_KW = dict(unit = u.deg, frame = 'icrs')
 FWHM_INIT = 6
 
 # Photometry parameters
-R_AP = 1.5*FWHM_INIT # Aperture radius
-R_IN = 4*FWHM_INIT   # Inner radius of annulus
-R_OUT = 6*FWHM_INIT  # Outer radius of annulus
+R_AP = 1.5 * FWHM_INIT # Aperture radius
+R_IN = 4 * FWHM_INIT   # Inner radius of annulus
+R_OUT = 6 * FWHM_INIT  # Outer radius of annulus
 #######################################################
 
 #%%
@@ -143,16 +143,18 @@ for BASEDIR in BASEDIRs[4:5]:
                 ccd = yfu.load_ccd(fpath, 
                                 unit="adu")
 
-                r_fov = yfu.fov_radius(ccd.header+ccd.wcs.to_header())
-                print("r_fov:", r_fov)
                 #%%
                 # 별의 목록을 가져옴.
+                r_fov = yfu.fov_radius(ccd.header+ccd.wcs.to_header())
+                print("r_fov:", r_fov)
+                
                 ps1 = ypu.PanSTARRS1(ccd.wcs.wcs.crval[0]*u.deg, 
                                     ccd.wcs.wcs.crval[1]*u.deg, 
                                     radius = r_fov,
                                     column_filters = {"{}mag".format(filt.lower()):"12.0..14.5", 
                                                     "e_{}mag".format(filt.lower()):"<0.10", 
-                                                    "nr":">5"})
+                                                    "nr":">5"}
+                                    )
                 print("ps1:", ps1)
                 #%%
                 # 가까이 붙어 있는 별은 지우자.
@@ -167,6 +169,7 @@ for BASEDIR in BASEDIRs[4:5]:
                 #%%
                 # 별의 목록
                 df_stars = ps1.queried.to_pandas()
+
                 if df_stars.empty:
                     print("The dataframe(df_stars) is empty")
                     pass
@@ -178,27 +181,32 @@ for BASEDIR in BASEDIRs[4:5]:
                     df_stars.to_csv("{}_stars.csv".format(str(APhRESULTDIR / fpath.stem)))
                     print("df_stars:", df_stars)
 
-                    # 각 별의 측광을 수행
-                    _phot_stars = []
-                    for idx, row in df_stars.iterrows():
-                        print("Starting photometry star {}:".format(idx))
-                        
-                        fig, axs = plt.subplots(1, 1, 
+                    #%%
+                    fig, axs = plt.subplots(1, 1, 
                                 figsize=(10, 10), 
                                 sharex=False, 
                                 sharey=False, 
                                 gridspec_kw=None
                                 )
-                        yvu.norm_imshow(axs, ccd, zscale=True)
-                    
+                    yvu.norm_imshow(axs, ccd, zscale=True)
+
+                    # 각 별의 측광을 수행
+                    _phot_stars = []
+                    for idx, row in df_stars.iterrows():
+                        print("Starting photometry star {}:".format(idx))
+                        
                         #별의 적경, 적위를 이미지 안에서의 픽셀 값으로 
                         pos_star = SkyCoord(row["RAJ2000"], 
                                             row["DEJ2000"], 
                                             **SKYC_KW).to_pixel(ccd.wcs)
-                        ap = CAp([pos_star[0], pos_star[1]], r=R_AP)
-                        an = CAn([pos_star[0], pos_star[1]], r_in=R_IN, r_out=R_OUT)
-                        _phot_star = ypu.apphot_annulus(ccd, 
-                                                ap, an, 
+                        ap = CAp([pos_star[0], 
+                                pos_star[1]], 
+                                r=R_AP)
+                        an = CAn([pos_star[0], 
+                                pos_star[1]], 
+                                r_in=R_IN, 
+                                r_out=R_OUT)
+                        _phot_star = ypu.apphot_annulus(ccd, ap, an, 
                                                 error=yfu.errormap(ccd))
                         _phot_star["{}mag".format(filt.upper())] = row["{}mag".format(filt.upper())]
                         _phot_star["e_{}mag".format(filt.upper())] = row["e_{}mag".format(filt.upper())]
@@ -208,7 +216,8 @@ for BASEDIR in BASEDIRs[4:5]:
                         _phot_star["objID"] = int(row["objID"])
                         _phot_stars.append(_phot_star)
                         
-                        axs.text(pos_star[0]+10, pos_star[1]+10, f"star {idx}", fontsize=8)
+                        axs.text(pos_star[0]+10, pos_star[1]+10, 
+                                f"star {idx}", fontsize=8)
                         ap.plot(axs, color="orange")
                         an.plot(axs, color="w")
                     plt.title("Marking Stars usigs star catalogue")
@@ -223,7 +232,8 @@ for BASEDIR in BASEDIRs[4:5]:
                     phot_stars.to_csv("{}_phot_stars.csv".format(str(APhRESULTDIR / fpath.stem)))
 
                     #%%
-
+                    # Centroid and Re-photometry
+                    _phot_stars = []
                     for idx, row in df_stars.iterrows():
                         print("Starting RE-photometry star {}:".format(idx))
                         
