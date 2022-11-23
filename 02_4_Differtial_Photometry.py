@@ -152,16 +152,17 @@ for BASEDIR in BASEDIRs[:1]:
                             ccd.wcs.wcs.crval[0]*u.deg, 
                             ccd.wcs.wcs.crval[1]*u.deg, 
                             radius=r_fov,
-                            column_filters={"rmag":"12.0..14.5", "e_rmag":"<0.10", "nr":">5"}
+                            column_filters={"rmag":"12.0..14.5", 
+                                            "e_rmag":"<0.10", "nr":">5"}
                             )
         
         isnear = ypu.organize_ps1_and_isnear(
-            ps1, 
-            header=ccd.header+ccd.wcs.to_header(), 
-            bezel=5*FWHM_INIT*PIX2ARCSEC.value,
-            nearby_obj_minsep=5*FWHM_INIT*PIX2ARCSEC.value,
-            group_crit_separation=6*FWHM_INIT
-        )
+                        ps1, 
+                        header = ccd.header+ccd.wcs.to_header(), 
+                        bezel = 5*FWHM_INIT*PIX2ARCSEC.value,
+                        nearby_obj_minsep = 5*FWHM_INIT*PIX2ARCSEC.value,
+                        group_crit_separation = 6*FWHM_INIT
+                        )
         df_stars = ps1.queried.to_pandas()
 
         print("df_stars:", df_stars)
@@ -177,18 +178,34 @@ for BASEDIR in BASEDIRs[:1]:
                                 )
 
         yvu.norm_imshow(axs, ccd, zscale=True)
-        ap = CircularAperture([pos_targ_init[0][0], pos_targ_init[1][0]], r=R_AP)
-        an = CircularAnnulus([pos_targ_init[0][0], pos_targ_init[1][0]], r_in=R_IN, r_out=R_OUT)
+        ap = CircularAperture([pos_targ_init[0][0], 
+                                pos_targ_init[1][0]], 
+                                r=R_AP)
+
+        an = CircularAnnulus([pos_targ_init[0][0], 
+                                pos_targ_init[1][0]], 
+                                r_in=R_IN, 
+                                r_out=R_OUT)
         ap.plot(axs, color="r")
         an.plot(axs, color="b")
 
         _phot_stars = []
 
         for i, row in df_stars.iterrows():
-            pos_star = SkyCoord(row["RAJ2000"], row["DEJ2000"], **SKYC_KW).to_pixel(ccd.wcs)
-            ap = CircularAperture([pos_star[0], pos_star[1]], r=R_AP)
-            an = CircularAnnulus([pos_star[0], pos_star[1]], r_in=R_IN, r_out=R_OUT)
-            _phot_star = ypu.apphot_annulus(ccd, ap, an, error=yfu.errormap(ccd))
+            pos_star = SkyCoord(row["RAJ2000"], 
+                                row["DEJ2000"], 
+                                **SKYC_KW).to_pixel(ccd.wcs)
+            ap = CircularAperture([pos_star[0], 
+                                    pos_star[1]], 
+                                    r=R_AP)
+            an = CircularAnnulus([pos_star[0], 
+                                    pos_star[1]], 
+                                    r_in=R_IN, 
+                                    r_out=R_OUT)
+            _phot_star = ypu.apphot_annulus(ccd, 
+                                            ap, 
+                                            an, 
+                                            error=yfu.errormap(ccd))
             _phot_star["Rmag"] = row["Rmag"]
             _phot_star["e_Rmag"] = row["e_Rmag"]
             _phot_star["grcolor"] = row["grcolor"]
@@ -196,7 +213,10 @@ for BASEDIR in BASEDIRs[:1]:
             _phot_star["id"] = i
             _phot_star["objID"] = int(row["objID"])
             _phot_stars.append(_phot_star)
-            axs.text(pos_star[0]+10, pos_star[1]+10, f"star {i}", fontsize=8)
+            axs.text(pos_star[0]+10, 
+                    pos_star[1]+10, 
+                    f"star {i}", 
+                    fontsize=8)
             ap.plot(axs, color="orange")
             an.plot(axs, color="w")
         plt.title("{} and {} stars".format(eph["targetname"][0], len(df_stars)),
