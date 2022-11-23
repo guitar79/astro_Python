@@ -100,7 +100,7 @@ print ("BASEDIRs: {}".format(BASEDIRs))
 print ("len(BASEDIRs): {}".format(len(BASEDIRs)))
 
 #%%
-for BASEDIR in BASEDIRs [4:5]:
+for BASEDIR in BASEDIRs [1:]:
     print ("Starting...\n{}".format(BASEDIR))
 
     BASEDIR = Path(BASEDIR)
@@ -145,4 +145,4 @@ for BASEDIR in BASEDIRs [4:5]:
                 #myMP.wait()
 
                 values.append(myMP.wait())
-                print("OK batch" + str(batch))  
+                print("OK batch" + str(batch))

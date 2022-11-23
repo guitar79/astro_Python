@@ -59,21 +59,19 @@ OBSRAWDIR = Path(astro_utilities.CCD_obs_dir)
 PostBASEDIR = Path("../Post_process/")
 
 #%%
-
 Object_name = "KLEOPATRA"   #"M45"
-Optic_name = "GSON300"  #"FSQ106ED" #"FS60-CB" #"TMB130ss" #"FS60-CB"
+Optic_name = "RiLA600" #"GSON300"  #"FSQ106ED" #"FS60-CB" #"TMB130ss" #"FS60-CB"
 OptAcc_name = ""    #"x80"
-Ccd_name = "STF-8300M"
-Bin_name = "1bin"
+Ccd_name = "STX-16803"  #"STF-8300M"
+Bin_name = "2bin"
 
 SearchRAWLIGHT = Path(OBSRAWDIR / f"{Ccd_name}_{Bin_name}")
-print(SearchRAWLIGHT)
+print("SearchRAWLIGHT:", SearchRAWLIGHT)
 
 #%%
 OBSRAWDIRs = sorted(Python_utilities.getFullnameListOfallsubDirs(SearchRAWLIGHT))
 OBSRAWDIRs = [w for w in OBSRAWDIRs if ((Object_name) in w
                                     or (".tmp") in w)]
-
 print ("OBSRAWDIRs: {}".format(OBSRAWDIRs))
 
 #%%

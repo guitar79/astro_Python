@@ -41,7 +41,7 @@ print ("BASEDIRs: {}".format(BASEDIRs))
 print ("len(BASEDIRs): {}".format(len(BASEDIRs)))
 
 #%%
-for BASEDIR in BASEDIRs[4:5] :
+for BASEDIR in BASEDIRs[:] :
     print ("Starting...\n{}".format(BASEDIR))
 
     BASEDIR = Path(BASEDIR)
@@ -92,7 +92,6 @@ for BASEDIR in BASEDIRs[4:5] :
                     verbose=2
                     )
                 ccd.write(MASTERDIR / f"nightskyflat-{filt}.fits", overwrite=True)
-
 
         # %%
         for _, row in summary.iterrows():
