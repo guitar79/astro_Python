@@ -77,7 +77,6 @@ BASEDIR = "../RnE_2022/"
 BASEDIR = "../RnE_2022/RiLA600_STX-16803_2bin/"
 
 BASEDIR = astro_utilities.base_dir
-
 #%%
 #####################################################################
 # Our object (will be queried to JPL HORIZONS)
@@ -105,7 +104,7 @@ R_OUT = 6 * FWHM_INIT  # Outer radius of annulus
 BASEDIRs = sorted(Python_utilities.getFullnameListOfsubDir(BASEDIR))
 print ("BASEDIRs: {}".format(BASEDIRs))
 
-for BASEDIR in BASEDIRs[4:5]:
+for BASEDIR in BASEDIRs[:]:
     print ("Starting...\n{}".format(BASEDIR))
 
     BASEDIR = Path(BASEDIR)
@@ -120,7 +119,7 @@ for BASEDIR in BASEDIRs[4:5]:
     #%%
     summary = yfu.make_summary(SOLVEDDIR/"*.fits")
     #print(summary)
-    print("len(summary):", len(summary))
+    #print("len(summary):", len(summary))
     #print(summary["file"][0])
 
     for filt in ["r", "v", "b"]:
@@ -130,8 +129,8 @@ for BASEDIR in BASEDIRs[4:5]:
             print("The dataframe(summary_filt) is empty")
             pass
         else:
-            print("len(summary_filt):", len(summary_filt))
             print("summary_filt:", summary_filt)
+            print("len(summary_filt):", len(summary_filt))
 
             for fname in summary_filt["file"][:]:
                 #fpath = summary["file"][1]
@@ -220,7 +219,8 @@ for BASEDIR in BASEDIRs[4:5]:
                                 f"star {idx}", fontsize=8)
                         ap.plot(axs, color="orange")
                         an.plot(axs, color="w")
-                    plt.title("Marking Stars usigs star catalogue")
+                    plt.title("Marking Stars usigs star catalogue",
+                                fontsize = 14)
                     plt.tight_layout()
                     plt.savefig("{}_stars.png".format(str(APhRESULTDIR / fpath.stem)))
                     #plt.show()
@@ -237,13 +237,10 @@ for BASEDIR in BASEDIRs[4:5]:
                     for idx, row in df_stars.iterrows():
                         print("Starting RE-photometry star {}:".format(idx))
                         
-                        #1. cut data
-                        pos_star = SkyCoord(
-                                            row["RAJ2000"], row["DEJ2000"], 
-                                            **SKYC_KW
-                                            ).to_pixel(ccd.wcs)
-                        print("pos_star:", pos_star)
-                        print("pos_star[0], pos_star[1] :", pos_star[0], pos_star[1])
+                        #1. 별의 적경, 적위를 이미지 안에서의 픽셀 값으로 
+                        pos_star = SkyCoord(row["RAJ2000"], 
+                                            row["DEJ2000"], 
+                                            **SKYC_KW).to_pixel(ccd.wcs)
 
                         #2. Loading and Cut Data
                         cutsizes = 32

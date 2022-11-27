@@ -26,7 +26,7 @@ import Python_utilities
 #########################################
 c_method = "median"
 CCD_obs_dir = "../CCD_obs_raw/"
-base_dir = "../Post_process/RiLA600_STX-16803_2bin/"
+base_dir = "../RnE_2022/RiLA600_STX-16803_2bin/"
 master_dir = "master_files_ys"
 reduced_dir = "reduced"
 reduced_dir2 = "reduced2"

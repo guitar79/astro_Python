@@ -10,7 +10,7 @@ cd ~/Downloads/ && git clone https://github.com/ysBach/ysphotutilpy && cd ysphot
 cd ~/Downloads/ && git clone https://github.com/ysBach/SNUO1Mpy && cd SNUO1Mpy && git pull && pip install -e . && cd ..
 
 # second time...
-cd ~/Downloads/ysvisutilpy && git pull && pip install -e . 
+cd ../ys/ysvisutilpy && git pull && pip install -e . 
 cd ~/Downloads/ysfitsutilpy && git pull && pip install -e . 
 cd ~/Downloads/ysphouutilpy && git pull && pip install -e . 
 cd ~/Downloads/SNUO1Mpy && git pull && pip install -e . 

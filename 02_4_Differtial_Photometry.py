@@ -96,7 +96,7 @@ R_OUT = 6 * FWHM_INIT  # Outer radius of annulus
 BASEDIRs = sorted(Python_utilities.getFullnameListOfsubDir(BASEDIR))
 print ("BASEDIRs: {}".format(BASEDIRs))
 
-for BASEDIR in BASEDIRs[4:5]:
+for BASEDIR in BASEDIRs[:]:
     print ("Starting...\n{}".format(BASEDIR))
 
     BASEDIR = Path(BASEDIR)
@@ -114,15 +114,15 @@ for BASEDIR in BASEDIRs[4:5]:
     #print("len(summary):", len(summary))
     #print(summary["file"][0])
 
-    for filt in ["r", "v", "b"]:
+    for filt in ["r"]:
         summary_filt = summary.loc[summary["FILTER"] == filt].copy()
         
         if summary_filt.empty:
             print("The dataframe(summary_filt) is empty")
             pass
         else:
-            print("len(summary_filt):", len(summary_filt))
             print("summary_filt:", summary_filt)
+            print("len(summary_filt):", len(summary_filt))
 
             for fname in summary_filt["file"][:]:
                 #fpath = summary["file"][1]
@@ -151,24 +151,23 @@ for BASEDIR in BASEDIRs[4:5]:
                 pos_targ_init = SkyCoord(eph["RA"], 
                                         eph["DEC"], 
                                         **SKYC_KW).to_pixel(ccd.wcs)
-                ap = CAp([pos_targ_init[0][0], 
+                targ_ap = CAp([pos_targ_init[0][0], 
                         pos_targ_init[1][0]], 
                         r=R_AP)
-                an = CAn([pos_targ_init[0][0], 
+                targ_an = CAn([pos_targ_init[0][0], 
                         pos_targ_init[1][0]], 
                         r_in=R_IN, 
                         r_out=R_OUT)
                 print("pos_targ_init:", pos_targ_init)
 
                 phot_targ = ypu.apphot_annulus(ccd, 
-                                                ap, 
-                                                an, 
+                                                targ_ap, 
+                                                targ_an, 
                                                 error=yfu.errormap(ccd))
                 print("phot_targ:", phot_targ)
 
                 #%%
                 # 별의 목록을 가져옴.
-
                 r_fov = yfu.fov_radius(ccd.header+ccd.wcs.to_header())
                 print("r_fov: ", r_fov)
                 
@@ -215,21 +214,16 @@ for BASEDIR in BASEDIRs[4:5]:
                                             )
 
                     yvu.norm_imshow(axs, ccd, zscale=True)
-                    # ap = CircularAperture([pos_targ_init[0][0], 
-                    #                         pos_targ_init[1][0]], 
-                    #                         r=R_AP)
-
-                    # an = CircularAnnulus([pos_targ_init[0][0], 
-                    #                         pos_targ_init[1][0]], 
-                    #                         r_in=R_IN, 
-                    #                         r_out=R_OUT)
-                    ap.plot(axs, color="r")
-                    an.plot(axs, color="b")
+                    #
+                    targ_ap.plot(axs, color="r")
+                    targ_an.plot(axs, color="b")
 
                     # 각 별의 측광을 수행
                     _phot_stars = []
                     for idx, row in df_stars.iterrows():
                         print("Starting photometry star {}:".format(idx))
+
+                        #별의 적경, 적위를 이미지 안에서의 픽셀 값으로 
                         pos_star = SkyCoord(row["RAJ2000"], 
                                             row["DEJ2000"], 
                                             **SKYC_KW).to_pixel(ccd.wcs)
@@ -255,8 +249,8 @@ for BASEDIR in BASEDIRs[4:5]:
                                 fontsize=8)
                         ap.plot(axs, color="orange")
                         an.plot(axs, color="w")
-                    plt.title("{} and {} stars".format(eph["targetname"][0], 
-                            len(df_stars)), fontsize = 16)
+                    plt.title("Marking {} and {} stars".format(eph["targetname"][0], 
+                            len(df_stars)), fontsize = 14)
                     plt.tight_layout()
                     plt.savefig("{}_stars.png".format(str(AsteroidRESULTDIR / fpath.stem)))
                     #plt.show()
@@ -267,12 +261,16 @@ for BASEDIR in BASEDIRs[4:5]:
                     print("phot_stars: ", phot_stars)
                     phot_stars.to_csv("{}_phot_stars.csv".format(str(AsteroidRESULTDIR / fpath.stem)))
 
-
                     # %%
                     # Centroid and Re-photometry
                     _phot_stars = []
                     for idx, row in df_stars.iterrows():
                         print("Starting RE-photometry star {}:".format(idx))
+
+                        #1. 별의 적경, 적위를 이미지 안에서의 픽셀 값으로 
+                        pos_star = SkyCoord(row["RAJ2000"], 
+                                            row["DEJ2000"], 
+                                            **SKYC_KW).to_pixel(ccd.wcs)
                         
                         #2. Loading and Cut Data
                         cutsizes = 32
@@ -298,18 +296,33 @@ for BASEDIR in BASEDIRs[4:5]:
                         print("center dx, dy:", centerdx, centerdy)
                         print("center dx, dy:", centerdx, centerdy)
 
-                        pos_star = SkyCoord(row["RAJ2000"], 
-                                            row["DEJ2000"], 
-                                            **SKYC_KW).to_pixel(ccd.wcs)
-                        ap = CAp([pos_star[0]-centerdx, 
-                                pos_star[1]-centerdy], 
-                                r = R_AP)
-                        an = CAn([pos_star[0]-centerdx, 
-                                pos_star[1]-centerdy], 
-                                r_in = R_IN, 
-                                r_out = R_OUT)
+                        #3. Loading and RE-Cut Data with New center
+                        bigcutsizes = 100
+                        bigcut_hdu = Cutout2D(
+                                    data = ccd, 
+                                    position = ([pos_star[0], pos_star[1]]), 
+                                    size=(bigcutsizes, bigcutsizes) #cut ccd
+                                    )
+                        avg, med, std = sigma_clipped_stats(bigcut_hdu.data)  # by default, 3-sigma 5-iteration.
+
+                        #4. re center Aperture and Annulus
+                        bigcenter = [bigcutsizes/2 - centerdx, bigcutsizes/2 - centerdy]
+                        
+                        
+                        ap = CAp(positions = bigcenter, 
+                                r=R_AP)
+                        an = CAn(positions = bigcenter, 
+                                r_in=R_IN, 
+                                r_out=R_OUT)
+                        
+                        print("ap", ap)
+                        print("type(ap)", type(ap))
+                        print("an", an)
+                        print("type(an)", type(an))
+
                         _phot_star = ypu.apphot_annulus(ccd, ap, an, 
                                                         error=yfu.errormap(ccd))
+
                         _phot_star["{}mag".format(filt.upper())] = row["{}mag".format(filt.upper())]
                         _phot_star["e_{}mag".format(filt.upper())] = row["e_{}mag".format(filt.upper())]
                         _phot_star["grcolor"] = row["grcolor"]
@@ -323,8 +336,8 @@ for BASEDIR in BASEDIRs[4:5]:
                                 fontsize=8)
                         ap.plot(axs, color="orange")
                         an.plot(axs, color="w")
-                    plt.title("{} and {} stars".format(eph["targetname"][0], 
-                            len(df_stars)), fontsize = 16)
+                    plt.title("Marking {} and Re-centering {} stars".format(eph["targetname"][0], 
+                            len(df_stars)), fontsize = 14)
                     plt.tight_layout()
                     plt.savefig("{}_stars_Re.png".format(str(AsteroidRESULTDIR / fpath.stem)))
                     #plt.show()
@@ -334,86 +347,5 @@ for BASEDIR in BASEDIRs[4:5]:
                     # SEE THE LAST CELL IN THIS FILE FOR DESCRIPTION
                     print("phot_stars: ", phot_stars)
                     phot_stars.to_csv("{}_phot_stars_Re.csv".format(str(AsteroidRESULTDIR / fpath.stem)))
-                        
 
-                    # %%
-                    # Standardization Plots
-                    #import seaborn as sns
-                    fig, axs = plt.subplots(1, 1, 
-                                        figsize=(8, 8), 
-                                        sharex=False, 
-                                        sharey=False, 
-                                        gridspec_kw=None)
-
-                    _xx = np.linspace(12, 14.5)
-                    axs.plot(phot_stars["Rmag"], phot_stars["mag"], '+')
-                    axs.axhline(phot_targ["mag"].values, label="Kleopatra, instrumental mag")
-                    axs.plot(_xx, _xx + np.median(phot_stars["mag"] - phot_stars["Rmag"]))
-                    #axs.plot(x, x + np.median(y-x))
-                    # IDEA: y = 1*x + c  -> c = mean(y - x)
-
-
-
-                    # axs.plot(phot_stars["Rmag"], phot_stars["mag"], '+')
-                    # sns.scatterplot(
-                    #                     x = "Rmag",
-                    #                     y = "mag", 
-                    #                     marker = '+',
-                    #                     ax = axs,
-                    #                     data = phot_stars
-                    #                     )
-                    # p = sns.regplot(
-                    #                 x = "Rmag",
-                    #                 y = "mag", 
-                    #                 ax = axs,
-                    #                 data = phot_stars
-                    #                 )
-                    
-                    
-                    
-
-                    for _, row in phot_stars.iterrows():
-                        axs.text(row["Rmag"], row["mag"], int(row["id"]), fontsize=8)
-
-                    axs.set(
-                        xlabel="R magnitude (PS1 to R_C filter by Tonry+2012)",
-                        ylabel="R_inst",
-                        title = "R_mag of {} and {} stars".format(eph["targetname"][0], len(df_stars))
-                    )
-                    axs.grid(ls=':')
-                    axs.legend()
-
-                    plt.tight_layout()
-                    #plt.show()
-                    plt.savefig("{}_R_mag.png".format(str(AsteroidRESULTDIR / fpath.stem)))
-                    
-                    # %%
-                    fig, axs = plt.subplots(1, 2, 
-                                            figsize=(16, 8), 
-                                            sharex=False, 
-                                            sharey=False, 
-                                            gridspec_kw=None)
-
-                    axs[0].plot(phot_stars["Rmag"], phot_stars["mag"] - phot_stars["Rmag"], '+')
-                    axs[1].plot(phot_stars["grcolor"], phot_stars["mag"] - phot_stars["Rmag"], '+')
-                    for _, row in phot_stars.iterrows():
-                        axs[0].text(row["Rmag"], row["mag"] - row["Rmag"], int(row["id"]), fontsize=8)
-                        axs[1].text(row["grcolor"], row["mag"] - row["Rmag"], int(row["id"]), fontsize=8)
-                        
-                    axs[0].set(
-                        xlabel="R magnitude (PS1 to R_C filter by Tonry+2012)",
-                        ylabel="R_inst - R"
-                    )
-                    axs[0].grid(ls=':')
-                    
-                    axs[1].set(
-                        xlabel="g - r (PS1)",
-                        ylabel="R_inst - R"
-                    )
-                    axs[1].grid(ls=':')
-                    plt.tight_layout()
-                    #plt.show()
-                    plt.savefig("{}_result.png".format(str(AsteroidRESULTDIR / fpath.stem)))
-
-                    
-            # %%
+                   
