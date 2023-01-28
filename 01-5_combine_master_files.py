@@ -76,15 +76,29 @@ for BASEDIR in BASEDIRs[:1] :
     #%%
     try: 
         bias_fits = summary[summary["IMAGETYP"] == "BIAS"]["file"]
-        bias_comb = yfu.group_combine(
-                        bias_fits.tolist(),
-                        type_key = ["IMAGETYP"],
-                        type_val = ["BIAS"],
-                        group_key = ["EXPTIME"],
-                        fmt = "master_bias.fits",  # output file name format
-                        outdir = MASTERDIR,  # output directory (will automatically be made if not exist)
-                        verbose = True
-                    )
+        #%%
+        bias = combine(bias_fits.tolist(),       # ccdproc does not accept numpy.ndarray, but only python list.
+                    method = "median",         # default is average so I specified median.
+                    unit='adu')              # unit is required: it's ADU in our case.
+
+        bias.data = np.array(bias.data, dtype=np.float32)
+        print('type(bias.data)', type(bias.data),
+            'bias.data.mean()', bias.data.mean(), 
+            'bias.data.std()', bias.data.std(), 
+            'bias.data.max()', bias.data.max(), 
+            'bias.data.min()', bias.data.min(), 
+            'bias', bias)
+        bias.write(f"{str(MASTERDIR/'master_bias.fits')}", overwrite =True)
+        
+        # bias_comb = yfu.group_combine(
+        #                 bias_fits.tolist(),
+        #                 type_key = ["IMAGETYP"],
+        #                 type_val = ["BIAS"],
+        #                 group_key = ["EXPTIME"],
+        #                 fmt = "master_bias.fits",  # output file name format
+        #                 outdir = MASTERDIR,  # output directory (will automatically be made if not exist)
+        #                 verbose = True
+        #             )
     except Exception as err :
         print("X"*60)
         print('{0}'.format(err))
