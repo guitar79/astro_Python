@@ -13,3 +13,4 @@ cd ~/Downloads/ysvisutilpy && git pull && pip install -e .
 cd ~/Downloads/ysfitsutilpy && git pull && pip install -e . 
 cd ~/Downloads/ysphotutilpy && git pull && pip install -e . 
 cd ~/Downloads/SNUO1Mpy && git pull && pip install -e . 
+ls

@@ -26,10 +26,12 @@ import Python_utilities
 #########################################
 c_method = "median"
 #CCD_obs_dir = "../CCD_obs_raw/"
+base_dir = "R:\CCD_obs\CCD_obs_raw"
 #CCD_obs_dir = "/mnt/Rdata/CCD_obs/CCD_obs_raw/"
 CCD_obs_dir = "R:\CCD_obs\CCD_obs_raw"
 
 #base_dir = "../RnE_2022/RiLA600_STX-16803_2bin/"
+base_dir = "R:\CCD_obs\RnE_2022\RiLA600_STX-16803_2bin"
 #base_dir = "/mnt/Rdata/CCD_obs/RiLA600_2022"
 base_dir = "R:\CCD_obs\RiLA600_2022"
 
@@ -72,11 +74,12 @@ PIXSIZEEDIC = {"STF-8300M": 5.4,
             "STL-11000": 9.0, 
             "QSI683ws": 5.4 } 
 
+
 PIXSCALEDIC = {"FSQ106ED_STF-8300M": 2.1, 
             "FSQ106ED-x72_STF-8300M": 2.1/0.72, 
             "FSQ106ED-x73_STF-8300M": 2.1/0.73, 
             "FS60CB_STF-8300M": 3.14, 
-            "RiLA600_STX-16803_1bin": 0.512, 
+            "RiLA600_STX-16803": 0.62, 
             "FSQ106ED_STL-11000": 3.5, 
             "FSQ106ED-x72_STL-11000": 3.5/0.72, 
             "FSQ106ED-x73_STL-11000": 3.5/0.73, 
@@ -102,13 +105,14 @@ CCDDIC = {"STF-8300M": [5.4, 0.37, 9.3],
         "STL-11000": [9.0, 0.8, 9.6],
         "STX-16803": [9.0, 1.27, 9.0]}
         
-OPTICDIC = {"TMB130ss": [910], 
-            "RiLA600": [3000], 
-            "GSON300": [1200], 
-            "FS-60CB": [355], 
-            "SVX080T": [480], 
-            "FSQ106ED": [530]} 
+# OPTICDIC = {"TMB130ss": [910], 
+#             "RiLA600": [3000], 
+#             "GSON300": [1200], 
+#             "FS-60CB": [355], 
+#             "SVX080T": [480], 
+#             "FSQ106ED": [530]} 
 
+#OPTICNAME, Focal_length, Aperature
 OPTICDIC = {"TMB130ss": [910, 130], 
             "RiLA600": [3000, 600], 
             "GSON300": [1200, 300], 
@@ -116,19 +120,20 @@ OPTICDIC = {"TMB130ss": [910, 130],
             "SVX080T": [480, 80], 
             "FSQ106ED": [530, 106]}
 
+#Optic Acc name
 OptAccDIC = {"x80": 0.8, 
             "x72": 0.72, 
             "x73": 0.73, 
             "x75": 0.75} 
 #######################################################
 
-def calPixScale (F_length, O_acc, Pix_size) :
+def calPixScale (F_length, Opt_acc, Pix_size) :
     # Pixel Size   /   Telescope Focal Length   )   X 206.265  
     # Pixel Size : um, 
     # Telescope Focal Length: mm
     # PixScale: arcsec / pixel
-    PixScale = Pix_size / (F_length * O_acc) *  206.265
-    return PixScale
+    PIXScale = Pix_size / (F_length * Opt_acc) *  206.265
+    return PIXScale
 
 
 #%%
@@ -212,7 +217,9 @@ class KevinSolver():
 #########################################
 # Astrometry Solver
 #########################################
-def AstrometrySolver(fullname, solved_dir): 
+def AstrometrySolver(fullname, 
+                    solved_dir
+                    ): 
     """
     Parameters
     ----------
@@ -220,57 +227,59 @@ def AstrometrySolver(fullname, solved_dir):
         The fullname of input file...
 
     solved dir: string
-        The directory where the output file              
+        The directory where the output file
+
+
     """
 
-    fullname = fullname
-    solved_dir = solved_dir
+    fpath = Path(fullname)
+    SOLVEDDIR = Path(solved_dir)
 
-    print("Starting... \n{}".format(fullname))
-    fullname_el = fullname.split("/")
-    filename_el = fullname_el[-1].split("_")
+    print("Starting... \n{}".format(str(fullname)))
+    #fullname_el = fullname.split("/")
+    #filename_el = fullname_el[-1].split("_")
 
-    print("solved_dir:", solved_dir)
-    print('{}/{}'.format(solved_dir, fullname_el[-1]))
+    print("str(SOLVEDDIR):", str(SOLVEDDIR))
+    print('str(SOLVEDDIR/fpath.name)', SOLVEDDIR/fpath.name)
 
-    if os.path.exists('{}/{}'.format(solved_dir, fullname_el[-1])) and False :
-        print("{} is already solved ...".format(fullname_el[-1]))
+    if (SOLVEDDIR/fpath.name).exists():
+        print(f"{str((SOLVEDDIR/fpath.name))} is already exist...")
     
     else: 
-
         try : 
             # solve command.
             # solve-field fullname.fit -O --cpulimit 120 --nsigma 15 -u app -L 1.2 -U 1.3 -N new_filename.fits -p --no-plots -D output_directory {0}
             with subprocess.Popen(['solve-field', 
                                     '-O', #--overwrite: overwrite output files if they already exist
                                     #'--scale-low', '0.1', '--scale-high', '0.40', #pixel scale
-                                    '-g', #--guess-scale: try to guess the image scale from the FITS headers
-                                    '--cpulimit', '120',  #will make it give up after 30 seconds.
+                                    #'-g', #--guess-scale: try to guess the image scale from the FITS headers
+                                    '--cpulimit', '10',  #will make it give up after 30 seconds.
                                     '--nsigma', '15',
-                                    #'--downsample', '4',
+                                    '--downsample', '4',
                                     '-u', 'app', #'--scale-units', 'arcsecperpix', #pixel scale
-                                    '-L', '1.2', '-U', '1.3',
+                                    #'-L', '1.2', '-U', '1.3', #16803_2bin
+                                    '-L', '0.60', '-U', '0.63',   #16803_1bin
                                     #'-N',  '{}'.format(fullname[-1]), #--new-fits <filename>: output filename of the new FITS file containingthe WCS header; "none" to not create this file
                                     '-p', 
-                                    '--no-plots',#: don't create any plots of the results
-                                    '-D', '{}/'.format(solved_dir),
-                                    '{0}'.format(fullname)], 
+                                    #'--no-plots',#: don't create any plots of the results
+                                    '-D', str(SOLVEDDIR),
+                                    str(fpath)
+                                    ], 
                                     stdout=subprocess.PIPE) as proc :
                 print(proc.stdout.read())
             
-            if os.path.exists('{}/{}.new'.format(solved_dir, fullname_el[-1][:-5])):
-                print("{} is solved successful ...".format(fullname_el[-1]))
-                
-                shutil.move('{}/{}.new'.format(solved_dir, fullname_el[-1][:-5]), \
-                            '{}/{}'.format(solved_dir, fullname_el[-1]))
-                print("{} is renamed to fits ...".format(fullname_el[-1]))
+            if (SOLVEDDIR/f'{fpath.stem}.new').exists():
+                print(f"{fpath.name} is solved successfully ...")
+                shutil.move(str((SOLVEDDIR/f'{fpath.stem}.new')), \
+                            str((SOLVEDDIR/f'{fpath.stem}.fit')))
+                print(f"{str(SOLVEDDIR/f'{fpath.stem}.new')} is renamed to fits ...")
             
             else : 
-                print("{} solving fail ...".format(fullname_el[-1]))
+                print(f"solving {fpath.name} is failed...")
             
         except Exception as err :
-                print('{1} ::: {2} with {0} ...'\
-                        .format(fullname, datetime.now(), err))
+            print('{1} ::: {2} with {0} ...'\
+                .format(fullname, datetime.now(), err))
 
 
 # #%%
