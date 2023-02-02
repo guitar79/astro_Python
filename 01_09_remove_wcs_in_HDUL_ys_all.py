@@ -68,9 +68,9 @@ for summary_fpath in fpaths[:-1] :
                         overwrite=True)
         if new_fpath.exists() \
                 and fpath.exists():
-                print("rename", f"{str(new_fpath)}", f"{str(fpath)}")
-                #os.rename(f"{str(new_fpath)}", f"{str(fpath)}")
-                shutil.move(f"{str(new_fpath)}", f"{str(fpath)}")
+            print("rename", f"{str(new_fpath)}", f"{str(fpath)}")
+            #os.rename(f"{str(new_fpath)}", f"{str(fpath)}")
+            shutil.move(f"{str(new_fpath)}", f"{str(fpath)}")
                 
         # except Exception as err :
         #     print("X"*60)
