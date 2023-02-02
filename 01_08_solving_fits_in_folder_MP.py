@@ -88,16 +88,16 @@ for BASEDIR in BASEDIRs [:]:
     BASEDIR = Path(BASEDIR)
 
     RESULTDIR = BASEDIR / astro_utilities.DAOfinder_result_dir
-    SOLVEDDIR = BASEDIR / astro_utilities.solved_dir
+    SOLVEDDIR = BASEDIR / astro_utilities.solved_dir2
     MASTERDIR = BASEDIR / astro_utilities.master_dir
-    REDUCEDDIR = BASEDIR / astro_utilities.reduced_dir
+    REDUCEDDIR = BASEDIR / astro_utilities.reduced_dir2
     MASTERDIR = BASEDIR / astro_utilities.master_dir
 
     if not (SOLVEDDIR).exists():
         os.makedirs(str(SOLVEDDIR))
 
-    #summary = yfu.make_summary(REDUCEDDIR/"*.fit*")
-    summary = yfu.make_summary(BASEDIR/"*.fit*")
+    summary = yfu.make_summary(REDUCEDDIR/"*.fit*")
+    #summary = yfu.make_summary(BASEDIR/"*.fit*")
 
     if summary.empty:
         print("The dataframe(summary) is empty")
@@ -109,7 +109,6 @@ for BASEDIR in BASEDIRs [:]:
             print("The dataframe(df_light) is empty")
             pass
         else:
-
             df_light = df_light.reset_index(drop=True)
             print("df_light:\n{}".format(df_light))
 

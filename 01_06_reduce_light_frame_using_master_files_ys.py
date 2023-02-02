@@ -3,19 +3,6 @@
 Created on Thu Nov 22 01:00:19 2018
 @author: user
 
-
-#first time
-cd ~/Downloads/ && git clone https://github.com/ysBach/ysvisutilpy && cd ysvisutilpy && git pull && pip install -e . && cd ..
-cd ~/Downloads/ && git clone https://github.com/ysBach/ysfitsutilpy && cd ysfitsutilpy && git pull && pip install -e . && cd ..
-cd ~/Downloads/ && git clone https://github.com/ysBach/ysphotutilpy && cd ysphotutilpy && git pull && pip install -e . && cd ..
-cd ~/Downloads/ && git clone https://github.com/ysBach/SNUO1Mpy && cd SNUO1Mpy && git pull && pip install -e . && cd ..
-
-# second time...
-cd ~/Downloads/ysvisutilpy && git pull && pip install -e . 
-cd ~/Downloads/ysfitsutilpy && git pull && pip install -e . 
-cd ~/Downloads/ysphotutilpy && git pull && pip install -e . 
-cd ~/Downloads/SNUO1Mpy && git pull && pip install -e . 
-
 이 파일은 관측 자료를 전처리 해준다.
 
 """
@@ -48,17 +35,14 @@ if not os.path.exists('{0}'.format(log_dir)):
 #%%
 #######################################################
 # read all files in base directory for processing
-BASEDIR = "../RnE_2022/"
-BASEDIR = "../RnE_2022/RiLA600_STX-16803_2bin/"
-BASEDIR = astro_utilities.base_dir
-
 OBSRAWDIR = astro_utilities.CCD_obs_dir
-#%%
+BASEDIR = astro_utilities.base_dir
 BASEDIRs = sorted(Python_utilities.getFullnameListOfsubDir(BASEDIR))
 print ("BASEDIRs: {}".format(BASEDIRs))
+print ("len(BASEDIRs): {}".format(len(BASEDIRs)))
 
 #%%
-for BASEDIR in BASEDIRs[4:] :
+for BASEDIR in BASEDIRs[:4] :
     print ("Starting...\n{}".format(BASEDIR))
 
     BASEDIR = Path(BASEDIR)
@@ -87,7 +71,7 @@ for BASEDIR in BASEDIRs[4:] :
             expt = ccd.header["EXPTIME"]
             red = yfu.ccdred(
                 ccd,
-                output=Path(f"{REDUCEDDIR}/{fpath.stem}.fits"),
+                output=Path(f"{REDUCEDDIR}/{fpath.stem}.fit"),
                 mdarkpath=str(MASTERDIR / "master_dark_{:.0f}sec.fits".format(expt)),
                 mflatpath=str(MASTERDIR / "master_flat_{}_norm.fits".format(filt.upper())),
                 # flat_norm_value=1,  # 1 = skip normalization, None = normalize by mean
@@ -96,5 +80,4 @@ for BASEDIR in BASEDIRs[4:] :
         except Exception as err: 
             print ('Error messgae .......')
             print (err)
-   
-# %%
+ 

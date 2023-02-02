@@ -12,7 +12,6 @@ import ysvisutilpy as yvu
 import Python_utilities
 import astro_utilities
 
-
 #%%
 #######################################################
 # for log file
@@ -26,16 +25,8 @@ if not os.path.exists('{0}'.format(log_dir)):
 #######################################################
 
 #%%
-#######################################################
-# read all files in base directory for processing
-BASEDIR = "../RnE_2022/"
-BASEDIR = "../RnE_2022/RiLA600_STX-16803_2bin/"
-#BASEDIR = "../RnE_2022/GSON300_STF-8300M/"
 BASEDIR = astro_utilities.base_dir
-
 OBSRAWDIR = astro_utilities.CCD_obs_dir
-
-#%%
 BASEDIRs = sorted(Python_utilities.getFullnameListOfsubDir(BASEDIR))
 print ("BASEDIRs: {}".format(BASEDIRs))
 print ("len(BASEDIRs): {}".format(len(BASEDIRs)))
@@ -64,14 +55,6 @@ for BASEDIR in BASEDIRs[:] :
         print("len(summary):", len(summary))
 
         # %%
-        #light_fits = summary[summary["IMAGETYP"] == "LIGHT"]["file"]
-        #fpaths = list((REDUCEDDIR).glob("*.fit*"))
-        #fpaths.sort()
-        #summary = yfu.make_summary(fpaths)
-        #if summary.empty:
-        #    print("The dataframe(summary) is empty")
-        #    pass
-        #else:
         for filt in ["b", "v", "r"]:
             summary_filt = summary.loc[summary["FILTER"] == filt].copy()
             

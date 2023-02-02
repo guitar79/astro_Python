@@ -7,7 +7,7 @@ Created on Thu Nov 22 01:00:19 2018
 필요할때만 사용하면 된다.
 """
 #%%
-import os
+import os, shutil
 from glob import glob
 from pathlib import Path
 
@@ -19,8 +19,8 @@ from astropy.io import fits
 from ccdproc import combine, ccd_process, CCDData
 
 import ysfitsutilpy as yfu
-#import ysphotutilpy as ypu
-#import ysvisutilpy as yvu
+import ysphotutilpy as ypu
+import ysvisutilpy as yvu
 
 from snuo1mpy import Preprocessor
 
@@ -79,11 +79,22 @@ for BASEDIR in BASEDIRs :
     for _, row in df_light.iterrows():
         # 파일명 출력
         print (row["file"])
+        fpath = Path(row["file"])
+        new_fpath = Path(f"{fpath.parents[0]}/{fpath.stem}_clean.fit")
         # fits hedaer 에 있는 wcs 정보를 지운다
-        yfu.wcsremove(row["file"], 
-                    output=row["file"], 
+        yfu.wcsremove(fpath, 
+                    additional_keys=["COMMENT"],
+                    verbose=True,
+                    output=new_fpath,
+                    ccddata=True,
                     overwrite=True)
-                    
+        if new_fpath.exists() \
+            and fpath.exists():
+            print("rename", f"{str(new_fpath)}", f"{str(fpath)}")
+            #os.rename(f"{str(new_fpath)}", f"{str(fpath)}")
+            shutil.move(f"{str(new_fpath)}", f"{str(fpath)}")
+            
     # except Exception as err :
     #     print("X"*60)
     #     print('{0}'.format(err))
+

@@ -59,158 +59,159 @@ if not os.path.exists('{0}'.format(log_dir)):
 #######################################################
 
 #%%
-#######################################################
-# read all files in base directory for processing
-BASEDIR = "../RnE_2022/"
-BASEDIR = "../RnE_2022/RiLA600_STX-16803_2bin/"
+BASEDIR = astro_utilities.base_dir
 
-#%%
 BASEDIRs = sorted(Python_utilities.getFullnameListOfsubDir(BASEDIR))
 print ("BASEDIRs: {}".format(BASEDIRs))
+print ("len(BASEDIRs): {}".format(len(BASEDIRs)))
 
 for BASEDIR in BASEDIRs :
     print ("Starting...\n{}".format(BASEDIR))
 
     BASEDIR = Path(BASEDIR)
-    IRAFRESULTDIR = BASEDIR / astro_utilities.IRAFfinder_result_dir
     SOLVEDDIR = BASEDIR / astro_utilities.solved_dir2
+    IRAFRESULTDIR = BASEDIR / astro_utilities.IRAFfinder_result_dir
 
     if not IRAFRESULTDIR.exists():
         os.makedirs("{}".format(str(IRAFRESULTDIR)))
         print("{} is created...".format(str(IRAFRESULTDIR)))
 
-    summary = yfu.make_summary(SOLVEDDIR / "*.fits")
-    #print(summary)
-    #print("len(summary):", len(summary))
-    #print(summary["file"][0])
+    #summary = yfu.make_summary(BASEDIR/"*.fit*")
+    summary = yfu.make_summary(SOLVEDDIR/"*.fit*")
+
+    if summary.empty:
+            print("The dataframe(summary) is empty")
+            pass
+    else:
+        print("len(summary):", len(summary))
+        print("summary:", summary)
+
+    df_light = summary.loc[summary["IMAGETYP"] == "LIGHT"].copy()
+    df_light = df_light.reset_index(drop=True)
+    print("df_light:\n{}".format(df_light))
 
     #%%
-    if len(summary) != 0:
-        n = 0
-        for fname in summary["file"]:
-            #fpath = summary["file"][1]
-            n += 1
-            print('#'*40,
-                "\n{2:.01f}%  ({0}/{1}) {3}".format(n, len(summary["file"]), 
-                                                    (n/len(summary["file"]))*100, os.path.basename(__file__)))
-            print ("Starting...\nfpath: {}".format(fname))
+    for _, row  in df_light.iterrows():
+        fpath = Path(row["file"])
+        print("type(fpath)", type(fpath))
+        print("fpath", fpath)
+
+        hdul = fits.open(fpath)
+
+        hdr = hdul[0].header
+        img = hdul[0].data
+        print("img: {}".format(img))
+        print("img.shape: {}".format(img.shape))
+
+        # Set WCS and print for your information
+        w = WCS(hdr)
+        print("WCS: {}".format(w))
+
+        thresh = detect_threshold(data=img, nsigma=3)
+        thresh = thresh[0][0]
+        print('detect_threshold', thresh)
+
+        #%%
+        try:
             
-            fpath = Path(fname)
-            hdul = fits.open(fpath)
-            hdr = hdul[0].header
-            img = hdul[0].data
-            print("img: {}".format(img))
-            print("img.shape: {}".format(img.shape))
-
-            # Set WCS and print for your information
-            w = WCS(hdr)
-            print("WCS: {}".format(w))
-
-            thresh = detect_threshold(data=img, nsigma=3)
-            thresh = thresh[0][0]
-            print('detect_threshold', thresh)
+            FWHM   = 6
+            
+            IRAFfind = IRAFStarFinder(
+                                    fwhm = FWHM, 
+                                    threshold = thresh,
+                                    sigma_radius = 1.5, minsep_fwhm = 2.5,  # default values: sigma_radius=1.5, minsep_fwhm=2.5,
+                                    sharplo = 0.5, sharphi = 2.0,   # default values: sharplo=0.5, sharphi=2.0,
+                                    roundlo = 0.0, roundhi = 0.2,   # default values: roundlo=0.0, roundhi=0.2,
+                                    sky = None,                     # default values: sky=None
+                                    exclude_border = True  # default values: exclude_border=False
+                                    )
+                                
+            # The IRAFStarFinder object ("IRAFfind") gets at least one input: the image.
+            # Then it returns the astropy table which contains the aperture photometry results:
+            IRAFfound = IRAFfind(img)
+            print('{} star(s) founded by IRAFStarFinder...'.format(len(IRAFfound)))
 
             #%%
-            try:
-                
-                FWHM   = 6
-                
-                IRAFfind = IRAFStarFinder(
-                                        fwhm = FWHM, 
-                                        threshold = thresh,
-                                        sigma_radius = 1.5, minsep_fwhm = 2.5,  # default values: sigma_radius=1.5, minsep_fwhm=2.5,
-                                        sharplo = 0.5, sharphi = 2.0,   # default values: sharplo=0.5, sharphi=2.0,
-                                        roundlo = 0.0, roundhi = 0.2,   # default values: roundlo=0.0, roundhi=0.2,
-                                        sky = None,                     # default values: sky=None
-                                        exclude_border = True  # default values: exclude_border=False
-                                        )
-                                    
-                # The IRAFStarFinder object ("IRAFfind") gets at least one input: the image.
-                # Then it returns the astropy table which contains the aperture photometry results:
-                IRAFfound = IRAFfind(img)
-                print('{} star(s) founded by IRAFStarFinder...'.format(len(IRAFfound)))
+            if len(IRAFfound)==0 :
+                print ('No star was founded by IRAFStarFinder...\n'*3)
+            else : 
+
+                # Use the object "found" for aperture photometry:
+                N_stars = len(IRAFfound)
+                print('{} star(s) founded by IRAFStarFinder...'.format(N_stars))
+                IRAFfound.pprint(max_width=1800)
+
+                # save XY coordinates:
+                IRAFfound.write("{}/{}_IRAFStarfinder_fwhm{}.csv".\
+                                format(IRAFRESULTDIR, fpath.stem, FWHM), 
+                                overwrite = True,
+                                format='ascii.fast_csv')
+
+                print('type(IRAFfound): {}'.format(type(IRAFfound)))
+                print('IRAFfound: {}'.format(IRAFfound))
+
+                IRAFcoord = np.array([IRAFfound['xcentroid'], IRAFfound['ycentroid']]).T
+                print('type(IRAFcoord): {}'.format(type(IRAFcoord)))
+                print('IRAFcoord: {}'.format(IRAFcoord))
 
                 #%%
-                if len(IRAFfound)==0 :
-                    print ('No star was founded by IRAFStarFinder...\n'*3)
-                else : 
+                # Save apertures as circular, 4 pixel radius, at each (X, Y)
+                IRAFapert = CAp((IRAFcoord), r=4.)  
+                print('type(IRAFapert): {}'.format(type(IRAFapert)))
+                print('IRAFapert: {}'.format(IRAFapert))
+                print('dir(IRAFapert): {}'.format(dir(IRAFapert)))
 
-                    # Use the object "found" for aperture photometry:
-                    N_stars = len(IRAFfound)
-                    print('{} star(s) founded by IRAFStarFinder...'.format(N_stars))
-                    IRAFfound.pprint(max_width=1800)
+                IRAFannul = CAn(positions = (IRAFcoord), r_in = 4*FWHM, r_out = 6*FWHM) 
+                print('type(IRAFannul): {}'.format(type(IRAFannul)))
+                print('IRAFannul: {}'.format(IRAFannul))
 
-                    # save XY coordinates:
-                    IRAFfound.write("{}/{}_IRAFStarfinder_fwhm{}.csv".\
-                                    format(IRAFRESULTDIR, fpath.stem, FWHM), 
-                                    overwrite = True,
-                                    format='ascii.fast_csv')
+                #%%
+                plt.figure(figsize=(20,20))
+                ax = plt.gca()
 
-                    print('type(IRAFfound): {}'.format(type(IRAFfound)))
-                    print('IRAFfound: {}'.format(IRAFfound))
+                ###########################################################
+                # input some text for explaination. 
+                plt.title("Result of IRAFStarfinder", fontsize = 28, 
+                    ha='center')
 
-                    IRAFcoord = np.array([IRAFfound['xcentroid'], IRAFfound['ycentroid']]).T
-                    print('type(IRAFcoord): {}'.format(type(IRAFcoord)))
-                    print('IRAFcoord: {}'.format(IRAFcoord))
-
-                    #%%
-                    # Save apertures as circular, 4 pixel radius, at each (X, Y)
-                    IRAFapert = CAp((IRAFcoord), r=4.)  
-                    print('type(IRAFapert): {}'.format(type(IRAFapert)))
-                    print('IRAFapert: {}'.format(IRAFapert))
-                    print('dir(IRAFapert): {}'.format(dir(IRAFapert)))
-
-                    IRAFannul = CAn(positions = (IRAFcoord), r_in = 4*FWHM, r_out = 6*FWHM) 
-                    print('type(IRAFannul): {}'.format(type(IRAFannul)))
-                    print('IRAFannul: {}'.format(IRAFannul))
-
-                    #%%
-                    plt.figure(figsize=(20,20))
-                    ax = plt.gca()
-
-                    ###########################################################
-                    # input some text for explaination. 
-                    plt.title("Result of IRAFStarfinder", fontsize = 28, 
-                        ha='center')
-
-                    plt.annotate('filename: {}'.format(fpath.stem), fontsize=10,
-                        xy=(1, 0), xytext=(-500, -40), va='top', ha='left',
-                        xycoords='axes fraction', textcoords='offset points')
-                                
-                    plt.annotate('FWHM: {}'.format(FWHM), fontsize=10,
-                        xy=(1, 0), xytext=(-1100, -30), va='top', ha='left',
-                        xycoords='axes fraction', textcoords='offset points')
-                        
-                    plt.annotate('Sky threshold: {:02f}'.format(thresh), fontsize=10,
-                        xy=(1, 0), xytext=(-1100, -40), va='top', ha='left',
-                        xycoords='axes fraction', textcoords='offset points')
-
-                    plt.annotate('Number of star(s): {}'.format(len(IRAFfound)), fontsize=10,
-                        xy=(1, 0), xytext=(-1100, -50), va='top', ha='left',
-                        xycoords='axes fraction', textcoords='offset points')
-
-                    im = plt.imshow(img, 
-                                    vmin = thresh, 
-                                    vmax = thresh * 3,
-                                    #zscale=True,
-                                    origin='lower'
-                                    )
-
-                    IRAFannul.plot(color='red', lw=2., alpha=0.4)
+                plt.annotate('filename: {}'.format(fpath.stem), fontsize=10,
+                    xy=(1, 0), xytext=(-500, -40), va='top', ha='left',
+                    xycoords='axes fraction', textcoords='offset points')
+                            
+                plt.annotate('FWHM: {}'.format(FWHM), fontsize=10,
+                    xy=(1, 0), xytext=(-1100, -30), va='top', ha='left',
+                    xycoords='axes fraction', textcoords='offset points')
                     
-                    divider = make_axes_locatable(ax)
-                    cax = divider.append_axes("right", size="3%", pad=0.05)
-                    plt.colorbar(im, cax=cax)
+                plt.annotate('Sky threshold: {:02f}'.format(thresh), fontsize=10,
+                    xy=(1, 0), xytext=(-1100, -40), va='top', ha='left',
+                    xycoords='axes fraction', textcoords='offset points')
 
-                    plt.savefig(
-                                "{}/{}_IRAFStarfinder_fwhm{}.png".\
-                                    format(IRAFRESULTDIR, fpath.stem, FWHM)
+                plt.annotate('Number of star(s): {}'.format(len(IRAFfound)), fontsize=10,
+                    xy=(1, 0), xytext=(-1100, -50), va='top', ha='left',
+                    xycoords='axes fraction', textcoords='offset points')
+
+                im = plt.imshow(img, 
+                                vmin = thresh, 
+                                vmax = thresh * 3,
+                                #zscale=True,
+                                origin='lower'
                                 )
-                    print("{}/{}_IRAFStarfinder_fwhm{}.png is created...".\
-                                    format(IRAFRESULTDIR, fpath.stem, FWHM))
-                    #plt.show()
-                    plt.close() 
 
-            except Exception as err:
-                print('{0} with {1} '.format(err, fpath.name))
+                IRAFannul.plot(color='red', lw=2., alpha=0.4)
+                
+                divider = make_axes_locatable(ax)
+                cax = divider.append_axes("right", size="3%", pad=0.05)
+                plt.colorbar(im, cax=cax)
+
+                plt.savefig(
+                            "{}/{}_IRAFStarfinder_fwhm{}.png".\
+                                format(IRAFRESULTDIR, fpath.stem, FWHM)
+                            )
+                print("{}/{}_IRAFStarfinder_fwhm{}.png is created...".\
+                                format(IRAFRESULTDIR, fpath.stem, FWHM))
+                #plt.show()
+                plt.close() 
+
+        except Exception as err:
+            print('{0} with {1} '.format(err, fpath.name))
     

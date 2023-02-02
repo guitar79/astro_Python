@@ -102,285 +102,328 @@ for BASEDIR in BASEDIRs[:]:
         print("{} is created...".format(str(APhRESULTDIR)))
 
     #%%
-    summary = yfu.make_summary(SOLVEDDIR/"*.fits")
-    #print(summary)
-    #print("len(summary):", len(summary))
-    #print(summary["file"][0])
+    #summary = yfu.make_summary(BASEDIR/"*.fit*")
+    summary = yfu.make_summary(SOLVEDDIR/"*.fit*")
 
-    for filt in ["r", "v", "b"]:
-        summary_filt = summary.loc[summary["FILTER"] == filt].copy()
-        
-        if summary_filt.empty:
-            print("The dataframe(summary_filt) is empty")
+    if summary.empty:
+            print("The dataframe(summary) is empty")
             pass
-        else:
-            print("summary_filt:", summary_filt)
-            print("len(summary_filt):", len(summary_filt))
+    else:
+        print("len(summary):", len(summary))
+        print("summary:", summary)
 
-            for fname in summary_filt["file"][:]:
-                #fpath = summary["file"][1]
-                print ("Starting...\nfname: {}".format(fname))
-                fpath = Path(fname)
+        df_light = summary.loc[summary["IMAGETYP"] == "LIGHT"].copy()
+        df_light = df_light.reset_index(drop=True)
+        print("df_light:\n{}".format(df_light))
 
-                #%%
-                # load as ccd
-                ccd = yfu.load_ccd(fpath, 
-                                unit="adu")
-
-                #%%
-                # 별의 목록을 가져옴.
-                r_fov = yfu.fov_radius(ccd.header+ccd.wcs.to_header())
-                print("r_fov:", r_fov)
+        for filt in ["r", "v", "b"]:
+        #for filt in ["r"]:
+            df_light_filt = df_light.loc[df_light["FILTER"] == filt].copy()
+            
+            if df_light_filt.empty:
+                print("The dataframe(df_light_filt) is empty")
+                pass
+            else:
+                print("df_light_filt:", df_light_filt)
+                print("len(df_light_filt):", len(df_light_filt))
                 
-                ps1 = ypu.PanSTARRS1(ccd.wcs.wcs.crval[0]*u.deg, 
-                                    ccd.wcs.wcs.crval[1]*u.deg, 
-                                    radius = r_fov,
-                                    column_filters = {"{}mag".format(filt.lower()):"12.0..14.5", 
-                                                    "e_{}mag".format(filt.lower()):"<0.10", 
-                                                    "nr":">5"}
+                for _, row  in df_light_filt.iterrows():
+                    fpath = Path(row["file"])
+                    print("type(fpath)", type(fpath))
+                    print("fpath", fpath)
+
+                    try: 
+                        # load as ccd
+                        ccd = yfu.load_ccd(fpath, 
+                                        unit="adu")
+
+                        #%%
+                        # 별의 목록을 가져옴.
+                        r_fov = yfu.fov_radius(ccd.header+ccd.wcs.to_header())
+                        print("r_fov:", r_fov)
+
+                        ps1 = ypu.PanSTARRS1(ccd.wcs.wcs.crval[0]*u.deg, 
+                                        ccd.wcs.wcs.crval[1]*u.deg, 
+                                        radius = r_fov,
+                                        column_filters = {"{}mag".format(filt.lower()):"12.0..14.5", 
+                                                        "e_{}mag".format(filt.lower()):"<0.10", 
+                                                        "nr":">5"}
+                                        )
+                        print("ps1:", ps1)
+                        #%%
+                        # 가까이 붙어 있는 별은 지우자.
+                        isnear = ypu.organize_ps1_and_isnear(
+                                        ps1, 
+                                        header = ccd.header+ccd.wcs.to_header(), 
+                                        bezel = 5*FWHM_INIT * PIX2ARCSEC.value,
+                                        nearby_obj_minsep= 5 * FWHM_INIT*PIX2ARCSEC.value,
+                                        group_crit_separation = 6 * FWHM_INIT
+                                        )
+                        print("isnear:", isnear)
+                        df_stars = ps1.queried.to_pandas()
+
+                        #%%
+                        # 별의 목록
+                        df_stars = ps1.queried.to_pandas()
+
+                        if df_stars.empty:
+                            print("The dataframe(df_stars) is empty")
+                            pass
+
+                        else:
+                            print(df_stars)
+                            print("len(df_stars):", len(df_stars))
+
+                            df_stars.to_csv("{}_stars.csv".format(str(APhRESULTDIR / fpath.stem)))
+                            print("df_stars:", df_stars)
+
+                            #%%
+                            fig, axs = plt.subplots(1, 1, 
+                                    figsize=(8, 8), 
+                                    sharex=False, 
+                                    sharey=False, 
+                                    gridspec_kw=None
                                     )
-                print("ps1:", ps1)
-                #%%
-                # 가까이 붙어 있는 별은 지우자.
-                isnear = ypu.organize_ps1_and_isnear(
-                                    ps1, 
-                                    header = ccd.header+ccd.wcs.to_header(), 
-                                    bezel = 5*FWHM_INIT * PIX2ARCSEC.value,
-                                    nearby_obj_minsep= 5 * FWHM_INIT*PIX2ARCSEC.value,
-                                    group_crit_separation = 6 * FWHM_INIT
-                                )
-                print("isnear:", isnear)
-                #%%
-                # 별의 목록
-                df_stars = ps1.queried.to_pandas()
+                            axs = plt.subplot(projection=ccd.wcs, label='overlay')
 
-                if df_stars.empty:
-                    print("The dataframe(df_stars) is empty")
-                    pass
+                            im = yvu.norm_imshow(axs, ccd, 
+                                #origin="lower",
+                                zscale=True)
 
-                else:
-                    print(df_stars)
-                    print("len(df_stars):", len(df_stars))
+                            plt.colorbar(im, 
+                                    ax=axs,
+                                    fraction=0.042, 
+                                    pad=0.12)
 
-                    df_stars.to_csv("{}_stars.csv".format(str(APhRESULTDIR / fpath.stem)))
-                    print("df_stars:", df_stars)
+                            overlay = axs.get_coords_overlay('fk5')
+                            #overlay = ax.get_coords_overlay('icrs')
+                            overlay.grid(True, color='white', ls=':', alpha=0.7)
+                            overlay[0].set_axislabel('Right Ascension (J2000)')
+                            overlay[1].set_axislabel('Declination (J2000)')
 
-                    #%%
-                    fig, axs = plt.subplots(1, 1, 
-                                figsize=(10, 10), 
-                                sharex=False, 
-                                sharey=False, 
-                                gridspec_kw=None
-                                )
-                    yvu.norm_imshow(axs, ccd, zscale=True)
+                            # sat tick label
+                            lon, lat = axs.coords
+                            lon.set_ticks(color='red')
+                            lon.set_ticks_position('lbtr')
+                            lon.set_ticklabel_position('lbtr')
+                            lat.set_ticks(color='blue')
+                            lat.set_ticks_position('lbtr')
+                            lat.set_ticklabel_position('lbtr')
 
-                    # 각 별의 측광을 수행
-                    _phot_stars = []
-                    for idx, row in df_stars.iterrows():
-                        print("Starting photometry star {}:".format(idx))
-                        
-                        #별의 적경, 적위를 이미지 안에서의 픽셀 값으로 
-                        pos_star = SkyCoord(row["RAJ2000"], 
-                                            row["DEJ2000"], 
-                                            **SKYC_KW).to_pixel(ccd.wcs)
-                        ap = CAp([pos_star[0], 
-                                pos_star[1]], 
-                                r=R_AP)
-                        an = CAn([pos_star[0], 
-                                pos_star[1]], 
-                                r_in=R_IN, 
-                                r_out=R_OUT)
-                        _phot_star = ypu.apphot_annulus(ccd, ap, an, 
-                                                error=yfu.errormap(ccd))
-                        _phot_star["{}mag".format(filt.upper())] = row["{}mag".format(filt.upper())]
-                        _phot_star["e_{}mag".format(filt.upper())] = row["e_{}mag".format(filt.upper())]
-                        _phot_star["grcolor"] = row["grcolor"]
-                        _phot_star["e_grcolor"] = row["e_grcolor"]
-                        _phot_star["id"] = idx
-                        _phot_star["objID"] = int(row["objID"])
-                        _phot_stars.append(_phot_star)
-                        
-                        axs.text(pos_star[0]+10, pos_star[1]+10, 
-                                f"star {idx}", fontsize=8)
-                        ap.plot(axs, color="orange")
-                        an.plot(axs, color="w")
-                    plt.title("Marking Stars usigs star catalogue",
-                                fontsize = 14)
-                    plt.tight_layout()
-                    plt.savefig("{}_stars.png".format(str(APhRESULTDIR / fpath.stem)))
-                    #plt.show()
-                    #%%
-                    phot_stars = pd.concat(_phot_stars)
-                    # phot_stars = phot_stars.loc[phot_stars["objID"] != 110823405221754720].copy()  # star 15
-                    # SEE THE LAST CELL IN THIS FILE FOR DESCRIPTION
-                    print("phot_stars: ", phot_stars)
-                    phot_stars.to_csv("{}_phot_stars.csv".format(str(APhRESULTDIR / fpath.stem)))
+                            #ax.set_title(f"{str(fpath.name)}")
+                            #plt.title(f"{str(fpath.name)}", pad=50)
+                            plt.title(f"Marking Stars using PANSTARRS catalogue.",
+                                    fontsize = 14, pad=50)
 
-                    #%%
-                    # Centroid and Re-photometry
-                    _phot_stars = []
-                    for idx, row in df_stars.iterrows():
-                        print("Starting RE-photometry star {}:".format(idx))
-                        
-                        #1. 별의 적경, 적위를 이미지 안에서의 픽셀 값으로 
-                        pos_star = SkyCoord(row["RAJ2000"], 
-                                            row["DEJ2000"], 
-                                            **SKYC_KW).to_pixel(ccd.wcs)
+                            plt.annotate(f"{str(fpath.name)}",
+                                    fontsize=10, xy=(0, 0), xytext=(3, -50), va='top', ha='left',
+                                    xycoords='axes fraction', textcoords='offset points')
 
-                        #2. Loading and Cut Data
-                        cutsizes = 32
-                        cut_hdu = Cutout2D(
+                            # 각 별의 측광을 수행
+                            _phot_stars = []
+                            for idx, row in df_stars.iterrows():
+                                print("Starting photometry star {}:".format(idx))
+                                
+                                #별의 적경, 적위를 이미지 안에서의 픽셀 값으로 
+                                pos_star = SkyCoord(row["RAJ2000"], 
+                                        row["DEJ2000"], 
+                                        **SKYC_KW).to_pixel(ccd.wcs)
+                                ap = CAp([pos_star[0], 
+                                        pos_star[1]], 
+                                        r=R_AP)
+                                an = CAn([pos_star[0], 
+                                        pos_star[1]], 
+                                        r_in=R_IN, 
+                                        r_out=R_OUT)
+                                _phot_star = ypu.apphot_annulus(ccd, ap, an, 
+                                            error=yfu.errormap(ccd))
+                                _phot_star["{}mag".format(filt.upper())] = row["{}mag".format(filt.upper())]
+                                _phot_star["e_{}mag".format(filt.upper())] = row["e_{}mag".format(filt.upper())]
+                                _phot_star["grcolor"] = row["grcolor"]
+                                _phot_star["e_grcolor"] = row["e_grcolor"]
+                                _phot_star["id"] = idx
+                                _phot_star["objID"] = int(row["objID"])
+                                _phot_stars.append(_phot_star)
+                                
+                                axs.text(pos_star[0]+10, pos_star[1]+10, 
+                                    f"star {idx}", fontsize=8)
+                                ap.plot(axs, color="orange")
+                                an.plot(axs, color="w")
+
+                            plt.tight_layout()
+                            plt.savefig("{}_stars.png".format(str(APhRESULTDIR / fpath.stem)))
+                            #plt.show()
+                            #%%
+                            phot_stars = pd.concat(_phot_stars)
+                            # phot_stars = phot_stars.loc[phot_stars["objID"] != 110823405221754720].copy()  # star 15
+                            # SEE THE LAST CELL IN THIS FILE FOR DESCRIPTION
+                            print("phot_stars: ", phot_stars)
+                            phot_stars.to_csv("{}_phot_stars.csv".format(str(APhRESULTDIR / fpath.stem)))
+
+                            #%%
+                            # Centroid and Re-photometry
+                            _phot_stars = []
+                            for idx, row in df_stars.iterrows():
+                                print("Starting RE-photometry star {}:".format(idx))
+                                
+                                #1. 별의 적경, 적위를 이미지 안에서의 픽셀 값으로 
+                                pos_star = SkyCoord(row["RAJ2000"], 
+                                        row["DEJ2000"], 
+                                        **SKYC_KW).to_pixel(ccd.wcs)
+
+                                #2. Loading and Cut Data
+                                cutsizes = 32
+                                cut_hdu = Cutout2D(
                                     data = ccd, 
                                     position = ([pos_star[0], pos_star[1]]), 
                                     size=(cutsizes, cutsizes) #cut ccd
                                     )
-                        avg, med, std = sigma_clipped_stats(cut_hdu.data)  # by default, 3-sigma 5-iteration.
-                        thresh_3sig = med + 3 * std
-                        mask_3sig = (cut_hdu.data < thresh_3sig)
-                        center = centroid_com(
+                                avg, med, std = sigma_clipped_stats(cut_hdu.data)  # by default, 3-sigma 5-iteration.
+                                thresh_3sig = med + 3 * std
+                                mask_3sig = (cut_hdu.data < thresh_3sig)
+                                center = centroid_com(
                                     data = cut_hdu.data, 
                                     mask = mask_3sig
                                     )
-                        
-                        centerdx = int(cutsizes/2-center[0])
-                        centerdy = int(cutsizes/2-center[1])
+                                
+                                centerdx = int(cutsizes/2-center[0])
+                                centerdy = int(cutsizes/2-center[1])
 
-                        print("type(center):", type(center))
-                        print("center:", center)
-                        print("center dx, dy:", centerdx, centerdy)
-                        print("center dx, dy:", centerdx, centerdy)
-                        print("center dx, dy:", centerdx, centerdy)
-                        
-                        #3. Loading and RE-Cut Data with New center
-                        bigcutsizes = 100
-                        bigcut_hdu = Cutout2D(
+                                print("type(center):", type(center))
+                                print("center:", center)
+                                print("center dx, dy:", centerdx, centerdy)
+                                print("center dx, dy:", centerdx, centerdy)
+                                print("center dx, dy:", centerdx, centerdy)
+                                
+                                #3. Loading and RE-Cut Data with New center
+                                bigcutsizes = 100
+                                bigcut_hdu = Cutout2D(
                                     data = ccd, 
                                     position = ([pos_star[0], pos_star[1]]), 
                                     size=(bigcutsizes, bigcutsizes) #cut ccd
                                     )
-                        avg, med, std = sigma_clipped_stats(bigcut_hdu.data)  # by default, 3-sigma 5-iteration.
+                                avg, med, std = sigma_clipped_stats(bigcut_hdu.data)  # by default, 3-sigma 5-iteration.
 
-                        #4. Putting Aperture and Annulus
-                        bigcenter = [bigcutsizes/2 - centerdx, bigcutsizes/2 - centerdy]
-                        #fwhm = 4
-                        fwhm = FWHM_INIT
-                        r_ap = 2 * fwhm
-                        r_in = 4 * fwhm
-                        r_out = 6 * fwhm
-                        ap = CAp(positions = bigcenter, 
-                                r = r_ap)
-                        an = CAn(positions = bigcenter, 
-                                r_in = r_in, r_out = r_out)
-                        print("ap", ap)
-                        print("type(ap)", type(ap))
-                        print("an", an)
-                        print("type(an)", type(an))
+                                #4. Putting Aperture and Annulus
+                                bigcenter = [bigcutsizes/2 - centerdx, bigcutsizes/2 - centerdy]
+                                #bigcenter = [bigcutsizes/2 + centerdx, bigcutsizes/2 + centerdy]
+                                #fwhm = 4
+                                fwhm = FWHM_INIT
+                                r_ap = 2 * fwhm
+                                r_in = 4 * fwhm
+                                r_out = 6 * fwhm
+                                ap = CAp(positions = bigcenter, 
+                                    r = r_ap)
+                                an = CAn(positions = bigcenter, 
+                                    r_in = r_in, r_out = r_out)
+                                print("ap", ap)
+                                print("type(ap)", type(ap))
+                                print("an", an)
+                                print("type(an)", type(an))
 
-                        # 5. Estimating Sky
-                        sky_mask = an.to_mask(method = 'center')
+                                # 5. Estimating Sky
+                                sky_mask = an.to_mask(method = 'center')
 
-                        try:  # prior to photutils 0.7
-                            sky_vals = sky_mask[0].multiply(bigcut_hdu.data)
-                        except TypeError:
-                            sky_vals = sky_mask.multiply(bigcut_hdu.data)
+                                try:  # prior to photutils 0.7
+                                    sky_vals = sky_mask[0].multiply(bigcut_hdu.data)
+                                except TypeError:
+                                    sky_vals = sky_mask.multiply(bigcut_hdu.data)
 
-                        sky_vals = sky_vals[sky_vals > 0]
-                        avg, med, std = sigma_clipped_stats(
-                                                    sky_vals, 
-                                                    sigma=3, 
-                                                    maxiters=10, 
-                                                    std_ddof=1
-                                                    )
+                                sky_vals = sky_vals[sky_vals > 0]
+                                avg, med, std = sigma_clipped_stats(
+                                            sky_vals, 
+                                            sigma=3, 
+                                            maxiters=10, 
+                                            std_ddof=1
+                                            )
 
-                        if med - avg < 0.3 * std:
-                            msky = med
-                        else:
-                            msky = 2.5 * med - 1.5 * avg
+                                if med - avg < 0.3 * std:
+                                    msky = med
+                                else:
+                                    msky = 2.5 * med - 1.5 * avg
 
-                        print(f"Sky estimation: {msky:.3f} +- {std:.3f}")
+                                print(f"Sky estimation: {msky:.3f} +- {std:.3f}")
 
-                        phot = apphot(
+                                phot = apphot(
                                     data = bigcut_hdu.data, 
                                     apertures = ap
                                     )
-                        phot["sky"] = msky
-                        
-                        try:  # prior to photutils 0.7
-                            phot["source_sum"] = phot["aperture_sum"] - ap.area() * phot["sky"]
-                        
-                        except TypeError:
-                            phot["source_sum"] = phot["aperture_sum"] - ap.area * phot["sky"]
-                            
-                        phot["inst_mag"] = -2.5 * np.log10(phot["source_sum"] / ccd.header["EXPTIME"])
-                        print("phot:", phot)
+                                phot["sky"] = msky
+                                
+                                try:  # prior to photutils 0.7
+                                    phot["source_sum"] = phot["aperture_sum"] - ap.area() * phot["sky"]
+                                
+                                except TypeError:
+                                    phot["source_sum"] = phot["aperture_sum"] - ap.area * phot["sky"]
+                                
+                                phot["inst_mag"] = -2.5 * np.log10(phot["source_sum"] / ccd.header["EXPTIME"])
+                                print("phot:", phot)
 
-                        #%%
-                        fig = plt.figure(figsize=(12, 12))
-                        ax1 = plt.subplot(2, 2, 1)
-                        ax1.imshow(cut_hdu.data, 
+                                #%%
+                                fig = plt.figure(figsize=(10, 10))
+                                ax1 = plt.subplot(2, 2, 1)
+                                im1 = ax1.imshow(cut_hdu.data, 
                                     origin='lower'
                                     )
-                        ax1.set_ylabel('pixels')
-                        ax1.grid(ls=':')
-                        ax1.set_title('Star area image')
-                        ax1.text( 0, -2, 
-                                'sum: {0:.01f}, mean: {1:.01f}, std: {2:.01f} \nmax: {3:.01f}, min: {4:.01f} \nNumber of Pixel: {5:.0f}x{6:.0f}'\
-                                .format(np.sum(cut_hdu.data), 
-                                        np.mean(cut_hdu.data), 
-                                        np.std(cut_hdu.data), 
-                                        np.max(cut_hdu.data), 
-                                        np.min(cut_hdu.data),
-                                        np.shape(cut_hdu.data)[0],
-                                        np.shape(cut_hdu.data)[1]),
-                                va = 'top')
+                                ax1.set_ylabel('pixels')
+                                ax1.grid(ls=':')
+                                ax1.set_title(f'Star #{idx} area image')
+                                ax1.text( 0, -4, 
+                                    f"mean: {np.mean(cut_hdu.data):.01f}, std: {np.std(cut_hdu.data):.01f} \nmax: {np.max(cut_hdu.data):.01f}, min: {np.min(cut_hdu.data):.01f} \nNumber of Pixel: {np.shape(cut_hdu.data)[0]:.0f}x{np.shape(cut_hdu.data)[1]:.0f}",
+                                    va = 'top')
+                                plt.colorbar(im1, 
+                                    ax=ax1,
+                                    fraction=0.0455, pad=0.04)
 
-                        ax2 = plt.subplot(2, 2, 2)
-                        ax2.grid(ls=':')
-                        ax2.set_title('The center of Star')
-                        ax2.imshow(mask_3sig.astype(int), 
+                                ax2 = plt.subplot(2, 2, 2)
+                                ax2.grid(ls=':')
+                                ax2.set_title(f'The new center (star #{idx})')
+                                im21 = ax2.imshow(mask_3sig.astype(int), 
                                     origin="lower")
-                        ax2.imshow(cut_hdu.data, alpha=0.4, 
-                                    origin="lower")
-                        ax2.plot(*center, 'rx')
-                        ax2.text(0, -2, 
-                                'center: {0:.01f}, {1:.1f}'\
-                                .format(center[0], center[1]),
-                                va = 'top'
-                                )
-                        ax2.text(0, -3, 
-                                "center dx, dy: {}, {}"\
-                                .format(centerdx, centerdy),
-                                va = 'top'
-                                )
+                                im22 = ax2.imshow(cut_hdu.data, 
+                                        alpha=0.4, 
+                                        origin="lower")
+                                ax2.plot(*center, 'rx')
+                                ax2.text(0, -4, 
+                                    f"center: {center[0]:.01f}, {center[1]:.1f}\ncenter dx, dy: {centerdx}, {centerdy}",
+                                    va = 'top'
+                                    )
+                                # plt.colorbar(im21, 
+                                # 	ax=ax2,
+                                # 	fraction=0.0455, pad=0.04)
+                                plt.colorbar(im22, 
+                                    ax=ax2,
+                                    alpha=0.4, 
+                                    fraction=0.0455, pad=0.04)
                                     
-                        ax3 = plt.subplot(2, 2, 3)
-                        ax3.grid(ls=':')
-                        ax3.set_title('The result of photometry star {}'.format(idx))
-                        ax3.imshow(bigcut_hdu.data,
-                                    origin='lower' )
-                        ap.plot(ax3, color='r', lw=2)
-                        an.plot(ax3, color='w', lw=2)
-                        ax3.plot(*bigcenter, 'rx')
-                        ax3.text(0, -7, 
-                                'center: {0:.01f}, {1:.1f}'\
-                                .format(bigcenter[0], bigcenter[1]),
-                                va = 'top'
-                                )
-                        ax3.text(0, -10, 
-                                'aperture sum: {0:.01f}, sky: {1:.01f}, source sum: {2:.01f}\n initrument magnitude: {3:.01f}'\
-                                .format(float(phot["aperture_sum"]),
-                                        float(phot["sky"]),
-                                        float(phot["source_sum"]),
-                                        float(phot["inst_mag"])),
-                                        va = 'top'
-                                )
-                        #ax3.colorbar()
+                                ax3 = plt.subplot(2, 2, 3)
+                                ax3.grid(ls=':')
+                                ax3.set_title(f'The result of photometry (star #{idx})')
+                                im3 = ax3.imshow(bigcut_hdu.data,
+                                        origin='lower' )
+                                ap.plot(ax3, color='r', lw=2)
+                                an.plot(ax3, color='w', lw=2)
+                                ax3.plot(*bigcenter, 'rx')
+                                ax3.text(0, -12, 
+                                    f"center: {bigcenter[0]:.0f}, {bigcenter[1]:.0f}\naperture sum: {float(phot['aperture_sum']):.01f}, sky: {float(phot['sky']):.01f}\nsource sum: {float(phot['source_sum']):.01f}, initrument magnitude: {float(phot['inst_mag']):.01f}",
+                                    va = 'top'
+                                    )
+                                plt.colorbar(im3, 
+                                    ax=ax3,
+                                    fraction=0.0455, pad=0.04)
 
-                        ax4 = plt.subplot(2, 2, 4)
-                        ax4.set_title('The histrogram of sky value')
-                        ax4.hist(sky_vals, 50, histtype='step')
-                        ax4.axvline(msky, ls=':', color='r')
+                                ax4 = plt.subplot(2, 2, 4)
+                                ax4.set_title(f'The histrogram of sky value (star #{idx})')
+                                ax4.hist(sky_vals, 50, histtype='step')
+                                ax4.axvline(msky, ls=':', color='r')
 
+                                ax4.text(msky, -12, 
+                                    f'mean of sky: {msky:.0f}',
+                                    va = 'top'
+                                    )
 
-                        plt.tight_layout()
-                        plt.savefig("{}_star_{:02d}.png".format(str(APhRESULTDIR / fpath.stem), idx))
+                                plt.tight_layout()
+                                plt.savefig("{}_star_{:02d}.png".format(str(APhRESULTDIR / fpath.stem), idx))
+                    except Exception as err :
+                        print("X"*60)
+                        print('{0}'.format(err))

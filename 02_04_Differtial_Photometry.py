@@ -4,18 +4,6 @@ Created on Thu Nov 22 01:00:19 2018
 @author: user
 
 
-#first time
-cd ~/Downloads/ && git clone https://github.com/ysBach/ysvisutilpy && cd ysvisutilpy && git pull && pip install -e . && cd ..
-cd ~/Downloads/ && git clone https://github.com/ysBach/ysfitsutilpy && cd ysfitsutilpy && git pull && pip install -e . && cd ..
-cd ~/Downloads/ && git clone https://github.com/ysBach/ysphotutilpy && cd ysphotutilpy && git pull && pip install -e . && cd ..
-cd ~/Downloads/ && git clone https://github.com/ysBach/SNUO1Mpy && cd SNUO1Mpy && git pull && pip install -e . && cd ..
-
-# second time...
-cd ~/Downloads/ysvisutilpy && git pull && pip install -e . 
-cd ~/Downloads/ysfitsutilpy && git pull && pip install -e . 
-cd ~/Downloads/ysphotutilpy && git pull && pip install -e . 
-cd ~/Downloads/SNUO1Mpy && git pull && pip install -e . 
-
 """
 #%%
 import os
@@ -64,11 +52,11 @@ if not os.path.exists('{0}'.format(log_dir)):
 #######################################################
 #%%
 #######################################################
-# 
-BASEDIR = "../RnE_2022/"
-BASEDIR = "../RnE_2022/RiLA600_STX-16803_2bin/"
-
 BASEDIR = astro_utilities.base_dir
+
+BASEDIRs = sorted(Python_utilities.getFullnameListOfsubDir(BASEDIR))
+print ("BASEDIRs: {}".format(BASEDIRs))
+print ("len(BASEDIRs): {}".format(len(BASEDIRs)))
 #%%
 #####################################################################
 # Our object (will be queried to JPL HORIZONS)
@@ -93,8 +81,6 @@ R_OUT = 6 * FWHM_INIT  # Outer radius of annulus
 #####################################################################
 
 #%%
-BASEDIRs = sorted(Python_utilities.getFullnameListOfsubDir(BASEDIR))
-print ("BASEDIRs: {}".format(BASEDIRs))
 
 for BASEDIR in BASEDIRs[:]:
     print ("Starting...\n{}".format(BASEDIR))
@@ -109,10 +95,15 @@ for BASEDIR in BASEDIRs[:]:
         print("{} is created...".format(str(AsteroidRESULTDIR)))
 
     #%%
-    summary = yfu.make_summary(SOLVEDDIR/"*.fits")
-    #print(summary)
-    #print("len(summary):", len(summary))
-    #print(summary["file"][0])
+    #summary = yfu.make_summary(BASEDIR/"*.fit*")
+    summary = yfu.make_summary(SOLVEDDIR/"*.fit*")
+
+    if summary.empty:
+        print("The dataframe(summary) is empty")
+        pass
+    else:
+        print("len(summary):", len(summary))
+        print("summary:", summary)
 
     for filt in ["r"]:
         summary_filt = summary.loc[summary["FILTER"] == filt].copy()
@@ -124,228 +115,270 @@ for BASEDIR in BASEDIRs[:]:
             print("summary_filt:", summary_filt)
             print("len(summary_filt):", len(summary_filt))
 
-            for fname in summary_filt["file"][:]:
-                #fpath = summary["file"][1]
-                print ("Starting...\nfname: {}".format(fname))
-                fpath = Path(fname)
-        
-                #%%
-                # load as ccd
-                ccd = yfu.load_ccd(fname, 
-                                unit="adu")
-                
-                #%%
-                ## Get the Ephemeris
-                _, eph, _ = ypu.horizons_query(
-                                            OBJID, 
-                                            epochs=Time(ccd.header["DATE-OBS"]).jd, 
-                                            location=LOCATION)
-                print("eph:", eph)
-                #%%
-                eph.write("{}_eph-{}.csv"\
-                        .format(str(AsteroidRESULTDIR / fpath.stem), OBJID),
-                        overwrite = True)
+            df_light = summary.loc[summary["IMAGETYP"] == "LIGHT"].copy()
+            df_light = df_light.reset_index(drop=True)
+            print("df_light:\n{}".format(df_light))
 
-                #%%
-                # Initial Photometry of the Target
-                pos_targ_init = SkyCoord(eph["RA"], 
-                                        eph["DEC"], 
-                                        **SKYC_KW).to_pixel(ccd.wcs)
-                targ_ap = CAp([pos_targ_init[0][0], 
-                        pos_targ_init[1][0]], 
-                        r=R_AP)
-                targ_an = CAn([pos_targ_init[0][0], 
-                        pos_targ_init[1][0]], 
-                        r_in=R_IN, 
-                        r_out=R_OUT)
-                print("pos_targ_init:", pos_targ_init)
-
-                phot_targ = ypu.apphot_annulus(ccd, 
-                                                targ_ap, 
-                                                targ_an, 
-                                                error=yfu.errormap(ccd))
-                print("phot_targ:", phot_targ)
-
-                #%%
-                # 별의 목록을 가져옴.
-                r_fov = yfu.fov_radius(ccd.header+ccd.wcs.to_header())
-                print("r_fov: ", r_fov)
-                
-                ps1 = ypu.PanSTARRS1(
-                                    ccd.wcs.wcs.crval[0]*u.deg, 
-                                    ccd.wcs.wcs.crval[1]*u.deg, 
-                                    radius=r_fov,
-                                    column_filters = {"{}mag".format(filt.lower()):"12.0..14.5", 
-                                                    "e_{}mag".format(filt.lower()):"<0.10", 
-                                                    "nr":">5"}
-                                    )
-                print("ps1:", ps1)
-                #%%
-                # 가까이 붙어 있는 별은 지우자.
-                isnear = ypu.organize_ps1_and_isnear(
-                                    ps1, 
-                                    header = ccd.header+ccd.wcs.to_header(), 
-                                    bezel = 5*FWHM_INIT * PIX2ARCSEC.value,
-                                    nearby_obj_minsep= 5 * FWHM_INIT*PIX2ARCSEC.value,
-                                    group_crit_separation = 6 * FWHM_INIT
-                                )
-                print("isnear:", isnear)
-                #%%
-                # 별의 목록
-                df_stars = ps1.queried.to_pandas()
-                
-                if df_stars.empty:
-                    print("The dataframe(df_stars) is empty")
+            #for filt in ["r", "v", "b"]:
+            for filt in ["r"]:
+                df_light_filt = df_light.loc[df_light["FILTER"] == filt].copy()
+            
+                if df_light_filt.empty:
+                    print("The dataframe(df_light_filt) is empty")
                     pass
-
                 else:
-                    print(df_stars)
-                    print("len(df_stars):", len(df_stars))
-
-                    df_stars.to_csv("{}_stars.csv".format(str(AsteroidRESULTDIR / fpath.stem)))
-                    print("df_stars:", df_stars)
-
+                    print("df_light_filt:", df_light_filt)
+                    print("len(df_light_filt):", len(df_light_filt))
+                    
+                for _, row  in df_light_filt.iterrows():
+                    fpath = Path(row["file"])
+                    print("type(fpath)", type(fpath))
+                    print("fpath", fpath)
+            
                     #%%
-                    fig, axs = plt.subplots(1, 1, 
-                                            figsize=(10, 10), 
-                                            sharex=False, 
-                                            sharey=False, 
-                                            gridspec_kw=None
-                                            )
+                    # load as ccd
+                    ccd = yfu.load_ccd(fpath, 
+                                    unit="adu")
+                    
+                    ## Get the Ephemeris
+                    _, eph, _ = ypu.horizons_query(
+                                                OBJID, 
+                                                epochs=Time(ccd.header["DATE-OBS"]).jd, 
+                                                location=LOCATION)
+                    print("eph:", eph)
+                    eph.write("{}_eph-{}.csv"\
+                            .format(str(AsteroidRESULTDIR / fpath.stem), OBJID),
+                            overwrite = True)
 
-                    yvu.norm_imshow(axs, ccd, zscale=True)
-                    #
-                    targ_ap.plot(axs, color="r")
-                    targ_an.plot(axs, color="b")
-
-                    # 각 별의 측광을 수행
-                    _phot_stars = []
-                    for idx, row in df_stars.iterrows():
-                        print("Starting photometry star {}:".format(idx))
-
-                        #별의 적경, 적위를 이미지 안에서의 픽셀 값으로 
-                        pos_star = SkyCoord(row["RAJ2000"], 
-                                            row["DEJ2000"], 
+                    # Initial Photometry of the Target
+                    pos_targ_init = SkyCoord(eph["RA"], 
+                                            eph["DEC"], 
                                             **SKYC_KW).to_pixel(ccd.wcs)
-                        ap = CAp([pos_star[0], 
-                                pos_star[1]], 
-                                r=R_AP)
-                        an = CAn([pos_star[0], 
-                                pos_star[1]], 
-                                r_in=R_IN, 
-                                r_out=R_OUT)
-                        _phot_star = ypu.apphot_annulus(ccd, ap, an, 
-                                                        error=yfu.errormap(ccd))
-                        _phot_star["{}mag".format(filt.upper())] = row["{}mag".format(filt.upper())]
-                        _phot_star["e_{}mag".format(filt.upper())] = row["e_{}mag".format(filt.upper())]
-                        _phot_star["grcolor"] = row["grcolor"]
-                        _phot_star["e_grcolor"] = row["e_grcolor"]
-                        _phot_star["id"] = idx
-                        _phot_star["objID"] = int(row["objID"])
-                        _phot_stars.append(_phot_star)
-                        axs.text(pos_star[0]+10, 
-                                pos_star[1]+10, 
-                                f"star {idx}", 
-                                fontsize=8)
-                        ap.plot(axs, color="orange")
-                        an.plot(axs, color="w")
-                    plt.title("Marking {} and {} stars".format(eph["targetname"][0], 
-                            len(df_stars)), fontsize = 14)
-                    plt.tight_layout()
-                    plt.savefig("{}_stars.png".format(str(AsteroidRESULTDIR / fpath.stem)))
-                    #plt.show()
+                    targ_ap = CAp([pos_targ_init[0][0], 
+                            pos_targ_init[1][0]], 
+                            r=R_AP)
+                    targ_an = CAn([pos_targ_init[0][0], 
+                            pos_targ_init[1][0]], 
+                            r_in=R_IN, 
+                            r_out=R_OUT)
+                    print("pos_targ_init:", pos_targ_init)
+
+                    phot_targ = ypu.apphot_annulus(ccd, 
+                                                    targ_ap, 
+                                                    targ_an, 
+                                                    error=yfu.errormap(ccd))
+                    print("phot_targ:", phot_targ)
+
                     #%%
-                    phot_stars = pd.concat(_phot_stars)
-                    # phot_stars = phot_stars.loc[phot_stars["objID"] != 110823405221754720].copy()  # star 15
-                    # SEE THE LAST CELL IN THIS FILE FOR DESCRIPTION
-                    print("phot_stars: ", phot_stars)
-                    phot_stars.to_csv("{}_phot_stars.csv".format(str(AsteroidRESULTDIR / fpath.stem)))
-
-                    # %%
-                    # Centroid and Re-photometry
-                    _phot_stars = []
-                    for idx, row in df_stars.iterrows():
-                        print("Starting RE-photometry star {}:".format(idx))
-
-                        #1. 별의 적경, 적위를 이미지 안에서의 픽셀 값으로 
-                        pos_star = SkyCoord(row["RAJ2000"], 
-                                            row["DEJ2000"], 
-                                            **SKYC_KW).to_pixel(ccd.wcs)
-                        
-                        #2. Loading and Cut Data
-                        cutsizes = 32
-                        cut_hdu = Cutout2D(
-                                    data = ccd, 
-                                    position = ([pos_star[0], pos_star[1]]), 
-                                    size=(cutsizes, cutsizes) #cut ccd
-                                    )
-                        avg, med, std = sigma_clipped_stats(cut_hdu.data)  # by default, 3-sigma 5-iteration.
-                        thresh_3sig = med + 3 * std
-                        mask_3sig = (cut_hdu.data < thresh_3sig)
-                        center = centroid_com(
-                                    data = cut_hdu.data, 
-                                    mask = mask_3sig
-                                    )
-                        
-                        centerdx = int(cutsizes/2-center[0])
-                        centerdy = int(cutsizes/2-center[1])
-
-                        print("type(center):", type(center))
-                        print("center:", center)
-                        print("center dx, dy:", centerdx, centerdy)
-                        print("center dx, dy:", centerdx, centerdy)
-                        print("center dx, dy:", centerdx, centerdy)
-
-                        #3. Loading and RE-Cut Data with New center
-                        bigcutsizes = 100
-                        bigcut_hdu = Cutout2D(
-                                    data = ccd, 
-                                    position = ([pos_star[0], pos_star[1]]), 
-                                    size=(bigcutsizes, bigcutsizes) #cut ccd
-                                    )
-                        avg, med, std = sigma_clipped_stats(bigcut_hdu.data)  # by default, 3-sigma 5-iteration.
-
-                        #4. re center Aperture and Annulus
-                        bigcenter = [bigcutsizes/2 - centerdx, bigcutsizes/2 - centerdy]
-                        
-                        
-                        ap = CAp(positions = bigcenter, 
-                                r=R_AP)
-                        an = CAn(positions = bigcenter, 
-                                r_in=R_IN, 
-                                r_out=R_OUT)
-                        
-                        print("ap", ap)
-                        print("type(ap)", type(ap))
-                        print("an", an)
-                        print("type(an)", type(an))
-
-                        _phot_star = ypu.apphot_annulus(ccd, ap, an, 
-                                                        error=yfu.errormap(ccd))
-
-                        _phot_star["{}mag".format(filt.upper())] = row["{}mag".format(filt.upper())]
-                        _phot_star["e_{}mag".format(filt.upper())] = row["e_{}mag".format(filt.upper())]
-                        _phot_star["grcolor"] = row["grcolor"]
-                        _phot_star["e_grcolor"] = row["e_grcolor"]
-                        _phot_star["id"] = idx
-                        _phot_star["objID"] = int(row["objID"])
-                        _phot_stars.append(_phot_star)
-                        axs.text(pos_star[0]+10, 
-                                pos_star[1]+10, 
-                                f"star {idx}", 
-                                fontsize=8)
-                        ap.plot(axs, color="orange")
-                        an.plot(axs, color="w")
-                    plt.title("Marking {} and Re-centering {} stars".format(eph["targetname"][0], 
-                            len(df_stars)), fontsize = 14)
-                    plt.tight_layout()
-                    plt.savefig("{}_stars_Re.png".format(str(AsteroidRESULTDIR / fpath.stem)))
-                    #plt.show()
+                    # 별의 목록을 가져옴.
+                    r_fov = yfu.fov_radius(ccd.header+ccd.wcs.to_header())
+                    print("r_fov: ", r_fov)
+                    
+                    ps1 = ypu.PanSTARRS1(
+                                        ccd.wcs.wcs.crval[0]*u.deg, 
+                                        ccd.wcs.wcs.crval[1]*u.deg, 
+                                        radius=r_fov,
+                                        column_filters = {"{}mag".format(filt.lower()):"12.0..14.5", 
+                                                        "e_{}mag".format(filt.lower()):"<0.10", 
+                                                        "nr":">5"}
+                                        )
+                    print("ps1:", ps1)
                     #%%
-                    phot_stars = pd.concat(_phot_stars)
-                    # phot_stars = phot_stars.loc[phot_stars["objID"] != 110823405221754720].copy()  # star 15
-                    # SEE THE LAST CELL IN THIS FILE FOR DESCRIPTION
-                    print("phot_stars: ", phot_stars)
-                    phot_stars.to_csv("{}_phot_stars_Re.csv".format(str(AsteroidRESULTDIR / fpath.stem)))
+                    # 가까이 붙어 있는 별은 지우자.
+                    isnear = ypu.organize_ps1_and_isnear(
+                                        ps1, 
+                                        header = ccd.header+ccd.wcs.to_header(), 
+                                        bezel = 5*FWHM_INIT * PIX2ARCSEC.value,
+                                        nearby_obj_minsep= 5 * FWHM_INIT*PIX2ARCSEC.value,
+                                        group_crit_separation = 6 * FWHM_INIT
+                                    )
+                    print("isnear:", isnear)
+
+                    # 별의 목록
+                    df_stars = ps1.queried.to_pandas()
+                    
+                    if df_stars.empty:
+                        print("The dataframe(df_stars) is empty")
+                        pass
+
+                    else:
+                        print(df_stars)
+                        print("len(df_stars):", len(df_stars))
+
+                        df_stars.to_csv("{}_stars.csv".format(str(AsteroidRESULTDIR / fpath.stem)))
+                        print("df_stars:", df_stars)
+
+                        #%%
+                        fig, axs = plt.subplots(1, 1, 
+                                                figsize=(8, 8), 
+                                                sharex=False, 
+                                                sharey=False, 
+                                                gridspec_kw=None
+                                                )
+
+                        axs = plt.subplot(projection=ccd.wcs, label='overlay')
+
+                        im = yvu.norm_imshow(axs, 
+                                        ccd, zscale=True)
+
+                        plt.colorbar(im, 
+                                    ax=axs,
+                                    fraction=0.042, #0.0455
+                                    #aspect=10,
+                                    pad=0.12)
+                        overlay = axs.get_coords_overlay('fk5')
+                                                    #overlay = ax.get_coords_overlay('icrs')
+                        overlay.grid(True, color='white', ls=':', alpha=0.7)
+                        overlay[0].set_axislabel('Right Ascension (J2000)')
+                        overlay[1].set_axislabel('Declination (J2000)')
+
+                        # sat tick label
+                        lon, lat = axs.coords
+                        lon.set_ticks(color='red')
+                        lon.set_ticks_position('lbtr')
+                        lon.set_ticklabel_position('lbtr')
+                        lat.set_ticks(color='blue')
+                        lat.set_ticks_position('lbtr')
+                        lat.set_ticklabel_position('lbtr')
+
+                        plt.title(f"Marking {eph['targetname'][0]} and {len(df_stars)} stars",
+                                fontsize = 14, pad=50)
+
+                        plt.annotate(f"{str(fpath.name)}",
+                                fontsize=10, xy=(0, 0), xytext=(3, -50), va='top', ha='left',
+                                xycoords='axes fraction', textcoords='offset points')
+                        #
+                        targ_ap.plot(axs, color="r")
+                        targ_an.plot(axs, color="b")
+
+                        # 각 별의 측광을 수행
+                        _phot_stars = []
+                        for idx, row in df_stars.iterrows():
+                            print("Starting photometry star {}:".format(idx))
+
+                            #별의 적경, 적위를 이미지 안에서의 픽셀 값으로 
+                            pos_star = SkyCoord(row["RAJ2000"], 
+                                                row["DEJ2000"], 
+                                                **SKYC_KW).to_pixel(ccd.wcs)
+                            ap = CAp([pos_star[0], 
+                                    pos_star[1]], 
+                                    r=R_AP)
+                            an = CAn([pos_star[0], 
+                                    pos_star[1]], 
+                                    r_in=R_IN, 
+                                    r_out=R_OUT)
+                            _phot_star = ypu.apphot_annulus(ccd, ap, an, 
+                                                            error=yfu.errormap(ccd))
+                            _phot_star["{}mag".format(filt.upper())] = row["{}mag".format(filt.upper())]
+                            _phot_star["e_{}mag".format(filt.upper())] = row["e_{}mag".format(filt.upper())]
+                            _phot_star["grcolor"] = row["grcolor"]
+                            _phot_star["e_grcolor"] = row["e_grcolor"]
+                            _phot_star["id"] = idx
+                            _phot_star["objID"] = int(row["objID"])
+                            _phot_stars.append(_phot_star)
+                            axs.text(pos_star[0]+10, 
+                                    pos_star[1]+10, 
+                                    f"star {idx}", 
+                                    fontsize=8)
+                            ap.plot(axs, color="orange")
+                            an.plot(axs, color="w")
+                        plt.title("Marking {} and {} stars".format(eph["targetname"][0], 
+                                len(df_stars)), fontsize = 14)
+                        plt.tight_layout()
+                        plt.savefig("{}_stars.png".format(str(AsteroidRESULTDIR / fpath.stem)))
+                        #plt.show()
+                        #%%
+                        phot_stars = pd.concat(_phot_stars)
+                        # phot_stars = phot_stars.loc[phot_stars["objID"] != 110823405221754720].copy()  # star 15
+                        # SEE THE LAST CELL IN THIS FILE FOR DESCRIPTION
+                        print("phot_stars: ", phot_stars)
+                        phot_stars.to_csv("{}_phot_stars.csv".format(str(AsteroidRESULTDIR / fpath.stem)))
+
+                        # %%
+                        # Centroid and Re-photometry
+                        _phot_stars = []
+                        for idx, row in df_stars.iterrows():
+                            print("Starting RE-photometry star {}:".format(idx))
+
+                            #1. 별의 적경, 적위를 이미지 안에서의 픽셀 값으로 
+                            pos_star = SkyCoord(row["RAJ2000"], 
+                                                row["DEJ2000"], 
+                                                **SKYC_KW).to_pixel(ccd.wcs)
+                            
+                            #2. Loading and Cut Data
+                            cutsizes = 32
+                            cut_hdu = Cutout2D(
+                                        data = ccd, 
+                                        position = ([pos_star[0], pos_star[1]]), 
+                                        size=(cutsizes, cutsizes) #cut ccd
+                                        )
+                            avg, med, std = sigma_clipped_stats(cut_hdu.data)  # by default, 3-sigma 5-iteration.
+                            thresh_3sig = med + 3 * std
+                            mask_3sig = (cut_hdu.data < thresh_3sig)
+                            center = centroid_com(
+                                        data = cut_hdu.data, 
+                                        mask = mask_3sig
+                                        )
+                            
+                            centerdx = int(cutsizes/2-center[0])
+                            centerdy = int(cutsizes/2-center[1])
+
+                            print("type(center):", type(center))
+                            print("center:", center)
+                            print("center dx, dy:", centerdx, centerdy)
+                            print("center dx, dy:", centerdx, centerdy)
+                            print("center dx, dy:", centerdx, centerdy)
+
+                            #3. Loading and RE-Cut Data with New center
+                            bigcutsizes = 100
+                            bigcut_hdu = Cutout2D(
+                                        data = ccd, 
+                                        position = ([pos_star[0], pos_star[1]]), 
+                                        size=(bigcutsizes, bigcutsizes) #cut ccd
+                                        )
+                            avg, med, std = sigma_clipped_stats(bigcut_hdu.data)  # by default, 3-sigma 5-iteration.
+
+                            #4. re center Aperture and Annulus
+                            bigcenter = [bigcutsizes/2 - centerdx, bigcutsizes/2 - centerdy]
+                            
+                            
+                            ap = CAp(positions = bigcenter, 
+                                    r=R_AP)
+                            an = CAn(positions = bigcenter, 
+                                    r_in=R_IN, 
+                                    r_out=R_OUT)
+                            
+                            print("ap", ap)
+                            print("type(ap)", type(ap))
+                            print("an", an)
+                            print("type(an)", type(an))
+
+                            _phot_star = ypu.apphot_annulus(ccd, ap, an, 
+                                                            error=yfu.errormap(ccd))
+
+                            _phot_star["{}mag".format(filt.upper())] = row["{}mag".format(filt.upper())]
+                            _phot_star["e_{}mag".format(filt.upper())] = row["e_{}mag".format(filt.upper())]
+                            _phot_star["grcolor"] = row["grcolor"]
+                            _phot_star["e_grcolor"] = row["e_grcolor"]
+                            _phot_star["id"] = idx
+                            _phot_star["objID"] = int(row["objID"])
+                            _phot_stars.append(_phot_star)
+                            axs.text(pos_star[0]+10, 
+                                    pos_star[1]+10, 
+                                    f"star {idx}", 
+                                    fontsize=8)
+                            ap.plot(axs, color="orange")
+                            an.plot(axs, color="w")
+                        plt.title("Marking {} and Re-centering {} stars".format(eph["targetname"][0], 
+                                len(df_stars)), fontsize = 14)
+                        plt.tight_layout()
+                        plt.savefig("{}_stars_Re.png".format(str(AsteroidRESULTDIR / fpath.stem)))
+                        #plt.show()
+                        #%%
+                        phot_stars = pd.concat(_phot_stars)
+                        # phot_stars = phot_stars.loc[phot_stars["objID"] != 110823405221754720].copy()  # star 15
+                        # SEE THE LAST CELL IN THIS FILE FOR DESCRIPTION
+                        print("phot_stars: ", phot_stars)
+                        phot_stars.to_csv("{}_phot_stars_Re.csv".format(str(AsteroidRESULTDIR / fpath.stem)))
 
                    

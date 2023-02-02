@@ -26,14 +26,15 @@ import Python_utilities
 #########################################
 c_method = "median"
 #CCD_obs_dir = "../CCD_obs_raw/"
-base_dir = "R:\CCD_obs\CCD_obs_raw"
-#CCD_obs_dir = "/mnt/Rdata/CCD_obs/CCD_obs_raw/"
-CCD_obs_dir = "R:\CCD_obs\CCD_obs_raw"
+#base_dir = "R:\CCD_obs\CCD_obs_raw"
+CCD_obs_raw_dir = "/mnt/Rdata/CCD_obs/CCD_obs_raw/"
+#CCD_obs_dir = "R:\CCD_obs\CCD_obs_raw"
 
 #base_dir = "../RnE_2022/RiLA600_STX-16803_2bin/"
-base_dir = "R:\CCD_obs\RnE_2022\RiLA600_STX-16803_2bin"
-#base_dir = "/mnt/Rdata/CCD_obs/RiLA600_2022"
-base_dir = "R:\CCD_obs\RiLA600_2022"
+#base_dir = "/mnt/Rdata/CCD_obs/RnE_2022/RiLA600_STX-16803_2bin/"
+#base_dir = "R:\CCD_obs\RnE_2022\RiLA600_STX-16803_2bin"
+base_dir = "/mnt/Rdata/CCD_obs/RiLA600_2022"
+#base_dir = "R:\CCD_obs\RiLA600_2022"
 
 master_dir = "master_files_ys"
 reduced_dir = "reduced"

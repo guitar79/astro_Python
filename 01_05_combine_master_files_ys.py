@@ -61,7 +61,13 @@ for BASEDIR in BASEDIRs[:1] :
 
     #%%
     try: 
-        bias_fits = summary[summary["IMAGETYP"] == "BIAS"]["file"]
+        #bias_fits = summary[summary["IMAGETYP"] == "BIAS"]["file"]
+        bias_fits = summary.loc[summary["IMAGETYP"] == "BIAS"].copy()
+        bias_fits.reset_index(inplace=True)
+        bias_fits = bias_fits["file"]
+        print(type(bias_fits))
+        print(len(bias_fits))
+        print(bias_fits)
         bias_comb = yfu.group_combine(
                         bias_fits.tolist(),
                         type_key = ["IMAGETYP"],
@@ -69,7 +75,8 @@ for BASEDIR in BASEDIRs[:1] :
                         group_key = ["EXPTIME"],
                         fmt = "master_bias.fits",  # output file name format
                         outdir = MASTERDIR,  # output directory (will automatically be made if not exist)
-                        combine = "avg",
+                        combine = "med",
+                        memlimit = 2.e+10,
                         verbose = True
                     )
     except Exception as err :
@@ -77,7 +84,13 @@ for BASEDIR in BASEDIRs[:1] :
         print('{0}'.format(err))
 
     try: 
-        dark_fits = summary[summary["IMAGETYP"] == "DARK"]["file"]
+        #dark_fits = summary[summary["IMAGETYP"] == "DARK"]["file"]
+        dark_fits = summary.loc[summary["IMAGETYP"] == "DARK"].copy()
+        dark_fits.reset_index(inplace=True)
+        dark_fits = dark_fits["file"]
+        print(type(dark_fits))
+        print(len(dark_fits))
+        print(dark_fits)
         # Say dark frames have header OBJECT = "calib" && "IMAGE-TYP" = "DARK"
         dark_comb = yfu.group_combine(
                         dark_fits.tolist(),
@@ -86,8 +99,9 @@ for BASEDIR in BASEDIRs[:1] :
                         group_key = ["EXPTIME"],
                         fmt = "master_dark_{:.0f}sec.fits",  # output file name format
                         outdir = MASTERDIR,  # output directory (will automatically be made if not exist)
-                        combine='avg',
-                        verbose=True
+                        combine = "med",
+                        memlimit = 2.e+10,
+                        verbose = True
                     )
     except Exception as err :
         print("X"*60)
@@ -106,7 +120,8 @@ for BASEDIR in BASEDIRs[:1] :
                         scale="med_sc", #norm
                         scale_to_0th=False, #norm
                         outdir = MASTERDIR,  # output directory (will automatically be made if not exist)
-                        combine='avg',
+                        combine = "med",
+                        memlimit = 2.e+10,
                         verbose=True
                     )
 
@@ -120,7 +135,8 @@ for BASEDIR in BASEDIRs[:1] :
                         #scale="med_sc", #norm
                         #scale_to_0th=False, #norm
                         outdir = MASTERDIR,  # output directory (will automatically be made if not exist)
-                        combine='avg',
+                        combine = "med",
+                        memlimit = 2.e+10,
                         verbose=True
                     )
     except Exception as err :
