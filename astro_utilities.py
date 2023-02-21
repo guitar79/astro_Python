@@ -11,7 +11,7 @@ conda install -c condaforge ccdproc
 #%%
 from astropy.io import fits
 import subprocess
-from datetime import datetime
+from datetime import datetime, timedelta
 import os
 from pathlib import Path
 import numpy as np
@@ -36,6 +36,8 @@ CCD_obs_raw_dir = "CCD_obs_raw"
 #base_dir = "/mnt/Rdata/CCD_obs/RiLA600_2022"
 base_dir = "R:\CCD_obs\RiLA600_2022"
 CCD_NEW_dir = "CCD_new_files"
+CCD_duplicate_dir = "CCD_duplicate_files"
+
 
 master_dir = "master_files_ys"
 reduced_dir = "reduced"
@@ -757,16 +759,11 @@ def get_new_filename(fullname, **kargs):
 
 
 def get_new_foldername_from_filename(filename):
-    #log_file = 'get_new_foldername.log'
-    print('Starting get_new_foldername ...\n{0}'.format(filename))
-    
+    #print('Starting get_new_foldername ...\n{0}'.format(filename))   
     filename_el = filename[:-4].split("_")
-    from datetime import datetime, timedelta
+    #print("filename_el: ", filename_el)
     timez = 9
-    if int(filename_el[3][17:19])>=60 :
-        obs_UT = datetime.strptime("{}59".format(filename_el[3][:17]), '%Y-%m-%d-%H-%M-%S')
-    else:
-         obs_UT = datetime.strptime(filename_el[3], '%Y-%m-%d-%H-%M-%S')
+    obs_UT = datetime.strptime(filename_el[3], '%Y-%m-%d-%H-%M-%S')
     obs_LST = obs_UT + timedelta(hours = timez)
     if obs_LST.hour < 12 :
         obs_LST = obs_LST - timedelta(days = 1)

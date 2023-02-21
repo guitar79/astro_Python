@@ -69,7 +69,7 @@ for DOINGDIR in DOINGDIRs[:] :
 
             foldername_el = fpath.parts[-2].split('_')
             print("foldername_el", foldername_el)
-            object_name = foldername_el[0]
+            object_name = foldername_el[0].replace(" ", "")
             optic_name = foldername_el[5]
             ccd_name = foldername_el[6]
             print("object_name", object_name)
@@ -109,14 +109,11 @@ for DOINGDIR in DOINGDIRs[:] :
                             CCDNAME = ccd_name
                     print("CCDNAME", CCDNAME)
 
-                    if object_name != hdul[0].header["OBJECT"] : 
-                        hdul[0].header["OBJECT"] = object_name
-                        print(f"The 'OBJECT' is set {object_name}")
+                    hdul[0].header["OBJECT"] = object_name.upper()
+                    print(f"The 'OBJECT' is set {object_name}")    
 
-                    if not "CCDNAME" in hdul[0].header\
-                        or hdul[0].header["CCDNAME"] != CCDNAME : 
-                        hdul[0].header["CCDNAME"] = CCDNAME
-                        print(f"The 'CCDNAME' is set {CCDNAME}")
+                    hdul[0].header["CCDNAME"] = CCDNAME.upper()
+                    print(f"The 'CCDNAME' is set {CCDNAME}")
 
                     if optic_name != hdul[0].header["TELESCOP"] :
                         hdul[0].header["OPTIC"] = optic_name
