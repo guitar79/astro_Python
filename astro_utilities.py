@@ -28,13 +28,14 @@ c_method = "median"
 #CCD_obs_dir = "../CCD_obs_raw/"
 #base_dir = "R:\CCD_obs\CCD_obs_raw"
 #CCD_obs_raw_dir = "/mnt/Rdata/CCD_obs/CCD_obs_raw/"
-CCD_obs_raw_dir = "R:\CCD_obs\CCD_obs_raw"
+CCD_obs_raw_dir = "CCD_obs_raw"
 
 #base_dir = "../RnE_2022/RiLA600_STX-16803_2bin/"
 #base_dir = "/mnt/Rdata/CCD_obs/RnE_2022/RiLA600_STX-16803_2bin/"
 #base_dir = "R:\CCD_obs\RnE_2022\RiLA600_STX-16803_2bin"
 #base_dir = "/mnt/Rdata/CCD_obs/RiLA600_2022"
 base_dir = "R:\CCD_obs\RiLA600_2022"
+CCD_NEW_dir = "CCD_new_files"
 
 master_dir = "master_files_ys"
 reduced_dir = "reduced"
@@ -62,17 +63,17 @@ binning = 1
 
 GAINDIC = {"STF-8300M": 0.37, 
         "STX-16803": 1.27, 
-        "STL-11000": 0.8, 
+        "STL-11000M": 0.8, 
         "QSI683ws": 0.13 } 
 
 RDNOISEDIC = {"STF-8300M": 9.3, 
             "STX-16803": 9.0, 
-            "STL-11000": 9.6, 
+            "STL-11000M": 9.6, 
             "QSI683ws": 8.0 } 
 
 PIXSIZEEDIC = {"STF-8300M": 5.4, 
             "STX-16803": 9.0, 
-            "STL-11000": 9.0, 
+            "STL-11000M": 9.0, 
             "QSI683ws": 5.4 } 
 
 
@@ -84,7 +85,7 @@ PIXSCALEDIC = {"FSQ106ED_STF-8300M": 2.1,
             "FSQ106ED_STL-11000": 3.5, 
             "FSQ106ED-x72_STL-11000": 3.5/0.72, 
             "FSQ106ED-x73_STL-11000": 3.5/0.73, 
-            "FSQ106ED-_QSI683ws": 2.1,
+            "FSQ106ED_QSI683ws": 2.1,
             "FSQ106ED-x72_QSI683ws": 2.1/0.72,
             "FSQ106ED-x73_QSI683ws": 2.1/0.73
              } 
@@ -93,7 +94,7 @@ FOCALLENDIC = {"TMB130ss": 910,
             "TMB130ss-x75": 910*0.75, 
             "RiLA600": 3000, 
             "GSON300": 1200, 
-            "FS-60CB": 355, 
+            "FS60CB": 355, 
             "SVX080T": 480, 
             "SVX080T-x80": 480*0.8, 
             "FSQ106ED": 530, 
@@ -103,7 +104,7 @@ FOCALLENDIC = {"TMB130ss": 910,
 #CCDNAME, PIXSIZE, GAIN, RENOISE    
 CCDDIC = {"STF-8300M": [5.4, 0.37, 9.3], 
         "QSI683ws": [5.4, 0.13, 8.0],
-        "STL-11000": [9.0, 0.8, 9.6],
+        "STL-11000M": [9.0, 0.8, 9.6],
         "STX-16803": [9.0, 1.27, 9.0]}
         
 # OPTICDIC = {"TMB130ss": [910], 
@@ -114,12 +115,12 @@ CCDDIC = {"STF-8300M": [5.4, 0.37, 9.3],
 #             "FSQ106ED": [530]} 
 
 #OPTICNAME, Focal_length, Aperature
-OPTICDIC = {"TMB130ss": [910, 130], 
-            "RiLA600": [3000, 600], 
-            "GSON300": [1200, 300], 
-            "FS-60CB": [355, 60], 
-            "SVX080T": [480, 80], 
-            "FSQ106ED": [530, 106]}
+OPTICDIC = {"TMB130ss": [910, 4], 
+            "RiLA600": [3000, 5], 
+            "GSON300": [1200, 4], 
+            "FS60CB": [355, 355/60], 
+            "SVX080T": [480, 6], 
+            "FSQ106ED": [530, 5]}
 
 #Optic Acc name
 OptAccDIC = {"x80": 0.8, 

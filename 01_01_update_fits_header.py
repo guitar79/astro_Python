@@ -9,9 +9,15 @@ BASEDIR 폴더 안에 있는 모든 fit 파일에 대해서 바로 상위 디렉
 OPTIC, CCDNAME 등의 정보를 줍니다.
 """
 #%%
+from glob import glob
+from pathlib import Path, PosixPath, WindowsPath
+import os
 from datetime import datetime
 from astropy.io import fits
-import os
+
+import ysfitsutilpy as yfu
+import ysphotutilpy as ypu
+import ysvisutilpy as yvu
 
 import Python_utilities
 import astro_utilities
@@ -29,227 +35,114 @@ if not os.path.exists('{0}'.format(log_dir)):
 #%%
 #######################################################
 # read all files in base directory for processing
-BASEDIR = "../CCD_new_files/"
-#BASEDIR = "../Rne_2022/"
-#BASEDIR = "../CCD_obs_raw/"
+BASEDIR = Path(r"r:\CCD_obs") 
+BASEDIR = Path( BASEDIR/ astro_utilities.CCD_NEW_dir)
 
-fullnames = astro_utilities.getFullnameListOfallFiles(BASEDIR)
-
-print ("fullnames: {}".format(fullnames))
-print ("len(fullnames): {}".format(len(fullnames)))
+DOINGDIRs = sorted(Python_utilities.getFullnameListOfallsubDirs(BASEDIR))
+#print ("DOINGDIRs: ", format(DOINGDIRs))
+print ("len(DOINGDIRs): ", format(len(DOINGDIRs)))
 #######################################################
 
 #%%
 #######################################################
-# set gain and readout noise 
-gain = 0
-rdnoise = 0
-binning = 1
-
-GAINDIC = {"STF-8300M": 0.37, 
-        "STX-16803": 1.27, 
-        "STL-11000": 0.8, 
-        "QSI683ws": 0.13 } 
-
-RDNOISEDIC = {"STF-8300M": 9.3, 
-            "STX-16803": 9.0, 
-            "STL-11000": 9.6, 
-            "QSI683ws": 8.0 } 
-
-PIXSCALEDIC = {"STF-8300M": None, 
-            "RiLA600_STX-16803_1bin": 0.512, 
-            "RiLA600_STX-16803_2bin": 1.024, 
-            "STL-11000": None, 
-            "QSI683ws": None } 
-#######################################################
-
+checkKEYs = ["OBJECT", "TELESCOP", "OPTIC", "CCDNAME", 
+            "GAIN", "EGAIN", "RDNOISE", "FOCALLEN", "PIXSCALE",
+            "XBINNING", "YBINNING", "FLIPSTAT"]
 #%%
+for DOINGDIR in DOINGDIRs[:] :
+    #fpath = Path(DOINGDIRs[0])
+    DOINGDIR = Path(DOINGDIR)
+    #print(f"Starting: {str(fpath.parts[-1])}")
+    #save_fpath = fpath/f"summary_{fpath.parts[-1]}.csv"
+    try: 
+        summary = yfu.make_summary(DOINGDIR/"*.fit*",
+                    #output = save_fpath,
+                    verbose = False
+                    )
+        print("summary", summary)
+        print("len(summary)", len(summary))
 
-checkKEYs = ["OPTIC", "OBJECT", "FLIPSTAT", "CCDNAME", 
-            "GAIN", "EGAIN", "RDNOISE",
-            "XBINNING", "YBINNING"]
+        for _, row in summary.iterrows():
+            # 파일명 출력
+            print (row["file"])
+            fpath = Path(row["file"])
 
-changeKEYs = ["OPTIC", "OBJECT", "FLIPSTAT", "CCDNAME", 
-            "GAIN", "EGAIN", "RDNOISE",
-            "XBINNING", "YBINNING"]
-#%%
-n = 0    
-for fullname in fullnames[:] :
-#fullname = fullnames[0]
-    #######################################################
-    # print the processing status
+            foldername_el = fpath.parts[-2].split('_')
+            print("foldername_el", foldername_el)
+            object_name = foldername_el[0]
+            optic_name = foldername_el[5]
+            ccd_name = foldername_el[6]
+            print("object_name", object_name)
+            print("ccd_name", ccd_name)
 
-    n += 1
-    print('#'*40,
-        "\n{2:.01f}%  ({0}/{1}) {3}".format(n, len(fullnames), (n/len(fullnames))*100, os.path.basename(__file__)))
-    print ("Starting...   fullname: {}".format(fullname))
-    ######################################################
+            new_fpath = Path(f"{fpath.parents[0]}/{fpath.stem}_new.fit")
 
+            #hdul = fits.open(str(fpath))
 
-    if fullname[-4:] == ".fit" or fullname[-4:] == ".new" :
-        print('Starting......\n{0} ...'.format(fullname))
-        fullname_el = fullname.split('/')
-        foldername_el = fullname_el[-2].split('_')
-        object_name = foldername_el[0]
-        optic_name = foldername_el[5]
-        ccd_name = foldername_el[6]
-        flipstat = "        "
-
-        try: 
-            with fits.open('{0}'.format(fullname), mode="append") as hdul :
-            #with fits.open('{0}'.format(fullname), mode="update") as hdul :
+            try: 
+                with fits.open(str(fpath), mode="append") as hdul :
+                    for checkKEY in checkKEYs: 
+                        if not checkKEY in hdul[0].header :
+                            hdul[0].header.append(checkKEY, 
+                                            '', 
+                                            f"The keyword '{checkKEY}' is added") 
+                            print(f"The keyword '{checkKEY}' is added...")
+                    hdul.flush()  # changes are written back to original.fits
+                
                 for checkKEY in checkKEYs: 
-                    if not checkKEY in hdul[0].header :
-                        hdul[0].header.append(checkKEY, 
-                                        '', 
-                                        '{} value added'.format(checkKEY))                    
-                hdul.flush()  # changes are written back to original.fits
-                print('*'*30)
-                Python_utilities.write_log(log_file, 
-                    '{1} ::: fits header is append with {0} ...'\
-                    .format(fullname, datetime.now()))
-        except Exception as err :
-            print("X"*60)
-            Python_utilities.write_log(err_log_file,
-                '{2} ::: \n{1} with {0} ...'\
-                .format(fullname, err, datetime.now()))
+                    print(f"{checkKEY}: ", hdul[0].header[checkKEY])
 
+                # Change something in hdul.
+                with fits.open(str(fpath), mode="update") as hdul :
+                    try : 
+                        if 'qsi' in hdul[0].header['INSTRUME'].lower() :     
+                            CCDNAME = 'QSI683ws'
+                        elif  'st-8300' in hdul[0].header['INSTRUME'].lower() : 
+                            CCDNAME = 'ST-8300M'
+                        elif  'stf-8300' in hdul[0].header['INSTRUME'].lower() : 
+                            CCDNAME = 'STF-8300M'
+                        elif  '11000' in hdul[0].header['INSTRUME'].lower() : 
+                            CCDNAME = 'STL-11000M'
+                        elif  '16803' in hdul[0].header['INSTRUME'].lower() : 
+                            CCDNAME = 'STX-16803'
+                    except :
+                            CCDNAME = ccd_name
+                    print("CCDNAME", CCDNAME)
 
-        try :            
-            # Change something in hdul.
-            with fits.open('{0}'.format(fullname), mode="update") as hdul :
-                hdul[0].header['OBJECT'] = object_name
-                hdul[0].header.append('COMMENT', 
-                                       'change HEADER OBJECT {0}'.format(object_name), 
-                                       'change HEADER OBJECT {0}'.format(object_name))
+                    if object_name != hdul[0].header["OBJECT"] : 
+                        hdul[0].header["OBJECT"] = object_name
+                        print(f"The 'OBJECT' is set {object_name}")
 
-                hdul[0].header['OPTIC'] = optic_name
-                hdul[0].header.append('COMMENT',
-                                      'change HEADER OPTIC {0}'.format(optic_name),
-                                      'change HEADER OPTIC {0}'.format(optic_name))
+                    if not "CCDNAME" in hdul[0].header\
+                        or hdul[0].header["CCDNAME"] != CCDNAME : 
+                        hdul[0].header["CCDNAME"] = CCDNAME
+                        print(f"The 'CCDNAME' is set {CCDNAME}")
 
-                hdul[0].header['CCDNAME'] = ccd_name
-                hdul[0].header.append('COMMENT',
-                                      'change HEADER CCDNAME {0}'.format(ccd_name),
-                                      'change HEADER CCDNAME {0}'.format(ccd_name))
-
-                if "-8300" in hdul[0].header['INSTRUME'] :
-                    hdul[0].header['GAIN'] = GAINDIC["STF-8300M"]
-                    hdul[0].header.append('COMMENT',
-                                      'change HEADER GAIN {0}'.format(GAINDIC["STF-8300M"]),
-                                      'change HEADER GAIN {0}'.format(GAINDIC["STF-8300M"]))
-                    hdul[0].header['EGAIN'] = GAINDIC["STF-8300M"]
-                    hdul[0].header.append('COMMENT',
-                                      'change HEADER EGAIN {0}'.format(GAINDIC["STF-8300M"]),
-                                      'change HEADER EGAIN {0}'.format(GAINDIC["STF-8300M"]))
-                    hdul[0].header['RDNOISE'] = RDNOISEDIC["STF-8300M"]
-                    hdul[0].header.append('COMMENT',
-                                      'change HEADER RDNOISE {0}'.format(RDNOISEDIC["STF-8300M"]),
-                                      'change HEADER RDNOISE {0}'.format(RDNOISEDIC["STF-8300M"]))
-                    hdul[0].header['XBINNING'] = int(hdul[0].header['XPIXSZ'] / 5.4)
-                    hdul[0].header.append('COMMENT',
-                                      'change HEADER XBINNING {0}'.format(int(hdul[0].header['XPIXSZ'] / 5.4)),
-                                      'change HEADER XBINNING {0}'.format(int(hdul[0].header['XPIXSZ'] / 5.4)))
-                    
-                    hdul[0].header['YBINNING'] = int(hdul[0].header['YPIXSZ'] / 5.4)
-                    hdul[0].header.append('COMMENT',
-                                      'change HEADER YBINNING {0}'.format(int(hdul[0].header['YPIXSZ'] / 5.4)),
-                                      'change HEADER YBINNING {0}'.format(int(hdul[0].header['YPIXSZ'] / 5.4)))
-
-
-                elif "16803" in hdul[0].header['INSTRUME'] \
-                    or "16803" in hdul[0].header['CCDNAME']:
-                    hdul[0].header['GAIN'] = GAINDIC["STX-16803"]
-                    hdul[0].header.append('COMMENT',
-                                      'change HEADER GAIN {0}'.format(GAINDIC["STX-16803"]),
-                                      'change HEADER GAIN {0}'.format(GAINDIC["STX-16803"]))
-                    hdul[0].header['EGAIN'] = GAINDIC["STX-16803"]
-                    hdul[0].header.append('COMMENT',
-                                      'change HEADER EGAIN {0}'.format(GAINDIC["STX-16803"]),
-                                      'change HEADER EGAIN {0}'.format(GAINDIC["STX-16803"]))
-                    
-                    hdul[0].header['RDNOISE'] = RDNOISEDIC["STX-16803"]
-                    hdul[0].header.append('COMMENT',
-                                      'change HEADER RDNOISE {0}'.format(RDNOISEDIC["STX-16803"]),
-                                      'change HEADER RDNOISE {0}'.format(RDNOISEDIC["STX-16803"]))
-
-                    if 'XPIXSZ' in hdul[0].header :
-                        binning = int(hdul[0].header['XPIXSZ'] / 9)
+                    if optic_name != hdul[0].header["TELESCOP"] :
+                        hdul[0].header["OPTIC"] = optic_name
+                        print(f"The 'OPTIC' is set {optic_name}")
+                    else:
+                        hdul[0].header["OPTIC"] = hdul[0].header["TELESCOP"] 
+                        print(f"The 'OPTIC' is set {hdul[0].header['TELESCOP']}")
                         
-                    elif hdul[0].header['NAXIS1'] == 4096 or hdul[0].header['NAXIS2'] == 4096 :
-                        binning = 1
-                    elif hdul[0].header['NAXIS1'] == 2048 or hdul[0].header['NAXIS2'] == 2048 :
-                        binning = 2
-                    elif hdul[0].header['NAXIS1'] == 1024 or hdul[0].header['NAXIS2'] == 1024 :
-                        binning = 3    
+                    hdul[0].header['GAIN'] = astro_utilities.GAINDIC[CCDNAME]
+                    hdul[0].header['EGAIN'] = astro_utilities.GAINDIC[CCDNAME]
+                    hdul[0].header['RDNOISE'] = astro_utilities.RDNOISEDIC[CCDNAME]
+                    print(f"The 'GAIN' is set {astro_utilities.GAINDIC[CCDNAME]}...")
+                    print(f"The 'RDNOISE' is set {astro_utilities.RDNOISEDIC[CCDNAME]}...")
+                    hdul.flush()  # changes are written back to original.fits
+                    print('*'*30)
+                    print(f"The header of {fpath.name} is updated..")
 
-                    hdul[0].header['XBINNING'] = binning
-                    hdul[0].header['YBINNING'] = binning
-                    hdul[0].header.append('COMMENT',
-                                        'change HEADER XBINNING {0}'.format(binning),
-                                        'change HEADER XBINNING {0}'.format(binning))
-                    hdul[0].header.append('COMMENT',
-                                        'change HEADER YBINNING {0}'.format(binning),
-                                        'change HEADER YBINNING {0}'.format(binning))
+            except Exception as err :
+                print("X"*60)
+                print(err)
 
-                elif "11000" in hdul[0].header['INSTRUME'] :
-                    hdul[0].header['GAIN'] = GAINDIC["STL-11000"]
-                    hdul[0].header.append('COMMENT',
-                                      'change HEADER GAIN {0}'.format(GAINDIC["STL-11000"]),
-                                      'change HEADER GAIN {0}'.format(GAINDIC["STL-11000"]))
-                    hdul[0].header['EGAIN'] = GAINDIC["STL-11000"]
-                    hdul[0].header.append('COMMENT',
-                                      'change HEADER EGAIN {0}'.format(GAINDIC["STL-11000"]),
-                                      'change HEADER EGAIN {0}'.format(GAINDIC["STL-11000"]))
-                    
-                    hdul[0].header['RDNOISE'] = RDNOISEDIC["STX-16803"]
-                    hdul[0].header.append('COMMENT',
-                                      'change HEADER RDNOISE {0}'.format(RDNOISEDIC["STL-11000"]),
-                                      'change HEADER RDNOISE {0}'.format(RDNOISEDIC["STL-11000"]))
-                    hdul[0].header['XBINNING'] = int(hdul[0].header['XPIXSZ'] / 9)
-                    hdul[0].header.append('COMMENT',
-                                      'change HEADER XBINNING {0}'.format(int(hdul[0].header['XPIXSZ'] / 9)),
-                                      'change HEADER XBINNING {0}'.format(int(hdul[0].header['XPIXSZ'] / 9)))
+    except:
+        pass
+
         
-                    hdul[0].header['YBINNING'] = int(hdul[0].header['YPIXSZ'] / 9)
-                    hdul[0].header.append('COMMENT',
-                                      'change HEADER YBINNING {0}'.format(int(hdul[0].header['YPIXSZ'] / 9)),
-                                      'change HEADER YBINNING {0}'.format(int(hdul[0].header['YPIXSZ'] / 9)))
-                
-                elif "683" in hdul[0].header['INSTRUME'] :
-                    hdul[0].header['GAIN'] = GAINDIC["QSI683ws"]
-                    hdul[0].header.append('COMMENT',
-                                      'change HEADER GAIN {0}'.format(GAINDIC["QSI683ws"]),
-                                      'change HEADER GAIN {0}'.format(GAINDIC["QSI683ws"]))
-                    hdul[0].header['EGAIN'] = GAINDIC["QSI683ws"]
-                    hdul[0].header.append('COMMENT',
-                                      'change HEADER EGAIN {0}'.format(GAINDIC["QSI683ws"]),
-                                      'change HEADER EGAIN {0}'.format(GAINDIC["QSI683ws"]))
-                    
-                    hdul[0].header['RDNOISE'] = RDNOISEDIC["STX-16803"]
-                    hdul[0].header.append('COMMENT',
-                                      'change HEADER RDNOISE {0}'.format(RDNOISEDIC["QSI683ws"]),
-                                      'change HEADER RDNOISE {0}'.format(RDNOISEDIC["QSI683ws"]))
-                    hdul[0].header['XBINNING'] = int(hdul[0].header['XPIXSZ'] / 5.4)
-                    hdul[0].header.append('COMMENT',
-                                      'change HEADER XBINNING {0}'.format(int(hdul[0].header['XPIXSZ'] / 5.4)),
-                                      'change HEADER XBINNING {0}'.format(int(hdul[0].header['XPIXSZ'] / 5.4)))
-                    
-                    hdul[0].header['YBINNING'] = int(hdul[0].header['YPIXSZ'] / 5.4)
-                    hdul[0].header.append('COMMENT',
-                                      'change HEADER YBINNING {0}'.format(int(hdul[0].header['YPIXSZ'] / 5.4)),
-                                      'change HEADER YBINNING {0}'.format(int(hdul[0].header['YPIXSZ'] / 5.4)))
-                
-                hdul.flush()  # changes are written back to original.fits
-                print('*'*30)
-                print('*'*35)
-                Python_utilities.write_log(log_file, 
-                    '{1} ::: fits header is append with {0} ...'\
-                    .format(fullname, datetime.now()))
+
+
+
     
-        except Exception as err :
-            print("X"*60)
-            Python_utilities.write_log(err_log_file,
-                '{2} ::: \n{1} with {0} ...'\
-                .format(fullname, err, datetime.now()))
-# %%

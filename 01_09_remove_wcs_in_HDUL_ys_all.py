@@ -45,7 +45,8 @@ if not os.path.exists('{0}'.format(log_dir)):
 #%%
 #######################################################
 #%%
-BASEDIR = Path(astro_utilities.CCD_obs_raw_dir)
+BASEDIR = Path(r"r:\CCD_obs") 
+BASEDIR = Path( BASEDIR/ astro_utilities.CCD_NEW_dir)
 
 fpaths = sorted(list(BASEDIR.glob("*.csv")))
 print(fpaths)
