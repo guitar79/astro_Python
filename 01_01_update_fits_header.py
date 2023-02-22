@@ -46,7 +46,7 @@ print ("len(DOINGDIRs): ", format(len(DOINGDIRs)))
 
 #%%
 #######################################################
-checkKEYs = ["OBJECT", "TELESCOP", "OPTIC", "CCDNAME", "CCD-TEMP", "EXPOSURE", "EXPTIME", 'FILTER',
+checkKEYs = ["OBJECT", "TELESCOP", "OPTIC", "CCDNAME", 'FILTER',
             "GAIN", "EGAIN", "RDNOISE", "FOCALLEN", "PIXSCALE",
             "XBINNING", "YBINNING", "FLIPSTAT"]
 #%%
@@ -71,7 +71,7 @@ for DOINGDIR in DOINGDIRs[:] :
             foldername_el = fpath.parts[-2].split('_')
             fname_el = fpath.parts[-1].split('_')
             print("foldername_el", foldername_el)
-            print("frname_el", fname_el)
+            print("fname_el", fname_el)
             object_name = foldername_el[0]
             filter_name = fname_el[2]
             optic_name = foldername_el[5]
@@ -81,23 +81,17 @@ for DOINGDIR in DOINGDIRs[:] :
             print("optic_name", optic_name)
             print("ccd_name", ccd_name)
 
-            new_fpath = Path(f"{fpath.parents[0]}/{fpath.stem}_new.fit")
-
-            #hdul = fits.open(str(fpath))
-
             try: 
                 with fits.open(str(fpath), mode="append") as hdul :
                     for checkKEY in checkKEYs: 
                         if not checkKEY in hdul[0].header :
                             hdul[0].header.append(checkKEY, 
                                             '', 
-                                            f"The keyword '{checkKEY}' is added") 
-                            print(f"The keyword '{checkKEY}' is added...")
-                    hdul.flush()  # changes are written back to original.fits
-                
-                for checkKEY in checkKEYs: 
-                    print(f"{checkKEY}: ", hdul[0].header[checkKEY])
+                                            f"The keyword '{checkKEY}' is added.") 
+                        print(f"{checkKEY}: ", hdul[0].header[checkKEY])
 
+                    hdul.flush()  # changes are written back to original.fits
+            
                 # Change something in hdul.
                 with fits.open(str(fpath), mode="update") as hdul :
                     
@@ -109,40 +103,34 @@ for DOINGDIR in DOINGDIRs[:] :
                         and 'TIME-OBS' in hdul[0].header : 
                         hdul[0].header['DATE-OBS'] += 'T' + hdul[0].header['TIME-OBS']
                     
-                    if "zero".lower() in hdul[0].header["IMAGETYP"].lower() \
-                            or "bias".lower() in hdul[0].header["IMAGETYP"].lower() :
-                        hdul[0].header["IMAGETYP"] == "BIAS"
-                    elif "da".lower() in hdul[0].header["IMAGETYP"].lower() :
-                        hdul[0].header["IMAGETYP"] == "DARK"
-                    elif "fl".lower() in hdul[0].header["IMAGETYP"].lower() :
-                        hdul[0].header["IMAGETYP"] == "FLAT"
-                    elif "da".lower() in hdul[0].header["IMAGETYP"].lower() \
-                            or "lig".lower() in hdul[0].header["IMAGETYP"].lower() :
-                        hdul[0].header["IMAGETYP"] == "LIGHT"
+                    if "ze" in hdul[0].header["IMAGETYP"].lower() \
+                            or "bi" in hdul[0].header["IMAGETYP"].lower() :
+                        hdul[0].header["IMAGETYP"] = "BIAS"
+                    elif "da" in hdul[0].header["IMAGETYP"].lower() :
+                        hdul[0].header["IMAGETYP"] = "DARK"
+                    elif "fl" in hdul[0].header["IMAGETYP"].lower() :
+                        hdul[0].header["IMAGETYP"] = "FLAT"
+                    elif "da" in hdul[0].header["IMAGETYP"].lower() \
+                            or "lig" in hdul[0].header["IMAGETYP"].lower() :
+                        hdul[0].header["IMAGETYP"] = "LIGHT"
                     
-                    if "BIAS".lower() in hdul[0].header["IMAGETYP"].lower() \
-                        or "DARK".lower() in hdul[0].header["IMAGETYP"].lower() :
+                    if "BIAS" in hdul[0].header["IMAGETYP"] \
+                        or "DARK" in hdul[0].header["IMAGETYP"] :
                         hdul[0].header["FILTER"] = "-"
                         print(f"The 'FILTER' is set '-'")
                         hdul[0].header["OPTIC"] = "-"
                         print(f"The 'OPTIC' is set '-'")
 
-                    if "FLAT".lower() in hdul[0].header["IMAGETYP"].lower() \
-                        or "LIGHT".lower() in hdul[0].header["IMAGETYP"].lower() :
+                    if "FLAT" in hdul[0].header["IMAGETYP"] \
+                        or "LIGHT" in hdul[0].header["IMAGETYP"] :
                         hdul[0].header["FILTER"] = filter_name.upper()
                         print(f"The 'FILTER' is set {filter_name.upper()}")
                         
-                        try: 
-                            if "TELESCOP".lower() in hdul[0].header.lower() \
-                                and hdul[0].header["OPTIC"] != hdul[0].header["TELESCOP"].upper() :
-                                hdul[0].header["OPTIC"] = hdul[0].header["TELESCOP"].upper()
-                                print(f"The 'OPTIC' is set {hdul[0].header['TELESCOP'].upper()}")
-                        except:
-                            hdul[0].header["OPTIC"] = optic_name.upper()
-                            print(f"The 'OPTIC' is set {optic_name.upper()}")
+                        hdul[0].header["OPTIC"] = optic_name.upper()
+                        print(f"The 'OPTIC' is set {optic_name.upper()}")
 
                     try : 
-                        if 'qsi' in hdul[0].header['INSTRUME'].lower() :     
+                        if 'qsi' in hdul[0].header['INSTRUME'] :     
                             CCDNAME = 'QSI683ws'
                         elif 'st-8300' in hdul[0].header['INSTRUME'].lower() : 
                             CCDNAME = 'ST-8300M'
