@@ -95,50 +95,55 @@ for DOINGDIR in DOINGDIRs[:] :
                 # Change something in hdul.
                 with fits.open(str(fpath), mode="update") as hdul :
                     
-                    if object_name != hdul[0].header["OBJECT"] : 
-                        hdul[0].header["OBJECT"] = object_name.upper()
-                        print(f"The 'OBJECT' is set {object_name.upper()}")
-                    
+                    #if object_name != hdul[0].header["OBJECT"] : 
+                    hdul[0].header["OBJECT"] = object_name.upper()
+                    print(f"The 'OBJECT' is set {object_name.upper()}")
+                
                     if len(hdul[0].header['DATE-OBS']) == 10 \
                         and 'TIME-OBS' in hdul[0].header : 
                         hdul[0].header['DATE-OBS'] += 'T' + hdul[0].header['TIME-OBS']
-                    
+                        print(f"The 'DATE-OBS' is set {hdul[0].header['DATE-OBS']}")
+
                     if "ze" in hdul[0].header["IMAGETYP"].lower() \
                             or "bi" in hdul[0].header["IMAGETYP"].lower() :
                         hdul[0].header["IMAGETYP"] = "BIAS"
+                        print(f"The 'IMAGETYP' is set {hdul[0].header['IMAGETYP']}")
                     elif "da" in hdul[0].header["IMAGETYP"].lower() :
                         hdul[0].header["IMAGETYP"] = "DARK"
+                        print(f"The 'IMAGETYP' is set {hdul[0].header['IMAGETYP']}")
                     elif "fl" in hdul[0].header["IMAGETYP"].lower() :
                         hdul[0].header["IMAGETYP"] = "FLAT"
+                        print(f"The 'IMAGETYP' is set {hdul[0].header['IMAGETYP']}")
                     elif "da" in hdul[0].header["IMAGETYP"].lower() \
                             or "lig" in hdul[0].header["IMAGETYP"].lower() :
                         hdul[0].header["IMAGETYP"] = "LIGHT"
+                        print(f"The 'IMAGETYP' is set {hdul[0].header['IMAGETYP']}")
                     
                     if "BIAS" in hdul[0].header["IMAGETYP"] \
                         or "DARK" in hdul[0].header["IMAGETYP"] :
                         hdul[0].header["FILTER"] = "-"
-                        print(f"The 'FILTER' is set '-'")
-                        hdul[0].header["OPTIC"] = "-"
-                        print(f"The 'OPTIC' is set '-'")
+                        print(f"The 'FILTER' is set {hdul[0].header['FILTER']}")
+                        hdul[0].header['OPTIC'] = "-"
+                        print(f"The 'OPTIC' is set {hdul[0].header['OPTIC']}")
 
                     if "FLAT" in hdul[0].header["IMAGETYP"] \
                         or "LIGHT" in hdul[0].header["IMAGETYP"] :
                         hdul[0].header["FILTER"] = filter_name.upper()
-                        print(f"The 'FILTER' is set {filter_name.upper()}")
+                        print(f"The 'FILTER' is set {hdul[0].header['FILTER']}")
                         
-                        hdul[0].header["OPTIC"] = optic_name.upper()
-                        print(f"The 'OPTIC' is set {optic_name.upper()}")
+                        hdul[0].header["OPTIC"] = optic_name
+                        print(f"The 'OPTIC' is set {hdul[0].header['OPTIC']}")
 
                     try : 
                         if 'qsi' in hdul[0].header['INSTRUME'] :     
                             CCDNAME = 'QSI683ws'
-                        elif 'st-8300' in hdul[0].header['INSTRUME'].lower() : 
+                        elif 'st-8300' in hdul[0].header['INSTRUME'] : 
                             CCDNAME = 'ST-8300M'
-                        elif 'stf-8300' in hdul[0].header['INSTRUME'].lower() : 
+                        elif 'stf-8300' in hdul[0].header['INSTRUME'] : 
                             CCDNAME = 'STF-8300M'
-                        elif '11000' in hdul[0].header['INSTRUME'].lower() : 
+                        elif '11000' in hdul[0].header['INSTRUME'] : 
                             CCDNAME = 'STL-11000M'
-                        elif  '16803' in hdul[0].header['INSTRUME'].lower() : 
+                        elif '16803' in hdul[0].header['INSTRUME'] : 
                             CCDNAME = 'STX-16803'
                         elif "SBIG" in hdul[0].header['INSTRUME'] :
                             if hdul[0].header['XPIXSZ'] == 5.4 \
@@ -154,27 +159,29 @@ for DOINGDIR in DOINGDIRs[:] :
                                         or  hdul[0].header['NAXIS1'] == 2004 \
                                         or  hdul[0].header['NAXIS1'] == 1336 :
                                     CCDNAME = 'STL-11000M'
+                        else :
+                            CCDNAME = ccd_name    
                     except :
-                            CCDNAME = ccd_name
+                        CCDNAME = ccd_name
                     print("CCDNAME", CCDNAME)
 
-                    hdul[0].header["CCDNAME"] = CCDNAME.upper()
-                    print(f"The 'CCDNAME' is set {CCDNAME.upper()}")
+                    hdul[0].header["CCDNAME"] = CCDNAME
+                    print(f"The 'CCDNAME' is set {CCDNAME}...")
 
-                    if not "CCD-TEMP".lower() in hdul[0].header :
-                        hdul[0].header["CCD-TEMP"] = 'N'
-                        print(f"The 'CCD-TEMP' is set 'N'")
+                    if not "CCD-TEMP" in hdul[0].header :
+                        hdul[0].header['CCD-TEMP'] = 'N'
+                        print(f"The 'CCD-TEMP' is set {hdul[0].header['CCD-TEMP']}...")
 
-                    if not "EXPOSURE".lower() in hdul[0].header :
+                    if not "EXPOSURE" in hdul[0].header :
                         hdul[0].header["EXPOSURE"] = hdul[0].header["EXPTIME"]
                         print(f"The 'EXPOSURE' is set {hdul[0].header['EXPTIME']}...")
 
-                    hdul[0].header['GAIN'] = astro_utilities.GAINDIC[CCDNAME.upper()]
-                    hdul[0].header['EGAIN'] = astro_utilities.GAINDIC[CCDNAME.upper()]
-                    hdul[0].header['RDNOISE'] = astro_utilities.RDNOISEDIC[CCDNAME.upper()]
-
-                    print(f"The 'GAIN' is set {astro_utilities.GAINDIC[CCDNAME.upper()]}...")
-                    print(f"The 'RDNOISE' is set {astro_utilities.RDNOISEDIC[CCDNAME.upper()]}...")
+                    hdul[0].header['GAIN'] = astro_utilities.GAINDIC[CCDNAME]
+                    print(f"The 'GAIN' is set {hdul[0].header['GAIN']}...")
+                    hdul[0].header['EGAIN'] = astro_utilities.GAINDIC[CCDNAME]
+                    print(f"The 'EGAIN' is set {hdul[0].header['EGAIN']}...")
+                    hdul[0].header['RDNOISE'] = astro_utilities.RDNOISEDIC[CCDNAME]
+                    print(f"The 'RDNOISE' is set {hdul[0].header['RDNOISE']}...")
                     hdul.flush()  # changes are written back to original.fits
                     print('*'*30)
                     print(f"The header of {fpath.name} is updated..")
