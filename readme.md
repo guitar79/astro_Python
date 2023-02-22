@@ -14,3 +14,7 @@ cd ~/Downloads/ysfitsutilpy && git pull && pip install -e .
 cd ~/Downloads/ysphotutilpy && git pull && pip install -e . 
 cd ~/Downloads/SNUO1Mpy && git pull && pip install -e . 
 ls
+
+pip install ysfitsutilpy==0.2
+pip install ysfitsutilpy==0.2
+pip install ysphotutilpy==0.1

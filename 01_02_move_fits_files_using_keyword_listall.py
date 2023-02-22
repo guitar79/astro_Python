@@ -19,7 +19,7 @@ from astropy.io import fits
 import shutil 
 
 import ysfitsutilpy as yfu
-import ysphotutilpy as ypu
+#import ysphotutilpy as ypu
 import ysvisutilpy as yvu
 
 import astro_utilities
@@ -39,6 +39,8 @@ if not os.path.exists('{0}'.format(log_dir)):
 #######################################################
 # read all files in base directory for processing
 BASEDIR = Path(r"r:\CCD_obs") 
+BASEDIR = Path("/mnt/Rdata/CCD_obs") 
+
 DOINGDIR = Path( BASEDIR/ astro_utilities.CCD_NEW_dir)
                 
 DOINGDIRs = sorted(Python_utilities.getFullnameListOfallsubDirs(DOINGDIR))
@@ -69,18 +71,27 @@ for DOINGDIR in DOINGDIRs :
             fpath = Path(row["file"])
             
             hdul = fits.open(str(fpath))
-            #print(fpath)
+            print(fpath)
             for checkKEY in checkKEYs: 
                 print( f"{checkKEY}: ", hdul[0].header[checkKEY])
 
             print("fpath", fpath)
+
+            hdul[0].header["IMAGETYP"]
+
+            try :
+                ccdtemp = str(int(hdul[0].header["CCD-TEMP"]))
+            except : 
+                ccdtemp = "N"
+                
             new_fname = hdul[0].header["OBJECT"]+"_"+hdul[0].header["IMAGETYP"]+"_"+hdul[0].header["FILTER"]+"_"
             new_fname += hdul[0].header["DATE-OBS"][:19].replace("T","-").replace(":","-")+"_"
             new_fname += str(int(hdul[0].header["EXPOSURE"]))+"sec_"
             new_fname += hdul[0].header["OPTIC"]+"_"+hdul[0].header["CCDNAME"]+"_"
-            new_fname += str(int(hdul[0].header["CCD-TEMP"]))+"c_"+str(hdul[0].header["XBINNING"])+"bin.fit"
-            #print("new_fname: ", new_fname)
             
+            new_fname += ccdtemp+"c_"+str(hdul[0].header["XBINNING"])+"bin.fit"
+            #print("new_fname: ", new_fname)
+            hdul.close()
             new_folder = astro_utilities.get_new_foldername_from_filename(new_fname)
             #print("new_folder: ", new_folder)
 
@@ -89,36 +100,48 @@ for DOINGDIR in DOINGDIRs :
 
             if not new_fpath.parents[0].exists():
                 os.makedirs('{0}'.format(str(new_fpath.parents[0])))
-                print('{0} is created'.format(str(new_fpath.part[-2])))  
+                print('{0} is created'.format(str(new_fpath.parts[-2])))  
         
             if new_fpath.exists():
                 duplicate_fpath = BASEDIR / astro_utilities.CCD_duplicate_dir / new_fpath.name
-                #os.rename(f"{str(new_fpath)}", 
-                #            f"{str(duplicate_fpath)}")
-                shutil.move(f"{str(new_fpath)}", 
-                           f"{str(duplicate_fpath)}")
+                #os.rename(str(new_fpath), str(duplicate_fpath))
+                shutil.move(str(new_fpath), str(duplicate_fpath))
                 print (f"move duplicate file to {str(duplicate_fpath)}")
 
-            os.rename({str(fpath)}, {str(new_fpath)})
-            #shutil.move({str(fpath)}, {str(new_fpath)})
+            #os.rename(str(fpath), str(new_fpath))
+            shutil.move(str(fpath), str(new_fpath))
             print(f"move {str(fpath.name)} to {str(new_fpath)}")
-    except:
-       pass
- #%%   
+    except Exception as err:
+        print(err)
+        pass
+#%%   
 #############################################################################
 #Check and delete empty folder....
 #############################################################################
- 
-for DOINGDIR in DOINGDIRs :
+exts = [".csv"]
+for i in range(4):
+    DOINGDIR = Path( BASEDIR/ astro_utilities.CCD_NEW_dir)           
+    DOINGDIRs = sorted(Python_utilities.getFullnameListOfallsubDirs(DOINGDIR))
+    #print ("DOINGDIRs: ", format(DOINGDIRs))
+    print ("len(DOINGDIRs): ", format(len(DOINGDIRs)))
 
-    if len(os.listdir(str(DOINGDIR))) == 0 :
-        shutil.rmtree(f"{str(DOINGDIR)}") # Delete..
-        print (f"rmtree {str(DOINGDIR)}")
+    for DOINGDIR in DOINGDIRs :    
+        if len(os.listdir(str(DOINGDIR))) == 0 :
+            shutil.rmtree(f"{str(DOINGDIR)}") # Delete..
+            print (f"rmtree {str(DOINGDIR)}")
+        else : 
+            fpaths = Python_utilities.getFullnameListOfallFiles(str(DOINGDIR))
+            print("fpaths", fpaths)
+
+            for fpath in fpaths[:]:
+                print("fpath", fpath)
+
+                if fpath[-4:].lower() in [".txt", "xisf", ".zip", ".png", ".log",
+                                            "seal", "tiff", ".axy", "atch", "lved",
+                                            "rdls", "xyls", "corr", "xosm", ".ini",
+                                            ".wcs", ".csv"] \
+                                        and os.path.isfile(fpath):
+                    os.remove("{}".format(fpath))
+                    print("{} is removed...".format(fpath)) 
 
 
-
-
-
-              
-            
-           
