@@ -40,7 +40,7 @@ if not os.path.exists('{0}'.format(log_dir)):
 # read all files in base directory for processing
 BASEDIR = Path(r"r:\CCD_obs") 
 BASEDIR = Path("/mnt/Rdata/CCD_obs") 
-
+BASEDIR = Path("/mnt/OBS_data") 
 DOINGDIR = Path( BASEDIR/ astro_utilities.CCD_NEW_dir)
                 
 DOINGDIRs = sorted(Python_utilities.getFullnameListOfallsubDirs(DOINGDIR))

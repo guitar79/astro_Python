@@ -142,7 +142,7 @@ def calPixScale (F_length, Opt_acc, Pix_size) :
 
 
 #%%
-KevinFitsHeader():
+class KevinFitsHeader():
     def __init__(self, fpath):
         self.fpath = Path(fpath)
         self.checkKEYs = ["OBJECT", "TELESCOP", "OPTIC", "CCDNAME", 'FILTER',
@@ -1102,36 +1102,3 @@ def subp_solve_field(fullname, save_dir_name, sub_start_time):
        '''
     return 0
 
-#%%
-def align_image(im1, im2):
-    import cv2
-    #conda install -c conda-forge opencv
-
-    #code from https://www.learnopencv.com/image-alignment-ecc-in-opencv-c-python/
-    # Convert images to grayscale
-    #im1_gray = cv2.cvtColor(im1,cv2.COLOR_BGR2GRAY)
-    #im2_gray = cv2.cvtColor(im2,cv2.COLOR_BGR2GRAY)
-
-    im1_gray = im1
-    im2_gray = im2
-    
-    im1_32f_gray = np.array(im1_gray/65536.0, dtype=np.float32)
-    im2_32f_gray = np.array(im2_gray/65536.0, dtype=np.float32)
-    
-    # Find size of image1
-    sz = im1.shape
-    # Define the motion model
-    #warp_mode = cv2.MOTION_TRANSLATION
-    warp_mode = cv2.MOTION_EUCLIDEAN
-    # Define 2x3 or 3x3 matrices and initialize the matrix to identity
-    if warp_mode == cv2.MOTION_HOMOGRAPHY :
-        warp_matrix = np.eye(3, 3, dtype=np.float32)
-    else :
-        warp_matrix = np.eye(2, 3, dtype=np.float32)
-    # Specify the number of iterations.
-    number_of_iterations = 1000  #5000
-    # Specify the threshold of the increment
-    # in the correlation coefficient between two iterations
-    termination_eps = 1e-7   #1e-10
-    # Define termination criteria
-    criteria = (cv2.TERM_CRITERIA_EPS | cv2.TERM_CRITERIA_COUNT,
