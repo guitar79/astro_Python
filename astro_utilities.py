@@ -130,6 +130,10 @@ OptAccDIC = {"x80": 0.8,
             "x72": 0.72, 
             "x73": 0.73, 
             "x75": 0.75} 
+
+checkKEYs = ["OBJECT", "TELESCOP", "OPTIC", "CCDNAME", 'FILTER',
+            "GAIN", "EGAIN", "RDNOISE", "FOCALLEN", "PIXSCALE",
+            "XBINNING", "YBINNING", "FLIPSTAT"]
 #######################################################
 
 def calPixScale (F_length, Opt_acc, Pix_size) :
@@ -157,7 +161,6 @@ def KevinFitsUpdater(fpath):
     print("optic_name", optic_name)
     print("ccd_name", ccd_name)
 
-     
     with fits.open(str(fpath), mode="append") as hdul :
         for checkKEY in checkKEYs: 
             if not checkKEY in hdul[0].header :
@@ -264,19 +267,19 @@ def KevinFitsUpdater(fpath):
     return hdul
 
 #%%
-""" class KevinFitsHeader():
+class KevinFitsHeader():
     def __init__(self, fpath):
         self.fpath = Path(fpath)
         self.checkKEYs = ["OBJECT", "TELESCOP", "OPTIC", "CCDNAME", 'FILTER',
             "GAIN", "EGAIN", "RDNOISE", "FOCALLEN", "PIXSCALE",
             "XBINNING", "YBINNING", "FLIPSTAT"]
-        """
+        '''
         Parameters
         ----------
         fpath : string
             The fullname of input file...
 
-        """
+        '''
     def append_header(self):
         with fits.open(str(self.fpath), mode="append") as self.hdul :
             for self.checkKEY in self.checkKEYs: 
@@ -396,7 +399,7 @@ def KevinFitsUpdater(fpath):
             print('*'*30)
             print(f"The header of {self.fpath.name} is updated..")
         return self.hdul
- """
+
 #%%
 #########################################
 #single  KevinPSolver
