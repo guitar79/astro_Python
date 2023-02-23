@@ -9,6 +9,7 @@ ModuleNotFoundError: No module named 'ccdproc'
 conda install -c condaforge ccdproc
 """
 #%%
+from pathlib import Path
 from astropy.io import fits
 import subprocess
 from datetime import datetime, timedelta
@@ -139,6 +140,140 @@ def calPixScale (F_length, Opt_acc, Pix_size) :
     PIXScale = Pix_size / (F_length * Opt_acc) *  206.265
     return PIXScale
 
+
+#%%
+KevinFitsHeader():
+    def __init__(self, fpath):
+        self.fpath = Path(fpath)
+        self.checkKEYs = ["OBJECT", "TELESCOP", "OPTIC", "CCDNAME", 'FILTER',
+            "GAIN", "EGAIN", "RDNOISE", "FOCALLEN", "PIXSCALE",
+            "XBINNING", "YBINNING", "FLIPSTAT"]
+        """
+        Parameters
+        ----------
+        fpath : string
+            The fullname of input file...
+
+        """
+    def append_header(self):
+        with fits.open(str(self.fpath), mode="append") as self.hdul :
+            for self.checkKEY in self.checkKEYs: 
+                if not self.checkKEY in self.hdul[0].header :
+                    self.hdul[0].header.append(self.checkKEY, 
+                                    '', 
+                                    f"The keyword '{self.checkKEY}' is added.") 
+                print(f"{self.checkKEY}: ", self.hdul[0].header[self.checkKEY])
+
+            self.hdul.flush()  # changes are written back to original.fits
+        return self.hdul
+
+    def update_header(self): 
+        self.foldername_el = self.fpath.parts[-2].split('_')
+        self.fname_el = self.fpath.parts[-1].split('_')
+        print("foldername_el", self.foldername_el)
+        print("fname_el", self.fname_el)
+        self.object_name = self.foldername_el[0]
+        self.filter_name = self.fname_el[2]
+        self.optic_name = self.foldername_el[5]
+        self.ccd_name = self.foldername_el[6]
+        print("object_name", self.object_name)
+        print("filter_name", self.filter_name)
+        print("optic_name", self.optic_name)
+        print("ccd_name", self.ccd_name)
+   
+        # Change something in hdul.
+        with fits.open(str(self.fpath), mode="update") as self.hdul :
+            
+            #if object_name != hdul[0].header["OBJECT"] : 
+            self.hdul[0].header["OBJECT"] = self.object_name.upper()
+            print(f"The 'OBJECT' is set {self.object_name.upper()}")
+        
+            if len(self.hdul[0].header['DATE-OBS']) == 10 \
+                and 'TIME-OBS' in self.hdul[0].header : 
+                self.hdul[0].header['DATE-OBS'] += 'T' + self.hdul[0].header['TIME-OBS']
+                print(f"The 'DATE-OBS' is set {self.hdul[0].header['DATE-OBS']}")
+
+            if "ze" in self.hdul[0].header["IMAGETYP"].lower() \
+                    or "bi" in self.hdul[0].header["IMAGETYP"].lower() :
+                self.hdul[0].header["IMAGETYP"] = "BIAS"
+                print(f"The 'IMAGETYP' is set {self.hdul[0].header['IMAGETYP']}")
+            elif "da" in self.hdul[0].header["IMAGETYP"].lower() :
+                self.hdul[0].header["IMAGETYP"] = "DARK"
+                print(f"The 'IMAGETYP' is set {self.hdul[0].header['IMAGETYP']}")
+            elif "fl" in self.hdul[0].header["IMAGETYP"].lower() :
+                self.hdul[0].header["IMAGETYP"] = "FLAT"
+                print(f"The 'IMAGETYP' is set {self.hdul[0].header['IMAGETYP']}")
+            elif "da" in self.hdul[0].header["IMAGETYP"].lower() \
+                    or "lig" in self.hdul[0].header["IMAGETYP"].lower() :
+                self.hdul[0].header["IMAGETYP"] = "LIGHT"
+                print(f"The 'IMAGETYP' is set {self.hdul[0].header['IMAGETYP']}")
+            
+            if "BIAS" in self.hdul[0].header["IMAGETYP"] \
+                or "DARK" in self.hdul[0].header["IMAGETYP"] :
+                self.hdul[0].header["FILTER"] = "-"
+                print(f"The 'FILTER' is set {self.hdul[0].header['FILTER']}")
+                self.hdul[0].header['OPTIC'] = "-"
+                print(f"The 'OPTIC' is set {self.hdul[0].header['OPTIC']}")
+
+            if "FLAT" in self.hdul[0].header["IMAGETYP"] \
+                or "LIGHT" in self.hdul[0].header["IMAGETYP"] :
+                self.hdul[0].header["FILTER"] = self.filter_name.upper()
+                print(f"The 'FILTER' is set {self.hdul[0].header['FILTER']}")
+                self.hdul[0].header["OPTIC"] = self.optic_name
+                print(f"The 'OPTIC' is set {self.hdul[0].header['OPTIC']}")
+
+            try : 
+                if 'qsi' in self.hdul[0].header['INSTRUME'] : 
+                    self.CCDNAME = 'QSI683ws'
+                elif 'st-8300' in self.hdul[0].header['INSTRUME'] : 
+                    self.CCDNAME = 'ST-8300M'
+                elif 'stf-8300' in self.hdul[0].header['INSTRUME'] : 
+                    self.CCDNAME = 'STF-8300M'
+                elif '11000' in hdul[0].header['INSTRUME'] : 
+                    self.CCDNAME = 'STL-11000M'
+                elif '16803' in self.hdul[0].header['INSTRUME'] : 
+                    self.CCDNAME = 'STX-16803'
+                elif "SBIG" in self.hdul[0].header['INSTRUME'] :
+                    if self.hdul[0].header['XPIXSZ'] == 5.4 \
+                            or self.hdul[0].header['XPIXSZ'] == 10.8 :
+                        self.CCDNAME = 'STF-8300M'
+                    elif self.hdul[0].header['XPIXSZ'] == 9.0 \
+                            or self.hdul[0].header['XPIXSZ'] == 18.0 :
+                        if self.hdul[0].header['NAXIS1'] == 2048 \
+                                or self.hdul[0].header['NAXIS1'] == 4096 :
+                            self.CCDNAME = 'STX-16803'
+                        elif self.hdul[0].header['NAXIS1'] == 4008 \
+                                or  self.hdul[0].header['NAXIS1'] == 2672 \
+                                or  self.hdul[0].header['NAXIS1'] == 2004 \
+                                or  self.hdul[0].header['NAXIS1'] == 1336 :
+                            self.CCDNAME = 'STL-11000M'
+                else :
+                    self.CCDNAME = self.ccd_name    
+            except :
+                self.CCDNAME = self.ccd_name
+            print("CCDNAME", self.CCDNAME)
+
+            self.hdul[0].header["CCDNAME"] = self.CCDNAME
+            print(f"The 'CCDNAME' is set {self.CCDNAME}...")
+
+            if not "CCD-TEMP" in self.hdul[0].header :
+                self.hdul[0].header['CCD-TEMP'] = 'N'
+                print(f"The 'CCD-TEMP' is set {self.hdul[0].header['CCD-TEMP']}...")
+
+            if not "EXPOSURE" in self.hdul[0].header :
+                self.hdul[0].header["EXPOSURE"] = self.hdul[0].header["EXPTIME"]
+                print(f"The 'EXPOSURE' is set {self.hdul[0].header['EXPTIME']}...")
+
+            self.hdul[0].header['GAIN'] = GAINDIC[self.CCDNAME]
+            print(f"The 'GAIN' is set {self.hdul[0].header['GAIN']}...")
+            self.hdul[0].header['EGAIN'] = GAINDIC[self.CCDNAME]
+            print(f"The 'EGAIN' is set {self.hdul[0].header['EGAIN']}...")
+            self.hdul[0].header['RDNOISE'] = RDNOISEDIC[self.CCDNAME]
+            print(f"The 'RDNOISE' is set {self.hdul[0].header['RDNOISE']}...")
+            self.hdul.flush()  # changes are written back to original.fits
+            print('*'*30)
+            print(f"The header of {self.fpath.name} is updated..")
+        return self.hdul
 
 #%%
 #########################################
@@ -999,144 +1134,4 @@ def align_image(im1, im2):
     # in the correlation coefficient between two iterations
     termination_eps = 1e-7   #1e-10
     # Define termination criteria
-    criteria = (cv2.TERM_CRITERIA_EPS | cv2.TERM_CRITERIA_COUNT, number_of_iterations, termination_eps)
-    
-   # Run the ECC algorithm. The results are stored in warp_matrix.
-    (cc, warp_matrix) = cv2.findTransformECC (im1_32f_gray, im2_32f_gray, warp_matrix, warp_mode, criteria)
-    if warp_mode == cv2.MOTION_HOMOGRAPHY :
-        # Use warpPerspective for Homography 
-        im2_aligned = cv2.warpPerspective (im2, warp_matrix, (sz[1],sz[0]), flags=cv2.INTER_LINEAR + cv2.WARP_INVERSE_MAP)
-    else :
-        # Use warpAffine for Translation, Euclidean and Affine
-        im2_aligned = cv2.warpAffine(im2, warp_matrix, (sz[1],sz[0]), flags=cv2.INTER_LINEAR + cv2.WARP_INVERSE_MAP);
-    # Show final results
-    return im2_aligned
-
-#%%
-def combine_BiasDark(file_list, c_method, 
-        BASEDIR_name, master_file_dir_name, current_dir_name) :
-        
-    try :
-        
-        combine_result = combine(file_list,       # ccdproc does not accept numpy.ndarray, but only python list.
-               method = c_method,  # default is average so I specified median.
-               unit='adu')  
-        
-        combine_result.data = np.array(combine_result.data, dtype=np.float32)
-
-        combine_result.write('{0}/{1}{2}_master_{3}_float32.fit'\
-                  .format(BASEDIR_name, master_file_dir_name, 
-                  current_dir_name, c_method), overwrite =True, format='fits')
-        
-        ##### fits header update
-        with fits.open('{0}/{1}{2}_master_{3}_float32.fit'\
-              .format(BASEDIR_name, master_file_dir_name, current_dir_name, c_method),
-              mode='update') as hdul:
-            hdul[0].header.append(('COMMENT', ', '.join(file_list), 'combine file list'))
-            hdul[0].header.append('COMMENT', 
-                                  '{0}'.format(len(file_list)), 
-                                  'combine file number')
-    
-    except Exception as err :
-        print('{5} ::: {4} with {0}/{1}{2}_master_{3}_float32.fit ...'\
-            .format(BASEDIR_name, master_file_dir_name, 
-            current_dir_name, c_method, err, datetime.now()))
-
-    return 0
-
-#%%
-def combine_Flat(file_list, c_method, 
-        BASEDIR_name, master_file_dir_name, current_dir_name, chl) :
-        
-    try :
-        
-        combine_result = combine(file_list,       # ccdproc does not accept numpy.ndarray, but only python list.
-               method = c_method,  # default is average so I specified median.
-               unit='adu')  
-        
-        combine_result.data = np.array(combine_result.data, dtype=np.float32)
-
-        combine_result.write('{0}/{1}{2}_master_{3}_{4}_float32.fit'\
-                  .format(BASEDIR_name, master_file_dir_name, 
-                  current_dir_name, c_method, chl), overwrite =True, format='fits')
-        
-        ##### fits header update
-        with fits.open('{0}/{1}{2}_master_{3}_{4}_float32.fit'\
-              .format(BASEDIR_name, master_file_dir_name, current_dir_name, c_method, chl),
-              mode='update') as hdul:
-            hdul[0].header.append(('COMMENT', ', '.join(file_list), 'combine file list'))
-            hdul[0].header.append('COMMENT', 
-                                  '{0}'.format(len(file_list)), 
-                                  'combine file number')
-    
-    except Exception as err :
-        print('{6} ::: {5} with {0}/{1}{2}_master_{3}_{4}_float32.fit ...'\
-            .format(BASEDIR_name, master_file_dir_name, 
-            current_dir_name, c_method, chl, err, datetime.now()))
-
-    return 0
-
-#%%
-def combine_master_file(file_list, c_method, 
-        BASEDIR_name, master_file_dir_name, current_dir_name) :
-        
-    try :
-        combine_result = combine(file_list,       # ccdproc does not accept numpy.ndarray, but only python list.
-                       method = c_method,  # default is average so I specified median.
-                       sigma_clip = True, sigma_clip_low_thresh=3, sigma_clip_high_thresh=3,
-                       unit = 'adu')              # unit is required: it's ADU in our case.
-        
-        combine_result.data = np.array(combine_result.data, dtype=np.float32)
-
-        combine_result.write('{0}/{1}{2}_master_{3}_float32.fit'\
-                  .format(BASEDIR_name, master_file_dir_name, 
-                  current_dir_name, c_method), overwrite =True, format='fits')
-        
-        ##### fits header update
-        with fits.open('{0}/{1}{2}_master_{3}_float32.fit'\
-              .format(BASEDIR_name, master_file_dir_name, current_dir_name, c_method),
-              mode='update') as hdul:
-            hdul[0].header.append(('COMMENT', ', '.join(file_list), 'combine file list'))
-            hdul[0].header.append('COMMENT', 
-                                  '{0}'.format(len(file_list)), 
-                                  'combine file number')
-    
-    except Exception as err :
-        print('{5} ::: {4} with {0}/{1}{2}_master_{3}_float32.fit ...'\
-            .format(BASEDIR_name, master_file_dir_name, 
-            current_dir_name, c_method, err, datetime.now()))
-
-    return 0
-
-#%%
-def combine_master_flat_file(file_list, c_method, 
-         BASEDIR_name, master_file_dir_name, current_dir_name, chl) :
-        
-    try :
-        combine_result = combine(file_list,       # ccdproc does not accept numpy.ndarray, but only python list.
-                       method = c_method,  # default is average so I specified median.
-                       sigma_clip = True, sigma_clip_low_thresh=3, sigma_clip_high_thresh=3,
-                       unit = 'adu')              # unit is required: it's ADU in our case.
-        
-        combine_result.data = np.array(combine_result.data, dtype=np.float32)
-        
-        combine_result.write('{0}{1}{2}_master_{3}_{4}_float32.fit'\
-                  .format(BASEDIR_name, master_file_dir_name, 
-                  current_dir_name, c_method, chl), overwrite =True, format='fits')
-        ##### fits header update
-        with fits.open('{0}{1}{2}_master_{3}_{4}_float32.fit'\
-                  .format(BASEDIR_name, master_file_dir_name, 
-                  current_dir_name, c_method, chl),
-                  mode='update') as hdul:
-            hdul[0].header.append(('COMMENT', ', '.join(file_list), 'combine file list'))
-            hdul[0].header.append('COMMENT', 
-                                  '{0}'.format(len(file_list)), 
-                                  'combine file number')
-
-
-    except Exception as err :
-        print('{6} ::: {5} with {0}{1}{2}_master_{3}_{4}_float32.fit ...'\
-                  .format(BASEDIR_name, master_file_dir_name, 
-                  current_dir_name, c_method, chl, err, datetime.now()))
-                
-    return 0
+    criteria = (cv2.TERM_CRITERIA_EPS | cv2.TERM_CRITERIA_COUNT,
