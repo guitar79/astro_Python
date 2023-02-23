@@ -43,7 +43,7 @@ if not os.path.exists('{0}'.format(log_dir)):
 # read all files in base directory for processing
 BASEDIR = Path("/mnt/OBS_data") 
 DOINGDIR = Path( BASEDIR/ astro_utilities.CCD_obs_raw_dir)
-
+BASEDIR = Path("/mnt/OBS_data") 
 DOINGDIRs = sorted(Python_utilities.getFullnameListOfallsubDirs(DOINGDIR))
 #print ("DOINGDIRs: ", format(DOINGDIRs))
 print ("len(DOINGDIRs): ", format(len(DOINGDIRs)))
