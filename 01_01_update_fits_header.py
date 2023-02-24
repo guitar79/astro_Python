@@ -51,7 +51,7 @@ checkKEYs = ["OBJECT", "TELESCOP", "OPTIC", "CCDNAME", 'FILTER',
             "GAIN", "EGAIN", "RDNOISE", "FOCALLEN", "PIXSCALE", "CCD-TEMP"
             "XBINNING", "YBINNING", "FLIPSTAT"]
 #%%
-for DOINGDIR in DOINGDIRs[:] :
+for DOINGDIR in DOINGDIRs[:2] :
     DOINGDIR = Path(DOINGDIR)
     #print(f"Starting: {str(fpath.parts[-1])}")
     #save_fpath = fpath/f"summary_{fpath.parts[-1]}.csv"
@@ -168,6 +168,21 @@ for DOINGDIR in DOINGDIRs[:] :
                     hdul[0].header["CCDNAME"] = CCDNAME
                     print(f"The 'CCDNAME' is set {CCDNAME}...")
 
+                    if (not 'XBINNING' in hdul[0].header)\
+                        and (hdul[0].header["CCDNAME"] == "STX-16803") :
+                        if hdul[0].header['NAXIS1'] == 4096 \
+                            or  hdul[0].header['NAXIS2'] == 4096 :
+                            hdul[0].header['XBINNING'] = 1
+                            hdul[0].header['YBINNING'] = 1                     
+                        elif hdul[0].header['NAXIS1'] == 2048 \
+                            or  hdul[0].header['NAXIS2'] == 2048 :
+                            hdul[0].header['XBINNING'] = 2
+                            hdul[0].header['YBINNING'] = 2
+                        elif hdul[0].header['NAXIS1'] == 1024 \
+                            or  hdul[0].header['NAXIS2'] == 1024 :
+                            hdul[0].header['XBINNING'] = 3
+                            hdul[0].header['YBINNING'] = 3
+                            
                     if not "CCD-TEMP" in hdul[0].header :
                         hdul[0].header['CCD-TEMP'] = 'N'
                         print(f"The 'CCD-TEMP' is set {hdul[0].header['CCD-TEMP']}...")
