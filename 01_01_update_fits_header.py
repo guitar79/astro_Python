@@ -160,8 +160,10 @@ for DOINGDIR in DOINGDIRs[:] :
                         or "LIGHT" in hdul[0].header["IMAGETYP"] :
                         hdul[0].header["FILTER"] = filter_name.upper()
                         print(f"The 'FILTER' is set {hdul[0].header['FILTER']}")
-                        hdul[0].header["OPTIC"] = hdul[0].header["TELESCOP"]
-
+                        if not "TELESCOPE" in hdul[0].header:
+                            hdul[0].header["OPTIC"] = optic_name
+                        else :    
+                            hdul[0].header["OPTIC"] = hdul[0].header["TELESCOP"]
                         print(f"The 'OPTIC' is set {hdul[0].header['OPTIC']}")
                         hdul[0].header['FOCALLEN'] = astro_utilities.FOCALLENDIC[hdul[0].header['OPTIC']]
                         print(f"The 'FOCALLEN' is set {hdul[0].header['FOCALLEN']}...")
