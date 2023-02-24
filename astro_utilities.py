@@ -243,10 +243,10 @@ def KevinFitsUpdater(fpath):
             hdul[0].header["OPTIC"] = hdul[0].header["TELESCOP"]
 
             print(f"The 'OPTIC' is set {hdul[0].header['OPTIC']}")
-            hdul[0].header['FOCALLEN'] = astro_utilities.FOCALLENDIC[hdul[0].header['OPTIC']]
+            hdul[0].header['FOCALLEN'] = FOCALLENDIC[hdul[0].header['OPTIC']]
             print(f"The 'FOCALLEN' is set {hdul[0].header['FOCALLEN']}...")
             print(hdul[0].header['OPTIC']+'_'+hdul[0].header['CCDNAME'])
-            hdul[0].header['PIXSCALE'] = astro_utilities.PIXSCALEDIC[hdul[0].header['OPTIC']+'_'+hdul[0].header['CCDNAME']]
+            hdul[0].header['PIXSCALE'] = PIXSCALEDIC[hdul[0].header['OPTIC']+'_'+hdul[0].header['CCDNAME']]
             print(f"The 'PIXSCALE' is set {hdul[0].header['PIXSCALE']}...")
         
         if (not 'XBINNING' in hdul[0].header)\
