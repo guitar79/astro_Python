@@ -142,11 +142,24 @@ def calPixScale (F_length, Opt_acc, Pix_size) :
     return PIXScale
 
 #%%
-def KevinFitsUpdater(fpath):
+#########################################
+#KvinFitsUpdater
+#########################################
+def KevinFitsUpdater(
+    fpath,
     checkKEYs = ["OBJECT", "TELESCOP", "OPTIC", "CCDNAME", 'FILTER',
             "GAIN", "EGAIN", "RDNOISE", "FOCALLEN", "PIXSCALE", "CCD-TEMP",
-            "XBINNING", "YBINNING", "FLIPSTAT"]
-
+            "XBINNING", "YBINNING", "FLIPSTAT"],
+    ):
+    '''
+        Parameters
+        ----------
+        fpath : string
+            The fullname of input file...
+        checkKEYs : dictionary
+            KEY of fits file header for update
+        '''
+    
     fpath = Path(fpath)
 
     foldername_el = fpath.parts[-2].split('_')
