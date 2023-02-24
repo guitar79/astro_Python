@@ -401,7 +401,7 @@ class KevinFitsHeader():
                     self.CCDNAME = 'ST-8300M'
                 elif 'stf-8300' in self.hdul[0].header['INSTRUME'] : 
                     self.CCDNAME = 'STF-8300M'
-                elif '11000' in hdul[0].header['INSTRUME'] : 
+                elif '11000' in self.hdul[0].header['INSTRUME'] : 
                     self.CCDNAME = 'STL-11000M'
                 elif '16803' in self.hdul[0].header['INSTRUME'] : 
                     self.CCDNAME = 'STX-16803'
