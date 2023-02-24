@@ -99,7 +99,7 @@ for DOINGDIR in DOINGDIRs[:] :
                     hdul[0].header["OBJECT"] = object_name.upper()
                     print(f"The 'OBJECT' is set {object_name.upper()}")
                         
-                    try : 
+                    if 'INSTRUME' in hdul[0].header :
                         if 'qsi' in hdul[0].header['INSTRUME'] :     
                             CCDNAME = 'QSI683ws'
                         elif 'st-8300' in hdul[0].header['INSTRUME'] : 
@@ -124,10 +124,8 @@ for DOINGDIR in DOINGDIRs[:] :
                                         or  hdul[0].header['NAXIS1'] == 2004 \
                                         or  hdul[0].header['NAXIS1'] == 1336 :
                                     CCDNAME = 'STL-11000M'
-                        else :
-                            CCDNAME = ccd_name    
-                    except :
-                        CCDNAME = ccd_name
+                    else :
+                        CCDNAME = ccd_name    
                     print("CCDNAME", CCDNAME)
 
                     hdul[0].header["CCDNAME"] = CCDNAME
