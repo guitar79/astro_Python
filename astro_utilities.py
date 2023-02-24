@@ -131,9 +131,6 @@ OptAccDIC = {"x80": 0.8,
             "x73": 0.73, 
             "x75": 0.75} 
 
-checkKEYs = ["OBJECT", "TELESCOP", "OPTIC", "CCDNAME", 'FILTER',
-            "GAIN", "EGAIN", "RDNOISE", "FOCALLEN", "PIXSCALE",
-            "XBINNING", "YBINNING", "FLIPSTAT"]
 #######################################################
 
 def calPixScale (F_length, Opt_acc, Pix_size) :
@@ -146,6 +143,10 @@ def calPixScale (F_length, Opt_acc, Pix_size) :
 
 #%%
 def KevinFitsUpdater(fpath):
+    checkKEYs = ["OBJECT", "TELESCOP", "OPTIC", "CCDNAME", 'FILTER',
+            "GAIN", "EGAIN", "RDNOISE", "FOCALLEN", "PIXSCALE", "CCD-TEMP",
+            "XBINNING", "YBINNING", "FLIPSTAT"]
+
     fpath = Path(fpath)
 
     foldername_el = fpath.parts[-2].split('_')
@@ -177,42 +178,7 @@ def KevinFitsUpdater(fpath):
         #if object_name != hdul[0].header["OBJECT"] : 
         hdul[0].header["OBJECT"] = object_name.upper()
         print(f"The 'OBJECT' is set {object_name.upper()}")
-    
-        if len(hdul[0].header['DATE-OBS']) == 10 \
-            and 'TIME-OBS' in hdul[0].header : 
-            hdul[0].header['DATE-OBS'] += 'T' + hdul[0].header['TIME-OBS']
-            print(f"The 'DATE-OBS' is set {hdul[0].header['DATE-OBS']}")
-
-        if "ze" in hdul[0].header["IMAGETYP"].lower() \
-                or "bi" in hdul[0].header["IMAGETYP"].lower() :
-            hdul[0].header["IMAGETYP"] = "BIAS"
-            print(f"The 'IMAGETYP' is set {hdul[0].header['IMAGETYP']}")
-        elif "da" in hdul[0].header["IMAGETYP"].lower() :
-            hdul[0].header["IMAGETYP"] = "DARK"
-            print(f"The 'IMAGETYP' is set {hdul[0].header['IMAGETYP']}")
-        elif "fl" in hdul[0].header["IMAGETYP"].lower() :
-            hdul[0].header["IMAGETYP"] = "FLAT"
-            print(f"The 'IMAGETYP' is set {hdul[0].header['IMAGETYP']}")
-        elif "da" in hdul[0].header["IMAGETYP"].lower() \
-                or "lig" in hdul[0].header["IMAGETYP"].lower() :
-            hdul[0].header["IMAGETYP"] = "LIGHT"
-            print(f"The 'IMAGETYP' is set {hdul[0].header['IMAGETYP']}")
-        
-        if "BIAS" in hdul[0].header["IMAGETYP"] \
-            or "DARK" in hdul[0].header["IMAGETYP"] :
-            hdul[0].header["FILTER"] = "-"
-            print(f"The 'FILTER' is set {hdul[0].header['FILTER']}")
-            hdul[0].header['OPTIC'] = "-"
-            print(f"The 'OPTIC' is set {hdul[0].header['OPTIC']}")
-
-        if "FLAT" in hdul[0].header["IMAGETYP"] \
-            or "LIGHT" in hdul[0].header["IMAGETYP"] :
-            hdul[0].header["FILTER"] = filter_name.upper()
-            print(f"The 'FILTER' is set {hdul[0].header['FILTER']}")
             
-            hdul[0].header["OPTIC"] = optic_name
-            print(f"The 'OPTIC' is set {hdul[0].header['OPTIC']}")
-
         try : 
             if 'qsi' in hdul[0].header['INSTRUME'] :     
                 CCDNAME = 'QSI683ws'
@@ -247,6 +213,64 @@ def KevinFitsUpdater(fpath):
         hdul[0].header["CCDNAME"] = CCDNAME
         print(f"The 'CCDNAME' is set {CCDNAME}...")
 
+        if len(hdul[0].header['DATE-OBS']) == 10 \
+            and 'TIME-OBS' in hdul[0].header : 
+            hdul[0].header['DATE-OBS'] += 'T' + hdul[0].header['TIME-OBS']
+            print(f"The 'DATE-OBS' is set {hdul[0].header['DATE-OBS']}")
+        if "ze" in hdul[0].header["IMAGETYP"].lower() \
+                or "bi" in hdul[0].header["IMAGETYP"].lower() :
+            hdul[0].header["IMAGETYP"] = "BIAS"
+            print(f"The 'IMAGETYP' is set {hdul[0].header['IMAGETYP']}")
+        elif "da" in hdul[0].header["IMAGETYP"].lower() :
+            hdul[0].header["IMAGETYP"] = "DARK"
+            print(f"The 'IMAGETYP' is set {hdul[0].header['IMAGETYP']}")
+        elif "fl" in hdul[0].header["IMAGETYP"].lower() :
+            hdul[0].header["IMAGETYP"] = "FLAT"
+            print(f"The 'IMAGETYP' is set {hdul[0].header['IMAGETYP']}")
+        elif "da" in hdul[0].header["IMAGETYP"].lower() \
+                or "lig" in hdul[0].header["IMAGETYP"].lower() :
+            hdul[0].header["IMAGETYP"] = "LIGHT"
+            print(f"The 'IMAGETYP' is set {hdul[0].header['IMAGETYP']}")
+        
+        if "BIAS" in hdul[0].header["IMAGETYP"] \
+            or "DARK" in hdul[0].header["IMAGETYP"] :
+            for _KEY in ['FILTER', 'OPTIC', 'FOCALLEN', 'PIXSCALE'] :
+                hdul[0].header[_KEY] = "-"
+                print(f"The '{_KEY}' is set {hdul[0].header[_KEY]}")
+
+        if "FLAT" in hdul[0].header["IMAGETYP"] \
+            or "LIGHT" in hdul[0].header["IMAGETYP"] :
+            hdul[0].header["FILTER"] = filter_name.upper()
+            print(f"The 'FILTER' is set {hdul[0].header['FILTER']}")
+            hdul[0].header["OPTIC"] = hdul[0].header["TELESCOP"]
+
+            print(f"The 'OPTIC' is set {hdul[0].header['OPTIC']}")
+            hdul[0].header['FOCALLEN'] = astro_utilities.FOCALLENDIC[hdul[0].header['OPTIC']]
+            print(f"The 'FOCALLEN' is set {hdul[0].header['FOCALLEN']}...")
+            print(hdul[0].header['OPTIC']+'_'+hdul[0].header['CCDNAME'])
+            hdul[0].header['PIXSCALE'] = astro_utilities.PIXSCALEDIC[hdul[0].header['OPTIC']+'_'+hdul[0].header['CCDNAME']]
+            print(f"The 'PIXSCALE' is set {hdul[0].header['PIXSCALE']}...")
+        
+        if (not 'XBINNING' in hdul[0].header)\
+            and (hdul[0].header["CCDNAME"] == "STX-16803") :
+            if hdul[0].header['NAXIS1'] == 4096 \
+                or  hdul[0].header['NAXIS2'] == 4096 :
+                hdul[0].header['XBINNING'] = 1
+                hdul[0].header['YBINNING'] = 1   
+                print(f"The 'XBINNING', 'YBINNING' are set {hdul[0].header['XBINNING']}, {hdul[0].header['YBINNING']},...")
+        
+            elif hdul[0].header['NAXIS1'] == 2048 \
+                or  hdul[0].header['NAXIS2'] == 2048 :
+                hdul[0].header['XBINNING'] = 2
+                hdul[0].header['YBINNING'] = 2
+                print(f"The 'XBINNING', 'YBINNING' are set {hdul[0].header['XBINNING']}, {hdul[0].header['YBINNING']},...")
+        
+            elif hdul[0].header['NAXIS1'] == 1024 \
+                or  hdul[0].header['NAXIS2'] == 1024 :
+                hdul[0].header['XBINNING'] = 3
+                hdul[0].header['YBINNING'] = 3
+                print(f"The 'XBINNING', 'YBINNING' are set {hdul[0].header['XBINNING']}, {hdul[0].header['YBINNING']},...")
+                
         if not "CCD-TEMP" in hdul[0].header :
             hdul[0].header['CCD-TEMP'] = 'N'
             print(f"The 'CCD-TEMP' is set {hdul[0].header['CCD-TEMP']}...")
@@ -255,15 +279,23 @@ def KevinFitsUpdater(fpath):
             hdul[0].header["EXPOSURE"] = hdul[0].header["EXPTIME"]
             print(f"The 'EXPOSURE' is set {hdul[0].header['EXPTIME']}...")
 
-        hdul[0].header['GAIN'] = GAINDIC[CCDNAME]
+        hdul[0].header['GAIN'] = astro_utilities.GAINDIC[CCDNAME]
         print(f"The 'GAIN' is set {hdul[0].header['GAIN']}...")
-        hdul[0].header['EGAIN'] = GAINDIC[CCDNAME]
+        hdul[0].header['EGAIN'] = astro_utilities.GAINDIC[CCDNAME]
         print(f"The 'EGAIN' is set {hdul[0].header['EGAIN']}...")
-        hdul[0].header['RDNOISE'] = RDNOISEDIC[CCDNAME]
+        hdul[0].header['RDNOISE'] = astro_utilities.RDNOISEDIC[CCDNAME]
         print(f"The 'RDNOISE' is set {hdul[0].header['RDNOISE']}...")
+        
+        hdul[0].header['FLIPSTAT'] = " "
+        print(f"The 'FLIPSTAT' is set {hdul[0].header['FLIPSTAT']}...")
+        
+        for checkKEY in checkKEYs: 
+            print(f"{checkKEY}: ", hdul[0].header[checkKEY])
+
         hdul.flush()  # changes are written back to original.fits
         print('*'*30)
         print(f"The header of {fpath.name} is updated..")
+
     return hdul
 
 #%%
@@ -787,11 +819,46 @@ def print_working_time(cht_start_time):
     working_time = (datetime.now() - cht_start_time) #total days for downloading
     return print('working time ::: %s' % (working_time))
 
-
+#%%
 # =============================================================================
 #     
 # =============================================================================
+fnameKEYs = ["OBJECT", "IMAGETYP", "FILTER", "DATE-OBS", 
+            "EXPOSURE", "OPTIC", "CCDNAME", "CCD-TEMP", "XBINNING"]
+
+def Kevin_new_fname(fpath, ccd_obs_raw_dir):
+    if ccd_obs_raw_dir == None :
+        ccd_obs_raw_dir = CCD_obs_raw_dir
+
+    if ccd_obs_raw_dir == None :
+        ccd_obs_raw_dir = CCD_obs_raw_dir
+         
+    print(f'Starting get_new_filename ...\n{fpath.name}')
+    
+    fpath = Path(fpath)            
+    hdul = fits.open(str(fpath))
+    print("fpath: ", fpath)
+    
+    for fnameKEY in fnameKEYs: 
+        print(f"{fnameKEY}: ", hdul[0].header[fnameKEY])
+
+    try :
+        ccdtemp = str(int(hdul[0].header["CCD-TEMP"]))
+    except : 
+        ccdtemp = "N"
+
+    new_fname = hdul[0].header["OBJECT"]+"_"+hdul[0].header["IMAGETYP"]+"_"+hdul[0].header["FILTER"]+"_"
+    new_fname += hdul[0].header["DATE-OBS"][:19].replace("T","-").replace(":","-")+"_"
+    new_fname += str(int(hdul[0].header["EXPOSURE"]))+"sec_"
+    new_fname += hdul[0].header["OPTIC"]+"_"+hdul[0].header["CCDNAME"]+"_"       
+    new_fname += ccdtemp+"c_"+str(hdul[0].header["XBINNING"])+"bin.fit"
+    #print("new_fname: ", new_fname)
+    hdul.close()
+    return new_fname
 #%%
+# =============================================================================
+#     
+# =============================================================================
 def get_new_filename(fullname, **kargs):
     print('Starting get_new_filename ...\n{0}'.format(fullname))
     from astropy.io import fits

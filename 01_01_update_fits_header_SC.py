@@ -38,7 +38,7 @@ if not os.path.exists('{0}'.format(log_dir)):
 BASEDIR = Path(r"r:\CCD_obs")
 BASEDIR = Path("/mnt/Rdata/CCD_obs") 
 BASEDIR = Path("/mnt/OBS_data") 
-DOINGDIR = Path( BASEDIR/ astro_utilities.CCD_NEW_dir)
+DOINGDIR = Path(BASEDIR/ astro_utilities.CCD_NEW_dir)
 
 DOINGDIRs = sorted(Python_utilities.getFullnameListOfallsubDirs(DOINGDIR))
 #print ("DOINGDIRs: ", format(DOINGDIRs))
@@ -52,10 +52,10 @@ checkKEYs = ["OBJECT", "TELESCOP", "OPTIC", "CCDNAME", 'FILTER',
             "XBINNING", "YBINNING", "FLIPSTAT"]
 #%%
 for DOINGDIR in DOINGDIRs[:] :
-    #fpath = Path(DOINGDIRs[0])
+    #DOINGDIR = Path(DOINGDIRs[0])
     DOINGDIR = Path(DOINGDIR)
-    #print(f"Starting: {str(fpath.parts[-1])}")
-    #save_fpath = fpath/f"summary_{fpath.parts[-1]}.csv"
+    #print(f"Starting: {str(DOINGDIR.parts[-1])}")
+    #save_fpath = DOINGDIR/f"summary_{DOINGDIR.parts[-1]}.csv"
     try: 
         summary = yfu.make_summary(DOINGDIR/"*.fit*",
                     #output = save_fpath,

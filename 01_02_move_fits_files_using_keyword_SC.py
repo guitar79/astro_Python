@@ -69,8 +69,21 @@ for DOINGDIR in DOINGDIRs[:] :
             hdul = fits.open(str(fpath))
             print("fpath: ", fpath)
             
-            new_fname = astro_utilities.Kevin_new_fname(fpath)
-            
+            for fnameKEY in fnameKEYs: 
+                print(f"{fnameKEY}: ", hdul[0].header[fnameKEY])
+
+            try :
+                ccdtemp = str(int(hdul[0].header["CCD-TEMP"]))
+            except : 
+                ccdtemp = "N"
+
+            new_fname = hdul[0].header["OBJECT"]+"_"+hdul[0].header["IMAGETYP"]+"_"+hdul[0].header["FILTER"]+"_"
+            new_fname += hdul[0].header["DATE-OBS"][:19].replace("T","-").replace(":","-")+"_"
+            new_fname += str(int(hdul[0].header["EXPOSURE"]))+"sec_"
+            new_fname += hdul[0].header["OPTIC"]+"_"+hdul[0].header["CCDNAME"]+"_"       
+            new_fname += ccdtemp+"c_"+str(hdul[0].header["XBINNING"])+"bin.fit"
+            #print("new_fname: ", new_fname)
+            hdul.close()
             new_folder = astro_utilities.get_new_foldername_from_filename(new_fname)
             #print("new_folder: ", new_folder)
 
@@ -121,3 +134,5 @@ for i in range(4):
                                         and os.path.isfile(fpath):
                     os.remove("{}".format(fpath))
                     print("{} is removed...".format(fpath)) 
+
+
