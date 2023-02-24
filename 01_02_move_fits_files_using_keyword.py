@@ -51,7 +51,7 @@ fnameKEYs = ["OBJECT", "IMAGETYP", "FILTER", "DATE-OBS",
             "EXPOSURE", "OPTIC", "CCDNAME", "CCD-TEMP", "XBINNING"]
 
 #%%
-for DOINGDIR in DOINGDIRs[:2] : 
+for DOINGDIR in DOINGDIRs[:] : 
     DOINGDIR = Path(DOINGDIR)
     print(f"Starting: {str(DOINGDIR.parts[-1])}")
     

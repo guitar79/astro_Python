@@ -48,10 +48,10 @@ print ("len(DOINGDIRs): ", format(len(DOINGDIRs)))
 #%%
 #######################################################
 checkKEYs = ["OBJECT", "TELESCOP", "OPTIC", "CCDNAME", 'FILTER',
-            "GAIN", "EGAIN", "RDNOISE", "FOCALLEN", "PIXSCALE", "CCD-TEMP"
+            "GAIN", "EGAIN", "RDNOISE", "FOCALLEN", "PIXSCALE", "CCD-TEMP",
             "XBINNING", "YBINNING", "FLIPSTAT"]
 #%%
-for DOINGDIR in DOINGDIRs[:2] :
+for DOINGDIR in DOINGDIRs[:] :
     DOINGDIR = Path(DOINGDIR)
     #print(f"Starting: {str(fpath.parts[-1])}")
     #save_fpath = fpath/f"summary_{fpath.parts[-1]}.csv"
@@ -98,42 +98,7 @@ for DOINGDIR in DOINGDIRs[:2] :
                     #if object_name != hdul[0].header["OBJECT"] : 
                     hdul[0].header["OBJECT"] = object_name.upper()
                     print(f"The 'OBJECT' is set {object_name.upper()}")
-                
-                    if len(hdul[0].header['DATE-OBS']) == 10 \
-                        and 'TIME-OBS' in hdul[0].header : 
-                        hdul[0].header['DATE-OBS'] += 'T' + hdul[0].header['TIME-OBS']
-                        print(f"The 'DATE-OBS' is set {hdul[0].header['DATE-OBS']}")
-
-                    if "ze" in hdul[0].header["IMAGETYP"].lower() \
-                            or "bi" in hdul[0].header["IMAGETYP"].lower() :
-                        hdul[0].header["IMAGETYP"] = "BIAS"
-                        print(f"The 'IMAGETYP' is set {hdul[0].header['IMAGETYP']}")
-                    elif "da" in hdul[0].header["IMAGETYP"].lower() :
-                        hdul[0].header["IMAGETYP"] = "DARK"
-                        print(f"The 'IMAGETYP' is set {hdul[0].header['IMAGETYP']}")
-                    elif "fl" in hdul[0].header["IMAGETYP"].lower() :
-                        hdul[0].header["IMAGETYP"] = "FLAT"
-                        print(f"The 'IMAGETYP' is set {hdul[0].header['IMAGETYP']}")
-                    elif "da" in hdul[0].header["IMAGETYP"].lower() \
-                            or "lig" in hdul[0].header["IMAGETYP"].lower() :
-                        hdul[0].header["IMAGETYP"] = "LIGHT"
-                        print(f"The 'IMAGETYP' is set {hdul[0].header['IMAGETYP']}")
-                    
-                    if "BIAS" in hdul[0].header["IMAGETYP"] \
-                        or "DARK" in hdul[0].header["IMAGETYP"] :
-                        hdul[0].header["FILTER"] = "-"
-                        print(f"The 'FILTER' is set {hdul[0].header['FILTER']}")
-                        hdul[0].header['OPTIC'] = "-"
-                        print(f"The 'OPTIC' is set {hdul[0].header['OPTIC']}")
-
-                    if "FLAT" in hdul[0].header["IMAGETYP"] \
-                        or "LIGHT" in hdul[0].header["IMAGETYP"] :
-                        hdul[0].header["FILTER"] = filter_name.upper()
-                        print(f"The 'FILTER' is set {hdul[0].header['FILTER']}")
                         
-                        hdul[0].header["OPTIC"] = optic_name
-                        print(f"The 'OPTIC' is set {hdul[0].header['OPTIC']}")
-
                     try : 
                         if 'qsi' in hdul[0].header['INSTRUME'] :     
                             CCDNAME = 'QSI683ws'
@@ -168,20 +133,63 @@ for DOINGDIR in DOINGDIRs[:2] :
                     hdul[0].header["CCDNAME"] = CCDNAME
                     print(f"The 'CCDNAME' is set {CCDNAME}...")
 
+                    if len(hdul[0].header['DATE-OBS']) == 10 \
+                        and 'TIME-OBS' in hdul[0].header : 
+                        hdul[0].header['DATE-OBS'] += 'T' + hdul[0].header['TIME-OBS']
+                        print(f"The 'DATE-OBS' is set {hdul[0].header['DATE-OBS']}")
+                    if "ze" in hdul[0].header["IMAGETYP"].lower() \
+                            or "bi" in hdul[0].header["IMAGETYP"].lower() :
+                        hdul[0].header["IMAGETYP"] = "BIAS"
+                        print(f"The 'IMAGETYP' is set {hdul[0].header['IMAGETYP']}")
+                    elif "da" in hdul[0].header["IMAGETYP"].lower() :
+                        hdul[0].header["IMAGETYP"] = "DARK"
+                        print(f"The 'IMAGETYP' is set {hdul[0].header['IMAGETYP']}")
+                    elif "fl" in hdul[0].header["IMAGETYP"].lower() :
+                        hdul[0].header["IMAGETYP"] = "FLAT"
+                        print(f"The 'IMAGETYP' is set {hdul[0].header['IMAGETYP']}")
+                    elif "da" in hdul[0].header["IMAGETYP"].lower() \
+                            or "lig" in hdul[0].header["IMAGETYP"].lower() :
+                        hdul[0].header["IMAGETYP"] = "LIGHT"
+                        print(f"The 'IMAGETYP' is set {hdul[0].header['IMAGETYP']}")
+                    
+                    if "BIAS" in hdul[0].header["IMAGETYP"] \
+                        or "DARK" in hdul[0].header["IMAGETYP"] :
+                        for _KEY in ['FILTER', 'OPTIC', 'FOCALLEN', 'PIXSCALE'] :
+                            hdul[0].header[_KEY] = "-"
+                            print(f"The '{_KEY}' is set {hdul[0].header[_KEY]}")
+
+                    if "FLAT" in hdul[0].header["IMAGETYP"] \
+                        or "LIGHT" in hdul[0].header["IMAGETYP"] :
+                        hdul[0].header["FILTER"] = filter_name.upper()
+                        print(f"The 'FILTER' is set {hdul[0].header['FILTER']}")
+                        hdul[0].header["OPTIC"] = hdul[0].header["TELESCOP"]
+
+                        print(f"The 'OPTIC' is set {hdul[0].header['OPTIC']}")
+                        hdul[0].header['FOCALLEN'] = astro_utilities.FOCALLENDIC[hdul[0].header['OPTIC']]
+                        print(f"The 'FOCALLEN' is set {hdul[0].header['FOCALLEN']}...")
+                        print(hdul[0].header['OPTIC']+'_'+hdul[0].header['CCDNAME'])
+                        hdul[0].header['PIXSCALE'] = astro_utilities.PIXSCALEDIC[hdul[0].header['OPTIC']+'_'+hdul[0].header['CCDNAME']]
+                        print(f"The 'PIXSCALE' is set {hdul[0].header['PIXSCALE']}...")
+                    
                     if (not 'XBINNING' in hdul[0].header)\
                         and (hdul[0].header["CCDNAME"] == "STX-16803") :
                         if hdul[0].header['NAXIS1'] == 4096 \
                             or  hdul[0].header['NAXIS2'] == 4096 :
                             hdul[0].header['XBINNING'] = 1
-                            hdul[0].header['YBINNING'] = 1                     
+                            hdul[0].header['YBINNING'] = 1   
+                            print(f"The 'XBINNING', 'YBINNING' are set {hdul[0].header['XBINNING']}, {hdul[0].header['YBINNING']},...")
+                  
                         elif hdul[0].header['NAXIS1'] == 2048 \
                             or  hdul[0].header['NAXIS2'] == 2048 :
                             hdul[0].header['XBINNING'] = 2
                             hdul[0].header['YBINNING'] = 2
+                            print(f"The 'XBINNING', 'YBINNING' are set {hdul[0].header['XBINNING']}, {hdul[0].header['YBINNING']},...")
+                  
                         elif hdul[0].header['NAXIS1'] == 1024 \
                             or  hdul[0].header['NAXIS2'] == 1024 :
                             hdul[0].header['XBINNING'] = 3
                             hdul[0].header['YBINNING'] = 3
+                            print(f"The 'XBINNING', 'YBINNING' are set {hdul[0].header['XBINNING']}, {hdul[0].header['YBINNING']},...")
                             
                     if not "CCD-TEMP" in hdul[0].header :
                         hdul[0].header['CCD-TEMP'] = 'N'
@@ -197,6 +205,13 @@ for DOINGDIR in DOINGDIRs[:2] :
                     print(f"The 'EGAIN' is set {hdul[0].header['EGAIN']}...")
                     hdul[0].header['RDNOISE'] = astro_utilities.RDNOISEDIC[CCDNAME]
                     print(f"The 'RDNOISE' is set {hdul[0].header['RDNOISE']}...")
+                    
+                    hdul[0].header['FLIPSTAT'] = " "
+                    print(f"The 'FLIPSTAT' is set {hdul[0].header['FLIPSTAT']}...")
+                    
+                    for checkKEY in checkKEYs: 
+                        print(f"{checkKEY}: ", hdul[0].header[checkKEY])
+
                     hdul.flush()  # changes are written back to original.fits
                     print('*'*30)
                     print(f"The header of {fpath.name} is updated..")
@@ -207,9 +222,3 @@ for DOINGDIR in DOINGDIRs[:2] :
 
     except:
         pass
-
-        
-
-
-
-    
