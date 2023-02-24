@@ -246,7 +246,8 @@ def KevinFitsUpdater(fpath):
             hdul[0].header['FOCALLEN'] = FOCALLENDIC[hdul[0].header['OPTIC']]
             print(f"The 'FOCALLEN' is set {hdul[0].header['FOCALLEN']}...")
             print(hdul[0].header['OPTIC']+'_'+hdul[0].header['CCDNAME'])
-            hdul[0].header['PIXSCALE'] = PIXSCALEDIC[hdul[0].header['OPTIC']+'_'+hdul[0].header['CCDNAME']]
+            hdul[0].header['PIXSCALE'] = PIXSCALEDIC[hdul[0].header['OPTIC']\
+                                                     +'_'+hdul[0].header['CCDNAME']]
             print(f"The 'PIXSCALE' is set {hdul[0].header['PIXSCALE']}...")
         
         if (not 'XBINNING' in hdul[0].header)\
@@ -255,19 +256,22 @@ def KevinFitsUpdater(fpath):
                 or  hdul[0].header['NAXIS2'] == 4096 :
                 hdul[0].header['XBINNING'] = 1
                 hdul[0].header['YBINNING'] = 1   
-                print(f"The 'XBINNING', 'YBINNING' are set {hdul[0].header['XBINNING']}, {hdul[0].header['YBINNING']},...")
+                print(f"The 'XBINNING', 'YBINNING' are set {hdul[0].header['XBINNING']},\
+                       {hdul[0].header['YBINNING']},...")
         
             elif hdul[0].header['NAXIS1'] == 2048 \
                 or  hdul[0].header['NAXIS2'] == 2048 :
                 hdul[0].header['XBINNING'] = 2
                 hdul[0].header['YBINNING'] = 2
-                print(f"The 'XBINNING', 'YBINNING' are set {hdul[0].header['XBINNING']}, {hdul[0].header['YBINNING']},...")
+                print(f"The 'XBINNING', 'YBINNING' are set {hdul[0].header['XBINNING']}, \
+                      {hdul[0].header['YBINNING']},...")
         
             elif hdul[0].header['NAXIS1'] == 1024 \
                 or  hdul[0].header['NAXIS2'] == 1024 :
                 hdul[0].header['XBINNING'] = 3
                 hdul[0].header['YBINNING'] = 3
-                print(f"The 'XBINNING', 'YBINNING' are set {hdul[0].header['XBINNING']}, {hdul[0].header['YBINNING']},...")
+                print(f"The 'XBINNING', 'YBINNING' are set {hdul[0].header['XBINNING']}, \
+                       {hdul[0].header['YBINNING']},...")
                 
         if not "CCD-TEMP" in hdul[0].header :
             hdul[0].header['CCD-TEMP'] = 'N'
@@ -277,11 +281,11 @@ def KevinFitsUpdater(fpath):
             hdul[0].header["EXPOSURE"] = hdul[0].header["EXPTIME"]
             print(f"The 'EXPOSURE' is set {hdul[0].header['EXPTIME']}...")
 
-        hdul[0].header['GAIN'] = astro_utilities.GAINDIC[CCDNAME]
+        hdul[0].header['GAIN'] = GAINDIC[CCDNAME]
         print(f"The 'GAIN' is set {hdul[0].header['GAIN']}...")
-        hdul[0].header['EGAIN'] = astro_utilities.GAINDIC[CCDNAME]
+        hdul[0].header['EGAIN'] = GAINDIC[CCDNAME]
         print(f"The 'EGAIN' is set {hdul[0].header['EGAIN']}...")
-        hdul[0].header['RDNOISE'] = astro_utilities.RDNOISEDIC[CCDNAME]
+        hdul[0].header['RDNOISE'] = RDNOISEDIC[CCDNAME]
         print(f"The 'RDNOISE' is set {hdul[0].header['RDNOISE']}...")
         
         hdul[0].header['FLIPSTAT'] = " "
@@ -855,7 +859,7 @@ def Kevin_new_fname(fpath, ccd_obs_raw_dir):
     return new_fname
 #%%
 # =============================================================================
-#     
+# get new filename from fits    
 # =============================================================================
 def get_new_filename(fullname, **kargs):
     print('Starting get_new_filename ...\n{0}'.format(fullname))
