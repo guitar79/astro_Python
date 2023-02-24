@@ -74,7 +74,8 @@ for DOINGDIR in DOINGDIRs :
 
     try:
         # light frame  만 선택
-        df_light = summary[summary["IMAGETYP"] == "LIGHT"]
+        #df_light = summary[summary["IMAGETYP"] == "LIGHT"]
+        df_light = summary
         #print ("df_light: {}".format(df_light))
         #print ("len(df_light): {}".format(len(df_light)))
 
@@ -99,4 +100,3 @@ for DOINGDIR in DOINGDIRs :
     except Exception as err :
         print("X"*60)
         print('{0}'.format(err))
-
