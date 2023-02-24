@@ -48,11 +48,10 @@ print ("len(DOINGDIRs): ", format(len(DOINGDIRs)))
 #%%
 #######################################################
 checkKEYs = ["OBJECT", "TELESCOP", "OPTIC", "CCDNAME", 'FILTER',
-            "GAIN", "EGAIN", "RDNOISE", "FOCALLEN", "PIXSCALE",
+            "GAIN", "EGAIN", "RDNOISE", "FOCALLEN", "PIXSCALE", "CCD-TEMP"
             "XBINNING", "YBINNING", "FLIPSTAT"]
 #%%
 for DOINGDIR in DOINGDIRs[:] :
-    #fpath = Path(DOINGDIRs[0])
     DOINGDIR = Path(DOINGDIR)
     #print(f"Starting: {str(fpath.parts[-1])}")
     #save_fpath = fpath/f"summary_{fpath.parts[-1]}.csv"

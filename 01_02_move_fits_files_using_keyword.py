@@ -47,48 +47,40 @@ DOINGDIRs = sorted(Python_utilities.getFullnameListOfallsubDirs(DOINGDIR))
 #print ("DOINGDIRs: ", format(DOINGDIRs))
 print ("len(DOINGDIRs): ", format(len(DOINGDIRs)))
 
-checkKEYs = ["OBJECT", "IMAGETYP", "FILTER", "DATE-OBS", 
+fnameKEYs = ["OBJECT", "IMAGETYP", "FILTER", "DATE-OBS", 
             "EXPOSURE", "OPTIC", "CCDNAME", "CCD-TEMP", "XBINNING"]
 
 #%%
-for DOINGDIR in DOINGDIRs :
-    #fpath = Path(DOINGDIRs[0])
+for DOINGDIR in DOINGDIRs[:2] : 
     DOINGDIR = Path(DOINGDIR)
     print(f"Starting: {str(DOINGDIR.parts[-1])}")
-    #save_fpath = fpath/f"summary_{fpath.parts[-1]}.csv"
-
+    
     try: 
         summary = yfu.make_summary(DOINGDIR/"*.fit*",
                     #output = save_fpath,
                     verbose = True
                     )
-        print("summary", summary)
+        #print("summary", summary)
         print("len(summary)", len(summary))
 
         for _, row in summary.iterrows():
-            # 파일명 출력
             #print (row["file"])
-            fpath = Path(row["file"])
-            
+            fpath = Path(row["file"])            
             hdul = fits.open(str(fpath))
-            print(fpath)
-            for checkKEY in checkKEYs: 
-                print( f"{checkKEY}: ", hdul[0].header[checkKEY])
-
-            print("fpath", fpath)
-
-            hdul[0].header["IMAGETYP"]
+            print("fpath: ", fpath)
+            
+            for fnameKEY in fnameKEYs: 
+                print(f"{fnameKEY}: ", hdul[0].header[fnameKEY])
 
             try :
                 ccdtemp = str(int(hdul[0].header["CCD-TEMP"]))
             except : 
                 ccdtemp = "N"
-                
+
             new_fname = hdul[0].header["OBJECT"]+"_"+hdul[0].header["IMAGETYP"]+"_"+hdul[0].header["FILTER"]+"_"
             new_fname += hdul[0].header["DATE-OBS"][:19].replace("T","-").replace(":","-")+"_"
             new_fname += str(int(hdul[0].header["EXPOSURE"]))+"sec_"
-            new_fname += hdul[0].header["OPTIC"]+"_"+hdul[0].header["CCDNAME"]+"_"
-            
+            new_fname += hdul[0].header["OPTIC"]+"_"+hdul[0].header["CCDNAME"]+"_"       
             new_fname += ccdtemp+"c_"+str(hdul[0].header["XBINNING"])+"bin.fit"
             #print("new_fname: ", new_fname)
             hdul.close()
@@ -118,7 +110,6 @@ for DOINGDIR in DOINGDIRs :
 #############################################################################
 #Check and delete empty folder....
 #############################################################################
-exts = [".csv"]
 for i in range(4):
     DOINGDIR = Path( BASEDIR/ astro_utilities.CCD_NEW_dir)           
     DOINGDIRs = sorted(Python_utilities.getFullnameListOfallsubDirs(DOINGDIR))
