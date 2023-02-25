@@ -53,7 +53,7 @@ fnameKEYs = ["OBJECT", "IMAGETYP", "FILTER", "DATE-OBS",
 #%%
 for DOINGDIR in DOINGDIRs[:] : 
     DOINGDIR = Path(DOINGDIR)
-    print("DOINGDIR", DOINGDIR)
+    print("DOINGDIR: ", DOINGDIR)
     fits_in_dir = sorted(list(DOINGDIR.glob('*.fit*')))
     #print("fits_in_dir", fits_in_dir)
     print("len(fits_in_dir)", len(fits_in_dir))
