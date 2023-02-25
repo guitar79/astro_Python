@@ -52,28 +52,38 @@ checkKEYs = ["OBJECT", "TELESCOP", "OPTIC", "CCDNAME", 'FILTER',
             "XBINNING", "YBINNING", "FLIPSTAT"]
 #%%
 for DOINGDIR in DOINGDIRs[:] :
-    #DOINGDIR = Path(DOINGDIRs[0])
     DOINGDIR = Path(DOINGDIR)
-    #print(f"Starting: {str(DOINGDIR.parts[-1])}")
-    #save_fpath = DOINGDIR/f"summary_{DOINGDIR.parts[-1]}.csv"
-    try: 
-        summary = yfu.make_summary(DOINGDIR/"*.fit*",
-                    #output = save_fpath,
-                    verbose = False
-                    )
-        print("summary", summary)
-        print("len(summary)", len(summary))
+    print("DOINGDIR", DOINGDIR)
+    fits_in_dir = sorted(list(DOINGDIR.glob('*.fit*')))
+    #print("fits_in_dir", fits_in_dir)
+    print("len(fits_in_dir)", len(fits_in_dir))
 
-        for _, row in summary.iterrows():
-            # 파일명 출력
-            print (row["file"])
-            try:
-                hdul = astro_utilities.KevinFitsUpdater(row['file'])
-                print("hdul: ", hdul)
-
-            except Exception as err :
-                print("X"*60)
-                print(err)
-
-    except:
+    if len(fits_in_dir) == 0 :
+        print(f"There is no fits fils in {DOINGDIR}")
         pass
+    else : 
+        try:
+            print(f"Starting: {str(DOINGDIR.parts[-1])}")
+            summary = None 
+            summary = yfu.make_summary(DOINGDIR/"*.fit*",
+                        #output = save_fpath,
+                        verbose = False
+                        )
+            print("summary: ", summary)
+            print("len(summary)", len(summary))
+
+            for _, row in summary.iterrows():
+                # 파일명 출력
+                print (row["file"])
+                try:
+                    hdul = astro_utilities.KevinFitsUpdater(row['file'])
+                    print("hdul: ", hdul)
+
+                except Exception as err :
+                    print("X"*40)
+                    print(err)
+
+        except Exception as err:
+            print("X"*60)
+            print(err)
+            pass
