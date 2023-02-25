@@ -60,9 +60,6 @@ alignment_dir = 'alignment_Python/'
 #######################################################
 # OBS instruments information 
 #######################################################
-gain = 0
-rdnoise = 0
-binning = 1
 
 GAINDIC = {"STF-8300M": 0.37, 
         "STX-16803": 1.27, 
@@ -79,7 +76,6 @@ PIXSIZEEDIC = {"STF-8300M": 5.4,
             "STL-11000M": 9.0, 
             "QSI683ws": 5.4 } 
 
-
 PIXSCALEDIC = {"FSQ106ED_STF-8300M": 2.1, 
             "FSQ106ED-x72_STF-8300M": 2.1/0.72, 
             "FSQ106ED-x73_STF-8300M": 2.1/0.73, 
@@ -90,7 +86,23 @@ PIXSCALEDIC = {"FSQ106ED_STF-8300M": 2.1,
             "FSQ106ED-x73_STL-11000M": 3.5/0.73, 
             "FSQ106ED_QSI683ws": 2.1,
             "FSQ106ED-x72_QSI683ws": 2.1/0.72,
-            "FSQ106ED-x73_QSI683ws": 2.1/0.73
+            "FSQ106ED-x73_QSI683ws": 2.1/0.73,
+            "GSON300_QSI683ws": 0.93,
+            "GSON300_STF-8300M": 0.93,
+            "SVX080T_QSI683ws": 2.32,
+            "SVX080T-x80_QSI683ws": 2.32*0.8,
+            "TEC140_STL-11000M":1.89,
+            "TEC140-x75_STL-11000M":1.89*0.75,
+            "TEC140_STL-11000M":1.89,
+            "TEC140-x75_STL-11000M":1.89*0.75,
+            "TEC140_STL-11000M":1.89,
+            "TEC140-x75_STL-11000M":1.89*0.75,
+            "TMB130ss_STL-11000M":2.04,
+            "TEC130ss-x75_STL-11000M":2.04*0.75,
+            "TMB130ss_STL-11000M":2.04,
+            "TEC130ss-x75_STL-11000M":2.04*0.75,
+            "TMB130ss_STL-11000M":2.04,
+            "TEC130ss-x75_STL-11000M":2.04*0.75
              } 
 
 FOCALLENDIC = {"TMB130ss": 910, 
@@ -102,28 +114,51 @@ FOCALLENDIC = {"TMB130ss": 910,
             "SVX080T-x80": 480*0.8, 
             "FSQ106ED": 530, 
             "FSQ106ED-x72": 530*0.72,
-            "FSQ106ED-x73": 530*0.73} 
+            "FSQ106ED-x73": 530*0.73,
+            "TEC140":140*7,
+            "TEC140-x75":140*7*0.75} 
 
 #CCDNAME, PIXSIZE, GAIN, RENOISE    
-CCDDIC = {"STF-8300M": [5.4, 0.37, 9.3], 
-        "QSI683ws": [5.4, 0.13, 8.0],
-        "STL-11000M": [9.0, 0.8, 9.6],
-        "STX-16803": [9.0, 1.27, 9.0]}
+CCDDIC = {"STF-8300M": {"PIXSIZE":5.4, 
+                        "GAIN":0.37,
+                        "RDNOISE":9.3}, 
+        "QSI683ws": {"PIXSIZE":5.4, 
+                        "GAIN":0.13,
+                        "RDNOISE":8.0},
+        "STL-11000M": {"PIXSIZE":9.0, 
+                        "GAIN":0.8,
+                        "RDNOISE":9.6},
+        "STX-16803": {"PIXSIZE":9.0, 
+                        "GAIN":1.27,
+                        "RDNOISE":9.0}
+                        }
         
-# OPTICDIC = {"TMB130ss": [910], 
-#             "RiLA600": [3000], 
-#             "GSON300": [1200], 
-#             "FS-60CB": [355], 
-#             "SVX080T": [480], 
-#             "FSQ106ED": [530]} 
 
-#OPTICNAME, Focal_length, Aperature
-OPTICDIC = {"TMB130ss": [910, 4], 
-            "RiLA600": [3000, 5], 
-            "GSON300": [1200, 4], 
-            "FS60CB": [355, 355/60], 
-            "SVX080T": [480, 6], 
-            "FSQ106ED": [530, 5]}
+OPTICDIC = {"TMB130ss": {"APATURE" : 130, 
+                         "FOCALLEN" : 910},
+            "TMB130ss-x75": {"APATURE" : 130, 
+                         "FOCALLEN" : 910*0.75}, 
+            "RiLA600": {"APATURE" : 600, 
+                        "FOCALLEN" : 3000}, 
+            "GSON300": {"APATURE" : 300, 
+                        "FOCALLEN" : 1200}, 
+            "FS60CB": {"APATURE" : 60, 
+                       "FOCALLEN" : 355}, 
+            "SVX080T": {"APATURE": 80,
+                        "FOCALLEN": 480},
+            "SVX080T-x80": {"APATURE":80,
+                        "FOCALLEN": 480*0.8},
+            "FSQ106ED": {"APATURE": 106,
+                         "FOCALLEN": 530},
+            "FSQ106ED-x73": {"APATURE": 106,
+                         "FOCALLEN": 530*0.73},
+            "FSQ106ED-x72": {"APATURE": 106,
+                         "FOCALLEN": 530*0.72},
+            "TEC140": {"APATURE": 140,
+                       "FOCALLEN": 980},
+            "TEC140-x75": {"APATURE": 140,
+                       "FOCALLEN": 980*0.75}
+                       }
 
 #Optic Acc name
 OptAccDIC = {"x80": 0.8, 
@@ -133,12 +168,27 @@ OptAccDIC = {"x80": 0.8,
 
 #######################################################
 
-def calPixScale (F_length, Opt_acc, Pix_size) :
-    # Pixel Size   /   Telescope Focal Length   )   X 206.265  
-    # Pixel Size : um, 
-    # Telescope Focal Length: mm
-    # PixScale: arcsec / pixel
-    PIXScale = Pix_size / (F_length * Opt_acc) *  206.265
+def calPixScale (
+    F_length, 
+    #Opt_acc, 
+    Pix_size) :
+    '''
+        Parameters
+        ----------
+        F_length : float or int
+            Focal Length of Telescope with out accesery (mm)
+        
+        #Opt_acc : float
+        #    magnification of optical accesery (no unit)
+
+        Pix_Size : float
+            pixel size of detector (um), 
+    
+        Pixel scale : Pix_Size  /   Telescope Focal Length   )   X 206.265  
+            (arcsec / pixel)        
+    '''
+
+    PIXScale = Pix_size / (F_length ) *  206.265
     return PIXScale
 
 #%%
@@ -148,7 +198,7 @@ def calPixScale (F_length, Opt_acc, Pix_size) :
 def KevinFitsUpdater(
     fpath,
     checkKEYs = ["OBJECT", "TELESCOP", "OPTIC", "CCDNAME", 'FILTER',
-            "GAIN", "EGAIN", "RDNOISE", "FOCALLEN", "PIXSCALE", "CCD-TEMP",
+            "GAIN", "EGAIN", "RDNOISE", "FOCALLEN", "FOCRATIO", "PIXSCALE", "CCD-TEMP",
             "XBINNING", "YBINNING", "FLIPSTAT"],
     ):
     '''
@@ -158,7 +208,7 @@ def KevinFitsUpdater(
             The fullname of input file...
         checkKEYs : dictionary
             KEY of fits file header for update
-        '''
+    '''
     
     fpath = Path(fpath)
 
@@ -217,12 +267,14 @@ def KevinFitsUpdater(
                             or  hdul[0].header['NAXIS1'] == 2004 \
                             or  hdul[0].header['NAXIS1'] == 1336 :
                         CCDNAME = 'STL-11000M'
+            else :
+                CCDNAME = ccd_name
         else :
             CCDNAME = ccd_name    
         print("CCDNAME", CCDNAME)
 
         hdul[0].header["CCDNAME"] = CCDNAME
-        print(f"The 'CCDNAME' is set {CCDNAME}...")
+        print(f"The 'CCDNAME' is set {hdul[0].header['CCDNAME']}...")
 
         if len(hdul[0].header['DATE-OBS']) == 10 \
             and 'TIME-OBS' in hdul[0].header : 
@@ -245,7 +297,7 @@ def KevinFitsUpdater(
         
         if "BIAS" in hdul[0].header["IMAGETYP"] \
             or "DARK" in hdul[0].header["IMAGETYP"] :
-            for _KEY in ['FILTER', 'OPTIC', 'FOCALLEN', 'PIXSCALE'] :
+            for _KEY in ['FILTER', 'OPTIC', 'FOCALLEN', 'FOCRATIO', 'PIXSCALE'] :
                 hdul[0].header[_KEY] = "-"
                 print(f"The '{_KEY}' is set {hdul[0].header[_KEY]}")
 
@@ -253,16 +305,20 @@ def KevinFitsUpdater(
             or "LIGHT" in hdul[0].header["IMAGETYP"] :
             hdul[0].header["FILTER"] = filter_name.upper()
             print(f"The 'FILTER' is set {hdul[0].header['FILTER']}")
-            if not "TELESCOPE" in hdul[0].header:
-                hdul[0].header["OPTIC"] = optic_name
-            else :    
-                hdul[0].header["OPTIC"] = hdul[0].header["TELESCOP"]
+            hdul[0].header["OPTIC"] = optic_name
             print(f"The 'OPTIC' is set {hdul[0].header['OPTIC']}")
-            hdul[0].header['FOCALLEN'] = FOCALLENDIC[hdul[0].header['OPTIC']]
+            #hdul[0].header['FOCALLEN'] = FOCALLENDIC[hdul[0].header['OPTIC']]
+            hdul[0].header['FOCALLEN'] = OPTICDIC[hdul[0].header['OPTIC']]["FOCALLEN"]
             print(f"The 'FOCALLEN' is set {hdul[0].header['FOCALLEN']}...")
+            hdul[0].header['FOCRATIO'] = OPTICDIC[hdul[0].header['OPTIC']]["FOCALLEN"]/OPTICDIC[hdul[0].header['OPTIC']]["APATURE"]
+            print(f"The 'FOCRATIO' is set {hdul[0].header['FOCRATIO']}...")
+        
             print(hdul[0].header['OPTIC']+'_'+hdul[0].header['CCDNAME'])
-            hdul[0].header['PIXSCALE'] = PIXSCALEDIC[hdul[0].header['OPTIC']\
-                                                     +'_'+hdul[0].header['CCDNAME']]
+            # hdul[0].header['PIXSCALE'] = PIXSCALEDIC[hdul[0].header['OPTIC']\
+            #                                          +'_'+hdul[0].header['CCDNAME']]
+            #print(OPTICDIC['OPTIC']['FOCALLEN'], CCDDIC['CCDNAME']['PIXSIZE'])
+            hdul[0].header['PIXSCALE'] = calPixScale(OPTICDIC[hdul[0].header['OPTIC']]['FOCALLEN'],
+                                            CCDDIC[hdul[0].header['CCDNAME']]['PIXSIZE'])
             print(f"The 'PIXSCALE' is set {hdul[0].header['PIXSCALE']}...")
         
         if (not 'XBINNING' in hdul[0].header)\
@@ -271,23 +327,21 @@ def KevinFitsUpdater(
                 or  hdul[0].header['NAXIS2'] == 4096 :
                 hdul[0].header['XBINNING'] = 1
                 hdul[0].header['YBINNING'] = 1   
-                print(f"The 'XBINNING', 'YBINNING' are set {hdul[0].header['XBINNING']},\
-                       {hdul[0].header['YBINNING']},...")
         
             elif hdul[0].header['NAXIS1'] == 2048 \
                 or  hdul[0].header['NAXIS2'] == 2048 :
                 hdul[0].header['XBINNING'] = 2
                 hdul[0].header['YBINNING'] = 2
-                print(f"The 'XBINNING', 'YBINNING' are set {hdul[0].header['XBINNING']}, \
-                      {hdul[0].header['YBINNING']},...")
         
             elif hdul[0].header['NAXIS1'] == 1024 \
                 or  hdul[0].header['NAXIS2'] == 1024 :
                 hdul[0].header['XBINNING'] = 3
                 hdul[0].header['YBINNING'] = 3
-                print(f"The 'XBINNING', 'YBINNING' are set {hdul[0].header['XBINNING']}, \
-                       {hdul[0].header['YBINNING']},...")
-                
+        hdul[0].header['XBINNING'] = int(hdul[0].header['XBINNING'])
+        hdul[0].header['YBINNING'] = int(hdul[0].header['YBINNING'])
+        print(f"The 'XBINNING', 'YBINNING' are set {hdul[0].header['XBINNING']}, \
+                {hdul[0].header['YBINNING']},...")
+            
         if not "CCD-TEMP" in hdul[0].header :
             hdul[0].header['CCD-TEMP'] = 'N'
             print(f"The 'CCD-TEMP' is set {hdul[0].header['CCD-TEMP']}...")
@@ -296,11 +350,14 @@ def KevinFitsUpdater(
             hdul[0].header["EXPOSURE"] = hdul[0].header["EXPTIME"]
             print(f"The 'EXPOSURE' is set {hdul[0].header['EXPTIME']}...")
 
-        hdul[0].header['GAIN'] = GAINDIC[CCDNAME]
+        #hdul[0].header['GAIN'] = GAINDIC[CCDNAME]
+        hdul[0].header['GAIN'] = CCDDIC[hdul[0].header['CCDNAME']]['GAIN']
         print(f"The 'GAIN' is set {hdul[0].header['GAIN']}...")
-        hdul[0].header['EGAIN'] = GAINDIC[CCDNAME]
+        #hdul[0].header['EGAIN'] = GAINDIC[CCDNAME]
+        hdul[0].header['EGAIN'] = CCDDIC[hdul[0].header['CCDNAME']]['GAIN']
         print(f"The 'EGAIN' is set {hdul[0].header['EGAIN']}...")
-        hdul[0].header['RDNOISE'] = RDNOISEDIC[CCDNAME]
+        #hdul[0].header['RDNOISE'] = RDNOISEDIC[CCDNAME]
+        hdul[0].header['RDNOISE'] = CCDDIC[hdul[0].header['CCDNAME']]['RDNOISE']
         print(f"The 'RDNOISE' is set {hdul[0].header['RDNOISE']}...")
         
         hdul[0].header['FLIPSTAT'] = " "
@@ -1107,7 +1164,11 @@ def get_new_foldername_from_filename(filename):
     filename_el = filename[:-4].split("_")
     #print("filename_el: ", filename_el)
     timez = 9
-    obs_UT = datetime.strptime(filename_el[3], '%Y-%m-%d-%H-%M-%S')
+
+    if int(filename_el[3][17:19])>=60 :
+        obs_UT = datetime.strptime("{}59".format(filename_el[3][:17]), '%Y-%m-%d-%H-%M-%S')
+    else:
+         obs_UT = datetime.strptime(filename_el[3], '%Y-%m-%d-%H-%M-%S')
     obs_LST = obs_UT + timedelta(hours = timez)
     if obs_LST.hour < 12 :
         obs_LST = obs_LST - timedelta(days = 1)

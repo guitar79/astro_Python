@@ -157,7 +157,7 @@ def getFullnameListOfallsubDirs(dirName):
 # =============================================================================
 # getFullnameListOfsubDir
 # =============================================================================
-def getFullnameListOfsubDir(dirName):
+def getFullnameListOfsubDirs(dirName):
     ##############################################3
     import os
     allFiles = list()
@@ -167,3 +167,11 @@ def getFullnameListOfsubDir(dirName):
     allFiles = [w+"/" for w in allFiles]
     return allFiles
 # %%
+def getListOfFullnameInDir(dirName):
+    ##############################################3
+    import os
+    allFiles = list()
+    for it in os.scandir(dirName):
+        allFiles.append(it.path)
+    #allFiles = [w+"/" for w in allFiles]
+    return allFiles

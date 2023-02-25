@@ -19,10 +19,8 @@ from astropy.io import fits
 from ccdproc import combine, ccd_process, CCDData
 
 import ysfitsutilpy as yfu
-import ysphotutilpy as ypu
+#import ysphotutilpy as ypu
 import ysvisutilpy as yvu
-
-from snuo1mpy import Preprocessor
 
 import astro_utilities
 import Python_utilities
@@ -42,8 +40,10 @@ if not os.path.exists('{0}'.format(log_dir)):
 #######################################################
 # read all files in base directory for processing
 BASEDIR = Path("/mnt/OBS_data") 
-DOINGDIR = Path( BASEDIR/ astro_utilities.CCD_obs_raw_dir)
-BASEDIR = Path("/mnt/OBS_data") 
+BASEDIR = Path("/mnt/Rdata/CCD_obs") 
+#BASEDIR = Path("/mnt/OBS_data") 
+#DOINGDIR = Path( BASEDIR/ astro_utilities.CCD_obs_raw_dir)
+DOINGDIR = Path( BASEDIR/ astro_utilities.CCD_NEW_dir)
 DOINGDIRs = sorted(Python_utilities.getFullnameListOfallsubDirs(DOINGDIR))
 #print ("DOINGDIRs: ", format(DOINGDIRs))
 print ("len(DOINGDIRs): ", format(len(DOINGDIRs)))
@@ -54,30 +54,26 @@ for DOINGDIR in DOINGDIRs :
     print ("Starting...\n{}".format(DOINGDIR))
 
     DOINGDIR = Path(DOINGDIR)
-    
-    RESULTDIR = DOINGDIR / astro_utilities.DAOfinder_result_dir
-    SOLVEDDIR = DOINGDIR / astro_utilities.solved_dir
-    MASTERDIR = DOINGDIR / astro_utilities.master_dir
-    REDUCEDDIR = DOINGDIR / astro_utilities.reduced_dir
-    MASTERDIR = DOINGDIR / astro_utilities.master_dir
 
-    #try : 
     #파일 목록을 DataFrame으로 만들어서 이용하자
-    #summary = yfu.make_summary(REDUCEDDIR / "*.fit*")
+    summary = None 
     summary = yfu.make_summary(DOINGDIR / "*.fit*")
                         #keywords = ["DATE-OBS", "FILTER", "OBJECT", "IMAGETYP"],  # header keywords; actually it is case-insensitive
                         #fname_option = 'name',  # 'file' column will contain only the name of the file (not full path)
                         #output = "{}summary.csv".format(DOINGDIR),
                         #sort_by = "DATE-OBS"  # 'file' column will be sorted based on "DATE-OBS" value in the header
                         #)
-    print("summary:\n {}".format(summary))
-
-    try:
+    print("summary: ", summary)
+    print("type(summary): ", type(summary))
+    if summary == None :
+        print(f"There is no fits fils in {DOINGDIR}")
+        pass
+    else : 
         # light frame  만 선택
         #df_light = summary[summary["IMAGETYP"] == "LIGHT"]
         df_light = summary
         #print ("df_light: {}".format(df_light))
-        #print ("len(df_light): {}".format(len(df_light)))
+        print ("len(df_light): {}".format(len(df_light)))
 
         for _, row in df_light.iterrows():
             # 파일명 출력
@@ -97,6 +93,6 @@ for DOINGDIR in DOINGDIRs :
                 #os.rename(f"{str(new_fpath)}", f"{str(fpath)}")
                 shutil.move(f"{str(new_fpath)}", f"{str(fpath)}")
                 
-    except Exception as err :
-        print("X"*60)
-        print('{0}'.format(err))
+    # except Exception as err :
+    #     print("X"*60)
+    #     print('{0}'.format(err))

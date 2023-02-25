@@ -40,7 +40,7 @@ if not os.path.exists('{0}'.format(log_dir)):
 # read all files in base directory for processing
 BASEDIR = Path(r"r:\CCD_obs") 
 BASEDIR = Path("/mnt/Rdata/CCD_obs") 
-BASEDIR = Path("/mnt/OBS_data") 
+#BASEDIR = Path("/mnt/OBS_data") 
 DOINGDIR = Path( BASEDIR/ astro_utilities.CCD_NEW_dir)
                 
 DOINGDIRs = sorted(Python_utilities.getFullnameListOfallsubDirs(DOINGDIR))
@@ -53,59 +53,70 @@ fnameKEYs = ["OBJECT", "IMAGETYP", "FILTER", "DATE-OBS",
 #%%
 for DOINGDIR in DOINGDIRs[:] : 
     DOINGDIR = Path(DOINGDIR)
-    print(f"Starting: {str(DOINGDIR.parts[-1])}")
-    
-    try: 
-        summary = yfu.make_summary(DOINGDIR/"*.fit*",
-                    #output = save_fpath,
-                    verbose = True
-                    )
-        #print("summary", summary)
-        print("len(summary)", len(summary))
+    print("DOINGDIR", DOINGDIR)
+    fits_in_dir = sorted(list(DOINGDIR.glob('*.fit*')))
+    #print("fits_in_dir", fits_in_dir)
+    print("len(fits_in_dir)", len(fits_in_dir))
 
-        for _, row in summary.iterrows():
-            #print (row["file"])
-            fpath = Path(row["file"])            
-            hdul = fits.open(str(fpath))
-            print("fpath: ", fpath)
-            
-            for fnameKEY in fnameKEYs: 
-                print(f"{fnameKEY}: ", hdul[0].header[fnameKEY])
-
-            try :
-                ccdtemp = str(int(hdul[0].header["CCD-TEMP"]))
-            except : 
-                ccdtemp = "N"
-
-            new_fname = hdul[0].header["OBJECT"]+"_"+hdul[0].header["IMAGETYP"]+"_"+hdul[0].header["FILTER"]+"_"
-            new_fname += hdul[0].header["DATE-OBS"][:19].replace("T","-").replace(":","-")+"_"
-            new_fname += str(int(hdul[0].header["EXPOSURE"]))+"sec_"
-            new_fname += hdul[0].header["OPTIC"]+"_"+hdul[0].header["CCDNAME"]+"_"       
-            new_fname += ccdtemp+"c_"+str(hdul[0].header["XBINNING"])+"bin.fit"
-            #print("new_fname: ", new_fname)
-            hdul.close()
-            new_folder = astro_utilities.get_new_foldername_from_filename(new_fname)
-            #print("new_folder: ", new_folder)
-
-            new_fpath =  BASEDIR /astro_utilities.CCD_obs_raw_dir / new_folder / new_fname
-            print("new_fpath: ", new_fpath)
-
-            if not new_fpath.parents[0].exists():
-                os.makedirs('{0}'.format(str(new_fpath.parents[0])))
-                print('{0} is created'.format(str(new_fpath.parts[-2])))  
-        
-            if new_fpath.exists():
-                duplicate_fpath = BASEDIR / astro_utilities.CCD_duplicate_dir / new_fpath.name
-                #os.rename(str(new_fpath), str(duplicate_fpath))
-                shutil.move(str(new_fpath), str(duplicate_fpath))
-                print (f"move duplicate file to {str(duplicate_fpath)}")
-
-            #os.rename(str(fpath), str(new_fpath))
-            shutil.move(str(fpath), str(new_fpath))
-            print(f"move {str(fpath.name)} to {str(new_fpath)}")
-    except Exception as err:
-        print(err)
+    if len(fits_in_dir) == 0 :
+        print(f"There is no fits fils in {DOINGDIR}")
         pass
+    else : 
+        try:
+            print(f"Starting: {str(DOINGDIR.parts[-1])}")
+            summary = None 
+            summary = yfu.make_summary(DOINGDIR/"*.fit*",
+                        #output = save_fpath,
+                        verbose = True
+                        )
+            print("summary: ", summary)
+            print("type(summary): ", type(summary))
+    
+            for _, row in summary.iterrows():
+                #print (row["file"])
+                fpath = Path(row["file"])            
+                hdul = fits.open(str(fpath))
+                print("fpath: ", fpath)
+                
+                for fnameKEY in fnameKEYs: 
+                    print(f"{fnameKEY}: ", hdul[0].header[fnameKEY])
+
+                try :
+                    ccdtemp = str(int(hdul[0].header["CCD-TEMP"]))
+                except : 
+                    ccdtemp = "N"
+                print("ccdtemp: ", ccdtemp)
+
+                new_fname = hdul[0].header["OBJECT"]+"_"+hdul[0].header["IMAGETYP"]+"_"+hdul[0].header["FILTER"]+"_"
+                new_fname += hdul[0].header["DATE-OBS"][:19].replace("T","-").replace(":","-")+"_"
+                new_fname += str(int(hdul[0].header["EXPOSURE"]))+"sec_"
+                new_fname += hdul[0].header["OPTIC"]+"_"+hdul[0].header["CCDNAME"]+"_"       
+                new_fname += ccdtemp+"c_"+str(int(hdul[0].header["XBINNING"]))+"bin.fit"
+                print("new_fname: ", new_fname)
+                hdul.close()
+                new_folder = astro_utilities.get_new_foldername_from_filename(new_fname)
+                #print("new_folder: ", new_folder)
+
+                new_fpath =  BASEDIR /astro_utilities.CCD_obs_raw_dir / new_folder / new_fname
+                print("new_fpath: ", new_fpath)
+
+                if not new_fpath.parents[0].exists():
+                    os.makedirs('{0}'.format(str(new_fpath.parents[0])))
+                    print('{0} is created'.format(str(new_fpath.parts[-2])))  
+            
+                if new_fpath.exists():
+                    duplicate_fpath = BASEDIR / astro_utilities.CCD_duplicate_dir / new_fpath.name
+                    #os.rename(str(new_fpath), str(duplicate_fpath))
+                    shutil.move(str(new_fpath), str(duplicate_fpath))
+                    print (f"move duplicate file to {str(duplicate_fpath)}")
+
+                #os.rename(str(fpath), str(new_fpath))
+                shutil.move(str(fpath), str(new_fpath))
+                print(f"move {str(fpath.name)} to {str(new_fpath)}")
+        except Exception as err:
+            print("X"*60)
+            print(err)
+            pass
 #%%   
 #############################################################################
 #Check and delete empty folder....
