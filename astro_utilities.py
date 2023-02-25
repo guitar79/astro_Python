@@ -267,6 +267,10 @@ def KevinFitsUpdater(
                             or  hdul[0].header['NAXIS1'] == 2004 \
                             or  hdul[0].header['NAXIS1'] == 1336 :
                         CCDNAME = 'STL-11000M'
+                    else:
+                        CCDNAME = ccd_name
+                else :
+                    CCDNAME = ccd_name
             else :
                 CCDNAME = ccd_name
         else :
@@ -321,22 +325,29 @@ def KevinFitsUpdater(
                                             CCDDIC[hdul[0].header['CCDNAME']]['PIXSIZE'])
             print(f"The 'PIXSCALE' is set {hdul[0].header['PIXSCALE']}...")
         
+        if (not 'TELESCOP' in hdul[0].header):
+            hdul[0].header['TELESCOP'] = "-"
+            print(f"The 'TELESCOP' is set {hdul[0].header['TELESCOP']}...")
+        
         if (not 'XBINNING' in hdul[0].header)\
             and (hdul[0].header["CCDNAME"] == "STX-16803") :
             if hdul[0].header['NAXIS1'] == 4096 \
                 or  hdul[0].header['NAXIS2'] == 4096 :
                 hdul[0].header['XBINNING'] = 1
-                hdul[0].header['YBINNING'] = 1   
+                hdul[0].header['YBINNING'] = 1
+                hdul[0].header['TELESCOP'] = "-"   
         
             elif hdul[0].header['NAXIS1'] == 2048 \
                 or  hdul[0].header['NAXIS2'] == 2048 :
                 hdul[0].header['XBINNING'] = 2
                 hdul[0].header['YBINNING'] = 2
+                hdul[0].header['TELESCOP'] = "-"
         
             elif hdul[0].header['NAXIS1'] == 1024 \
                 or  hdul[0].header['NAXIS2'] == 1024 :
                 hdul[0].header['XBINNING'] = 3
                 hdul[0].header['YBINNING'] = 3
+                hdul[0].header['TELESCOP'] = "-"
         hdul[0].header['XBINNING'] = int(hdul[0].header['XBINNING'])
         hdul[0].header['YBINNING'] = int(hdul[0].header['YBINNING'])
         print(f"The 'XBINNING', 'YBINNING' are set {hdul[0].header['XBINNING']}, \
@@ -950,7 +961,7 @@ def get_new_filename(fullname, **kargs):
                     hdul1.flush()
             hdul[0].header[binning] = '1'
         hdul[0].header['INSTRUME'] = 'STX-16803' 
-        hdul[0].header['TELESCOPE'] = 'RiLA600' 
+        #hdul[0].header['TELESCOP'] = 'RiLA600' 
         hdul[0].header['OPTIC'] = 'RiLA600' 
     
     if hdul[0].header['NAXIS1'] == 2048 \
@@ -966,9 +977,8 @@ def get_new_filename(fullname, **kargs):
                     hdul1.flush()
             hdul[0].header[binning] = '2'
         hdul[0].header['INSTRUME'] = 'STX-16803' 
-        hdul[0].header['TELESCOPE'] = 'RiLA600' 
+        #hdul[0].header['TELESCOP'] = 'RiLA600' 
         hdul[0].header['OPTIC'] = 'RiLA600' 
-    
 
     if hdul[0].header['NAXIS1'] == 1024 \
         and hdul[0].header['NAXIS2'] == 1024 :
@@ -983,7 +993,7 @@ def get_new_filename(fullname, **kargs):
                     hdul1.flush()
             hdul[0].header[binning] = '3'
         hdul[0].header['INSTRUME'] = 'STX-16803' 
-        hdul[0].header['TELESCOPE'] = 'RiLA600' 
+        #hdul[0].header['TELESCOP'] = 'RiLA600' 
         hdul[0].header['OPTIC'] = 'RiLA600' 
 
 
