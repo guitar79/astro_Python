@@ -130,7 +130,10 @@ CCDDIC = {"STF-8300M": {"PIXSIZE":5.4,
                         "RDNOISE":9.6},
         "STX-16803": {"PIXSIZE":9.0, 
                         "GAIN":1.27,
-                        "RDNOISE":9.0}
+                        "RDNOISE":9.0},
+        "QHY8": {"PIXSIZE":5.4, 
+                "GAIN": "-",
+                "RDNOISE":"-"}
                         }
         
 
@@ -144,9 +147,9 @@ OPTICDIC = {"TMB130ss": {"APATURE" : 130,
                         "FOCALLEN" : 1200}, 
             "FS60CB": {"APATURE" : 60, 
                        "FOCALLEN" : 355}, 
-            "SVX080T": {"APATURE": 80,
+            "SVX80T": {"APATURE": 80,
                         "FOCALLEN": 480},
-            "SVX080T-x80": {"APATURE":80,
+            "SVX80T-x80": {"APATURE":80,
                         "FOCALLEN": 480*0.8},
             "FSQ106ED": {"APATURE": 106,
                          "FOCALLEN": 530},
@@ -217,6 +220,7 @@ def KevinFitsUpdater(
     print("foldername_el", foldername_el)
     print("fname_el", fname_el)
     object_name = foldername_el[0]
+    image_type = foldername_el[1]
     filter_name = fname_el[2]
     optic_name = foldername_el[5]
     ccd_name = foldername_el[6]
@@ -243,11 +247,13 @@ def KevinFitsUpdater(
         print(f"The 'OBJECT' is set {object_name.upper()}")
 
         if 'INSTRUME' in hdul[0].header :
-            if 'qsi' in hdul[0].header['INSTRUME'] :     
+            if 'qsi' in hdul[0].header['INSTRUME'].lower() :     
                 CCDNAME = 'QSI683ws'
-            elif 'st-8300' in hdul[0].header['INSTRUME'] : 
+            elif 'st-8300' in hdul[0].header['INSTRUME'].lower() : 
                 CCDNAME = 'ST-8300M'
-            elif 'stf-8300' in hdul[0].header['INSTRUME'] : 
+            elif 'qhy8' in hdul[0].header['INSTRUME'].lower() : 
+                CCDNAME = 'QHY8'
+            elif 'stf-8300' in hdul[0].header['INSTRUME'].lower() : 
                 CCDNAME = 'STF-8300M'
             elif '11000' in hdul[0].header['INSTRUME'] : 
                 CCDNAME = 'STL-11000M'
@@ -284,6 +290,10 @@ def KevinFitsUpdater(
             and 'TIME-OBS' in hdul[0].header : 
             hdul[0].header['DATE-OBS'] += 'T' + hdul[0].header['TIME-OBS']
             print(f"The 'DATE-OBS' is set {hdul[0].header['DATE-OBS']}")
+        
+        if not "IMAGETYP" in hdul[0].header :
+            hdul[0].header["IMAGETYP"] = image_type
+            
         if "ze" in hdul[0].header["IMAGETYP"].lower() \
                 or "bi" in hdul[0].header["IMAGETYP"].lower() :
             hdul[0].header["IMAGETYP"] = "BIAS"
@@ -307,10 +317,17 @@ def KevinFitsUpdater(
 
         if "FLAT" in hdul[0].header["IMAGETYP"] \
             or "LIGHT" in hdul[0].header["IMAGETYP"] :
-            hdul[0].header["FILTER"] = filter_name.upper()
-            print(f"The 'FILTER' is set {hdul[0].header['FILTER']}")
-            hdul[0].header["OPTIC"] = optic_name
-            print(f"The 'OPTIC' is set {hdul[0].header['OPTIC']}")
+            if not "FILTER" in hdul[0].header :
+                if  hdul[0].header["FILTER"] != filter_name.upper() :
+                    hdul[0].header["FILTER"] = filter_name.upper()
+                    print(f"The 'FILTER' is set {hdul[0].header['FILTER']}")
+            if not "OPTIC" in hdul[0].header :
+                hdul[0].header["OPTIC"] = optic_name
+                print(f"The 'OPTIC' is set {hdul[0].header['OPTIC']}")
+            elif  hdul[0].header["OPTIC"] != optic_name :
+                hdul[0].header["OPTIC"] = optic_name
+                print(f"The 'OPTIC' is set {hdul[0].header['OPTIC']}")
+
             #hdul[0].header['FOCALLEN'] = FOCALLENDIC[hdul[0].header['OPTIC']]
             hdul[0].header['FOCALLEN'] = OPTICDIC[hdul[0].header['OPTIC']]["FOCALLEN"]
             print(f"The 'FOCALLEN' is set {hdul[0].header['FOCALLEN']}...")

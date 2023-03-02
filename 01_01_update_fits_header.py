@@ -16,7 +16,7 @@ from datetime import datetime
 from astropy.io import fits
 
 import ysfitsutilpy as yfu
-#import ysphotutilpy as ypu
+import ysphotutilpy as ypu
 import ysvisutilpy as yvu
 
 import Python_utilities
@@ -38,7 +38,7 @@ if not os.path.exists('{0}'.format(log_dir)):
 BASEDIR = Path(r"r:\CCD_obs")
 BASEDIR = Path("/mnt/Rdata/CCD_obs") 
 BASEDIR = Path("/mnt/OBS_data") 
-DOINGDIR = Path( BASEDIR/ astro_utilities.CCD_NEW_dir)
+DOINGDIR = BASEDIR / astro_utilities.CCD_NEW_dir
 
 DOINGDIRs = sorted(Python_utilities.getFullnameListOfallsubDirs(DOINGDIR))
 #print ("DOINGDIRs: ", format(DOINGDIRs))

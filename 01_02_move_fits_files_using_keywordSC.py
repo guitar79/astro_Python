@@ -41,8 +41,9 @@ if not os.path.exists('{0}'.format(log_dir)):
 BASEDIR = Path(r"r:\CCD_obs") 
 BASEDIR = Path("/mnt/Rdata/CCD_obs") 
 #BASEDIR = Path("/mnt/OBS_data") 
-DOINGDIR = Path( BASEDIR/ astro_utilities.CCD_NEW_dir)
-                
+DOINGDIR = BASEDIR / astro_utilities.CCD_NEW_dir
+#DOINGDIR = BASEDIR / "CCD_new_files1"
+               
 DOINGDIRs = sorted(Python_utilities.getFullnameListOfallsubDirs(DOINGDIR))
 #print ("DOINGDIRs: ", format(DOINGDIRs))
 print ("len(DOINGDIRs): ", format(len(DOINGDIRs)))
@@ -62,21 +63,21 @@ for DOINGDIR in DOINGDIRs[:] :
         print(f"There is no fits fils in {DOINGDIR}")
         pass
     else : 
-        try:
-            print(f"Starting: {str(DOINGDIR.parts[-1])}")
-            summary = None 
-            summary = yfu.make_summary(DOINGDIR/"*.fit*",
-                        #output = save_fpath,
-                        verbose = True
-                        )
-            print("summary: ", summary)
-            print("type(summary): ", type(summary))
+        print(f"Starting: {str(DOINGDIR.parts[-1])}")
+        summary = None 
+        summary = yfu.make_summary(DOINGDIR/"*.fit*",
+                    #output = save_fpath,
+                    verbose = True
+                    )
+        print("summary: ", summary)
+        print("type(summary): ", type(summary))
     
-            for _, row in summary.iterrows():
-                #print (row["file"])
-                fpath = Path(row["file"])            
-                hdul = fits.open(str(fpath))
-                print("fpath: ", fpath)
+        for _, row in summary.iterrows():
+            #print (row["file"])
+            fpath = Path(row["file"])            
+            hdul = fits.open(str(fpath))
+            print("fpath: ", fpath)
+            try:
                 
                 for fnameKEY in fnameKEYs: 
                     print(f"{fnameKEY}: ", hdul[0].header[fnameKEY])
@@ -100,10 +101,10 @@ for DOINGDIR in DOINGDIRs[:] :
                 new_fpath =  BASEDIR /astro_utilities.CCD_obs_raw_dir / new_folder / new_fname
                 print("new_fpath: ", new_fpath)
 
-                if not new_fpath.parents[0].exists():
-                    os.makedirs('{0}'.format(str(new_fpath.parents[0])))
-                    print('{0} is created'.format(str(new_fpath.parts[-2])))  
-            
+                if not new_fpath.parent.exists():
+                    os.makedirs(str(new_fpath.parent))
+                    print(f'{str(new_fpath.parts[-2])} is created')  
+                #os.makedirs(str(new_fpath.parent), exist_ok=True)
                 if new_fpath.exists():
                     duplicate_fpath = BASEDIR / astro_utilities.CCD_duplicate_dir / new_fpath.name
                     #os.rename(str(new_fpath), str(duplicate_fpath))
@@ -113,10 +114,11 @@ for DOINGDIR in DOINGDIRs[:] :
                 #os.rename(str(fpath), str(new_fpath))
                 shutil.move(str(fpath), str(new_fpath))
                 print(f"move {str(fpath.name)} to {str(new_fpath)}")
-        except Exception as err:
-            print("X"*60)
-            print(err)
-            pass
+            except Exception as err :
+                print("X"*60)
+                with open(err_log_file, 'a') as f:
+                    f.write(f'{datetime.now()} ::: {str(fpath)}, {err}\n')
+                pass
 #%%   
 #############################################################################
 #Check and delete empty folder....
@@ -145,5 +147,3 @@ for i in range(4):
                                         and os.path.isfile(fpath):
                     os.remove("{}".format(fpath))
                     print("{} is removed...".format(fpath)) 
-
-

@@ -1,26 +1,27 @@
-"""
 # -*- coding: utf-8 -*-
-
+"""
 Created on Thu Nov 22 01:00:19 2018
-@author: guitar79@naver.com
+@author: user
 
-이 파일은 fits 파일의 헤더에 누락된 정보를 넣어주는 것입니다.
-BASEDIR 폴더 안에 있는 모든 fit 파일에 대해서 바로 상위 디렉토리 명을 참조하여 
-OPTIC, CCDNAME 등의 정보를 줍니다.
+이 파일은 fits file의 header에 있는 plate solving 관련 keyword를 삭제해 준다.
+필요할때만 사용하면 된다.
 """
 #%%
+import os, shutil
 from glob import glob
-from pathlib import Path, PosixPath, WindowsPath
-import os
+from pathlib import Path
 from datetime import datetime
+import numpy as np
+
 from astropy.io import fits
 
 import ysfitsutilpy as yfu
 import ysphotutilpy as ypu
 import ysvisutilpy as yvu
 
-import Python_utilities
 import astro_utilities
+import Python_utilities
+
 #%%
 #######################################################
 # for log file
@@ -35,19 +36,19 @@ if not os.path.exists('{0}'.format(log_dir)):
 #%%
 #######################################################
 # read all files in base directory for processing
-BASEDIR = Path(r"r:\CCD_obs")
+BASEDIR = Path("/mnt/OBS_data") 
 BASEDIR = Path("/mnt/Rdata/CCD_obs") 
 #BASEDIR = Path("/mnt/OBS_data") 
-DOINGDIR = Path(BASEDIR/ astro_utilities.CCD_NEW_dir)
+DOINGDIR = BASEDIR/ astro_utilities.CCD_obs_raw_dir
+DOINGDIR = BASEDIR/ astro_utilities.CCD_NEW_dir 
 #DOINGDIR = Path(BASEDIR/ "CCD_new_files1")
 
 DOINGDIRs = sorted(Python_utilities.getFullnameListOfallsubDirs(DOINGDIR))
 #print ("DOINGDIRs: ", format(DOINGDIRs))
 print ("len(DOINGDIRs): ", format(len(DOINGDIRs)))
-#######################################################
 
 #%%
-for DOINGDIR in DOINGDIRs[:] :
+for DOINGDIR in DOINGDIRs :
     DOINGDIR = Path(DOINGDIR)
     print("DOINGDIR", DOINGDIR)
     fits_in_dir = sorted(list(DOINGDIR.glob('*.fit*')))
@@ -62,20 +63,31 @@ for DOINGDIR in DOINGDIRs[:] :
         summary = None 
         summary = yfu.make_summary(DOINGDIR/"*.fit*",
                     #output = save_fpath,
-                    verbose = False
+                    verbose = True
                     )
         print("summary: ", summary)
-        print("len(summary)", len(summary))
+        print("type(summary): ", type(summary))
 
         for _, row in summary.iterrows():
-                # 파일명 출력
-                print (row["file"])
-                fpath = Path(row["file"])
-                try:
-                    hdul = astro_utilities.KevinFitsUpdater(fpath)
-                    print("hdul: ", hdul)
-
-                except Exception as err :
-                    print("X"*60)
-                    with open(err_log_file, 'a') as f:
-                        f.write(f'{datetime.now()} ::: {str(fpath)}, {err}\n')
+            # 파일명 출력
+            print (row["file"])
+            fpath = Path(row["file"])
+            new_fpath = Path(f"{fpath.parents[0]}/{fpath.stem}_clean.fit")
+            # fits hedaer 에 있는 wcs 정보를 지운다
+            try:
+                yfu.wcsremove(fpath, 
+                            additional_keys=["COMMENT"],
+                            verbose=True,
+                            output=new_fpath,
+                            ccddata=False,
+                            overwrite=True)
+                if new_fpath.exists() \
+                    and fpath.exists():
+                    print("rename", f"{str(new_fpath)}", f"{str(fpath)}")
+                    #os.rename(f"{str(new_fpath)}", f"{str(fpath)}")
+                    shutil.move(f"{str(new_fpath)}", f"{str(fpath)}")
+                    
+            except Exception as err :
+                print("X"*60)
+                with open(err_log_file, 'a') as f:
+                    f.write(f'{datetime.now()} ::: {str(fpath)}, {err}\n')

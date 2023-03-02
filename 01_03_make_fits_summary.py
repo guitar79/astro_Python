@@ -50,10 +50,10 @@ print ("len(DOINGDIRs): ", format(len(DOINGDIRs)))
 
 for DOINGDIR in DOINGDIRs[:] :
     DOINGDIR = Path(DOINGDIR)
-    DOINGSUBDIRs = sorted(Python_utilities.getFullnameListOfallsubDirs(str(DOINGDIR)))
     ccd_fpath = Path(f"{DOINGDIR/DOINGDIR.parts[-1]}.csv")
     print("ccd_fpath", ccd_fpath)
-
+    DOINGSUBDIRs = sorted(Python_utilities.getFullnameListOfallsubDirs(str(DOINGDIR)))
+    
     if ccd_fpath.exists() or False:
         print(f"{str(ccd_fpath)} is already exist...")
 
@@ -61,17 +61,13 @@ for DOINGDIR in DOINGDIRs[:] :
         summary_all = pd.DataFrame()
 
         for DOINGSUBDIR in DOINGSUBDIRs[:] :
-            print (f"Starting...\n{DOINGSUBDIR}")
+            print("DOINGDUBDIR", DOINGSUBDIR)
             DOINGSUBDIR = Path(DOINGSUBDIR)
-            #print("DOINGSUBDIR", DOINGSUBDIR)
+        
             fits_in_dir = sorted(list(DOINGSUBDIR.glob('*.fit*')))
             #print("fits_in_dir", fits_in_dir)
             print("len(fits_in_dir)", len(fits_in_dir))
-            save_fpath2 = DOINGSUBDIR / f"{DOINGSUBDIR.parts[-1]}.csv"
-            if save_fpath2.exists():
-                os.remove(str(save_fpath2))
-                print (f"{str(save_fpath2)} is deleted...")
-        
+
             if len(fits_in_dir) == 0 :
                 print(f"There is no fits fils in {DOINGSUBDIR}")
                 pass
@@ -84,11 +80,13 @@ for DOINGDIR in DOINGDIRs[:] :
                 else : 
                     summary = yfu.make_summary(DOINGSUBDIR/"*.fit*",
                                 output = save_fpath,
-                                verbose = False
+                                verbose = True
                                 )
                     print(f"{save_fpath} is created...")
                 summary_all = pd.concat([summary_all, summary], axis = 0)
         
         summary_all.reset_index(inplace=True)
-        summary_all.to_csv(str(ccd_fpath))
+        summary_all.to_csv(str(ccd_fpath),
+                           #overwrite=True,
+                           )
         print(f"{ccd_fpath} is created...")

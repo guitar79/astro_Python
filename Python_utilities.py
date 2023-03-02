@@ -28,10 +28,17 @@ def mkdir(fpath, mode=0o777, exist_ok=True):
 
 #%%
 # =============================================================================
-# creat log
-# =============================================================================
+# creat log.format(fullname, , )=======================================================
 
 def write_log(log_file, log_str):
+    import time
+    timestamp = time.strftime('%Y-%m-%d %H:%M:%S')
+    msg = '[' + timestamp + '] ' + log_str
+    print(msg)
+    with open(log_file, 'a') as f:
+        f.write(msg + '\n')
+
+def write_log_old(log_file, log_str):
     import time
     timestamp = time.strftime('%Y-%m-%d %H:%M:%S')
     msg = '[' + timestamp + '] ' + log_str
