@@ -77,5 +77,4 @@ for DOINGDIR in DOINGDIRs[:] :
 
                 except Exception as err :
                     print("X"*60)
-                    with open(err_log_file, 'a') as f:
-                        f.write(f'{datetime.now()} ::: {str(fpath)}, {err}\n')
+                    Python_utilities.write_log(err_log_file, err)

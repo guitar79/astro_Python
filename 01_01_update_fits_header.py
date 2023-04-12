@@ -37,7 +37,7 @@ if not os.path.exists('{0}'.format(log_dir)):
 # read all files in base directory for processing
 BASEDIR = Path(r"r:\CCD_obs")
 BASEDIR = Path("/mnt/Rdata/CCD_obs") 
-BASEDIR = Path("/mnt/OBS_data") 
+#BASEDIR = Path("/mnt/OBS_data") 
 DOINGDIR = BASEDIR / astro_utilities.CCD_NEW_dir
 
 DOINGDIRs = sorted(Python_utilities.getFullnameListOfallsubDirs(DOINGDIR))
@@ -48,8 +48,8 @@ print ("len(DOINGDIRs): ", format(len(DOINGDIRs)))
 #%%
 #######################################################
 checkKEYs = ["OBJECT", "TELESCOP", "OPTIC", "CCDNAME", 'FILTER',
-            "GAIN", "EGAIN", "RDNOISE", "FOCALLEN", "PIXSCALE", "CCD-TEMP",
-            "XBINNING", "YBINNING", "FLIPSTAT"]
+            "GAIN", "EGAIN", "RDNOISE", "FOCALLEN", "FOCRATIO", "PIXSCALE", "CCD-TEMP",
+            "XBINNING", "YBINNING", "FLIPSTAT", "EXPTIME", "EXPOSURE"]
 #%%
 for DOINGDIR in DOINGDIRs[:] :
     DOINGDIR = Path(DOINGDIR)
@@ -195,9 +195,17 @@ for DOINGDIR in DOINGDIRs[:] :
                         hdul[0].header['CCD-TEMP'] = 'N'
                         print(f"The 'CCD-TEMP' is set {hdul[0].header['CCD-TEMP']}...")
 
-                    if not "EXPOSURE" in hdul[0].header :
+                    if "EXPOSURE" in hdul[0].header :
+                        if not "EXPTIME" in hdul[0].header :
+                            hdul[0].header["EXPTIME"] = hdul[0].header["EXPOSURE"]
+                            print(f"The 'EXPTIME' is set {hdul[0].header['EXPOSURE']}...")
+                    elif "EXPTIME" in hdul[0].header :
                         hdul[0].header["EXPOSURE"] = hdul[0].header["EXPTIME"]
                         print(f"The 'EXPOSURE' is set {hdul[0].header['EXPTIME']}...")
+                    else :
+                        hdul[0].header["EXPTIME"] = 'N'
+                        hdul[0].header["EXPOSURE"] = 'N'
+                        print(f"The 'EXPTIME' and 'EXPOSURE' are set 'N'...")
 
                     hdul[0].header['GAIN'] = astro_utilities.GAINDIC[CCDNAME]
                     print(f"The 'GAIN' is set {hdul[0].header['GAIN']}...")

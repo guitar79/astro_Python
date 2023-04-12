@@ -36,14 +36,14 @@ if not os.path.exists('{0}'.format(log_dir)):
 #%%
 #######################################################
 # read all files in base directory for processing
-BASEDIR = Path("/mnt/OBS_data") 
 BASEDIR = Path("/mnt/Rdata/CCD_obs") 
 #BASEDIR = Path("/mnt/OBS_data") 
-DOINGDIR = BASEDIR/ astro_utilities.CCD_obs_raw_dir
-DOINGDIR = BASEDIR/ astro_utilities.CCD_NEW_dir 
-#DOINGDIR = Path(BASEDIR/ "CCD_new_files1")
+#DOINGDIR = Path(BASEDIR/ "RnE_2022/GSON300_STF-8300M")
+#DOINGDIR = Path(BASEDIR/ "CCD_new_files")
+DOINGDIR = ( BASEDIR/ astro_utilities.CCD_NEW_dir)
 
 DOINGDIRs = sorted(Python_utilities.getFullnameListOfallsubDirs(DOINGDIR))
+#DOINGDIRs = sorted([x for x in DOINGDIR.iterdir() if x.is_dir()])
 #print ("DOINGDIRs: ", format(DOINGDIRs))
 print ("len(DOINGDIRs): ", format(len(DOINGDIRs)))
 
@@ -69,12 +69,12 @@ for DOINGDIR in DOINGDIRs :
         print("type(summary): ", type(summary))
 
         for _, row in summary.iterrows():
-            # 파일명 출력
-            print (row["file"])
-            fpath = Path(row["file"])
-            new_fpath = Path(f"{fpath.parents[0]}/{fpath.stem}_clean.fit")
-            # fits hedaer 에 있는 wcs 정보를 지운다
-            try:
+            try: 
+                # 파일명 출력
+                print (row["file"])
+                fpath = Path(row["file"])
+                new_fpath = Path(f"{fpath.parents[0]}/{fpath.stem}_clean.fit")
+                # fits hedaer 에 있는 wcs 정보를 지운다
                 yfu.wcsremove(fpath, 
                             additional_keys=["COMMENT"],
                             verbose=True,
@@ -86,8 +86,8 @@ for DOINGDIR in DOINGDIRs :
                     print("rename", f"{str(new_fpath)}", f"{str(fpath)}")
                     #os.rename(f"{str(new_fpath)}", f"{str(fpath)}")
                     shutil.move(f"{str(new_fpath)}", f"{str(fpath)}")
-                    
+
             except Exception as err :
                 print("X"*60)
-                with open(err_log_file, 'a') as f:
-                    f.write(f'{datetime.now()} ::: {str(fpath)}, {err}\n')
+                Python_utilities.write_log(err_log_file, err)
+            

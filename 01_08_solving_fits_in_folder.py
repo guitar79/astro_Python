@@ -3,11 +3,6 @@
 Created on Thu Nov 22 01:00:19 2018
 @author: guitar79@naver.com
 
-이 파일은 BASEDIR 폴더 안에 있는 모든 fit 파일에 대해서 
-plste solving을 수행합니다.
-이미 solving이 완료된 파일은 건너뛰고, 
-먼저 ASTAP로 시도하고, 실패할 경우 Astrometry로 시도합니다. 
-
 """
 #%%
 import os
@@ -37,46 +32,62 @@ if not os.path.exists('{0}'.format(log_dir)):
 #%%
 #######################################################
 # read all files in base directory for processing
-BASEDIR = astro_utilities.base_dir
+BASEDIR = Path(r"r:\CCD_obs")
+BASEDIR = Path("/mnt/Rdata/CCD_obs") 
+#BASEDIR = Path("/mnt/OBS_data") 
+DOINGDIR = Path(BASEDIR/ "RnE_2022/GSON300_STF-8300M")
+#DOINGDIR = Path(BASEDIR/ "CCD_new_files1")
 
-BASEDIRs = sorted(Python_utilities.getFullnameListOfsubDir(BASEDIR))
-print ("BASEDIRs: {}".format(BASEDIRs))
-print ("len(BASEDIRs): {}".format(len(BASEDIRs)))
+#DOINGDIRs = sorted(Python_utilities.getFullnameListOfsubDirs(DOINGDIR))
+DOINGDIRs = sorted([x for x in DOINGDIR.iterdir() if x.is_dir()])
+#print ("DOINGDIRs: ", format(DOINGDIRs))
+print ("len(DOINGDIRs): ", format(len(DOINGDIRs)))
+#######################################################
 
 #%%
-for BASEDIR in BASEDIRs[:] :
-    print ("Starting...\n{}".format(BASEDIR))
+for DOINGDIR in DOINGDIRs[4:] :
+    #DOINGDIR = Path(DOINGDIR)
+    print("DOINGDIR", DOINGDIR)
+    fits_in_dir = sorted(list(DOINGDIR.glob('*.fit*')))
+    #print("fits_in_dir", fits_in_dir)
+    print("len(fits_in_dir)", len(fits_in_dir))
 
-    BASEDIR = Path(BASEDIR)
-    
-    RESULTDIR = BASEDIR / astro_utilities.DAOfinder_result_dir
-    SOLVEDDIR = BASEDIR / astro_utilities.solved_dir
-    MASTERDIR = BASEDIR / astro_utilities.master_dir
-    REDUCEDDIR = BASEDIR / astro_utilities.reduced_dir
-    MASTERDIR = BASEDIR / astro_utilities.master_dir
+    if len(fits_in_dir) == 0 :
+        print(f"There is no fits fils in {DOINGDIR}")
+        pass
+    else : 
+        print(f"Starting: {str(DOINGDIR.parts[-1])}")
 
-    if not SOLVEDDIR.exists():
-        os.makedirs("{}".format(str(SOLVEDDIR)))
-        print("{} is created...".format(str(SOLVEDDIR)))
+        MASTERDIR = DOINGDIR / astro_utilities.master_dir
+        REDUCEDDIR = DOINGDIR / astro_utilities.reduced_dir2
+        SOLVEDDIR = DOINGDIR / astro_utilities.solved_dir
 
-    #summary = yfu.make_summary(REDUCEDDIR / "*.fit*")
-    summary = yfu.make_summary(BASEDIR / "*.fit*")
+        if not SOLVEDDIR.exists():
+            os.makedirs("{}".format(str(SOLVEDDIR)))
+            print("{} is created...".format(str(SOLVEDDIR)))
 
-    df_light = summary.loc[summary["IMAGETYP"] == "LIGHT"].copy()
-    df_light = df_light.reset_index(drop=True)
-    print("df_light:\n{}".format(df_light))
+        summary = yfu.make_summary(DOINGDIR/"*.fit*")
+        #print(summary)
+        print("len(summary):", len(summary))
+        print("summary:", summary)
+        #print(summary["file"][0])
 
-    #%%
-    n = 0
-    for _, row  in df_light.iterrows():
+        df_light = summary.loc[summary["IMAGETYP"] == "LIGHT"].copy()
+        df_light = df_light.reset_index(drop=True)
 
-        #fullname = fullnames[5]
-        n += 1
-        print('#'*40,
-            "\n{2:.01f}%  ({0}/{1}) {3}".format(n, len(df_light), (n/len(df_light))*100, os.path.basename(__file__)))
-        print ("Starting...\nfullname: {}".format(row["file"]))
+        for _, row in df_light.iterrows():
+            try:
+                print('#'*40,
+                    "\n{2:.01f}%  ({0}/{1}) {3}".format(n, len(df_light), (n/len(df_light))*100, os.path.basename(__file__)))
+                print ("Starting...\nfullname: {}".format(row["file"]))
 
-        solved = astro_utilities.AstrometrySolver(row["file"], str(SOLVEDDIR))
+                solved = astro_utilities.AstrometrySolver(row["file"], str(SOLVEDDIR))
+            
+            except Exception as err: 
+                print ('Error messgae .......')
+                Python_utilities.write_log(err_log_file, err)
+
+
 
                 
 

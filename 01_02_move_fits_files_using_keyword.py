@@ -19,7 +19,7 @@ from astropy.io import fits
 import shutil 
 
 import ysfitsutilpy as yfu
-#import ysphotutilpy as ypu
+import ysphotutilpy as ypu
 import ysvisutilpy as yvu
 
 import astro_utilities
@@ -40,7 +40,7 @@ if not os.path.exists('{0}'.format(log_dir)):
 # read all files in base directory for processing
 BASEDIR = Path(r"r:\CCD_obs") 
 BASEDIR = Path("/mnt/Rdata/CCD_obs") 
-BASEDIR = Path("/mnt/OBS_data") 
+#BASEDIR = Path("/mnt/OBS_data") 
 DOINGDIR = Path( BASEDIR/ astro_utilities.CCD_NEW_dir)
                 
 DOINGDIRs = sorted(Python_utilities.getFullnameListOfallsubDirs(DOINGDIR))
@@ -64,12 +64,12 @@ for DOINGDIR in DOINGDIRs[:] :
         print("len(summary)", len(summary))
 
         for _, row in summary.iterrows():
-            #print (row["file"])
-            fpath = Path(row["file"])            
+            fpath = Path(row["file"])
+            print (f"starting {fpath.name}...")
             hdul = fits.open(str(fpath))
             print("fpath: ", fpath)
             
-            new_fname = astro_utilities.Kevin_new_fname(fpath)
+            new_fname = astro_utilities.Kevin_new_fname(fpath, astro_utilities.CCD_obs_raw_dir)
             
             new_folder = astro_utilities.get_new_foldername_from_filename(new_fname)
             #print("new_folder: ", new_folder)
@@ -91,7 +91,7 @@ for DOINGDIR in DOINGDIRs[:] :
             shutil.move(str(fpath), str(new_fpath))
             print(f"move {str(fpath.name)} to {str(new_fpath)}")
     except Exception as err:
-        print(err)
+        Python_utilities.write_log(err_log_file, err)
         pass
 #%%   
 #############################################################################

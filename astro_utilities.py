@@ -119,7 +119,10 @@ FOCALLENDIC = {"TMB130ss": 910,
             "TEC140-x75":140*7*0.75} 
 
 #CCDNAME, PIXSIZE, GAIN, RENOISE    
-CCDDIC = {"STF-8300M": {"PIXSIZE":5.4, 
+CCDDIC = {"ST-8300M": {"PIXSIZE":5.4, 
+                        "GAIN":0.37,
+                        "RDNOISE":9.3}, 
+        "STF-8300M": {"PIXSIZE":5.4, 
                         "GAIN":0.37,
                         "RDNOISE":9.3}, 
         "QSI683ws": {"PIXSIZE":5.4, 
@@ -202,7 +205,7 @@ def KevinFitsUpdater(
     fpath,
     checkKEYs = ["OBJECT", "TELESCOP", "OPTIC", "CCDNAME", 'FILTER',
             "GAIN", "EGAIN", "RDNOISE", "FOCALLEN", "FOCRATIO", "PIXSCALE", "CCD-TEMP",
-            "XBINNING", "YBINNING", "FLIPSTAT"],
+            "XBINNING", "YBINNING", "FLIPSTAT", "EXPTIME", "EXPOSURE"],
     ):
     '''
         Parameters
@@ -320,7 +323,7 @@ def KevinFitsUpdater(
             if not "FILTER" in hdul[0].header :
                 if  hdul[0].header["FILTER"] != filter_name.upper() :
                     hdul[0].header["FILTER"] = filter_name.upper()
-                    print(f"The 'FILTER' is set {hdul[0].header['FILTER']}")
+                    print(f"The timestamp = datetime.new().strftime(r'%Y-%m-%d %H:%M:%S')'FILTER' is set {hdul[0].header['FILTER']}")
             if not "OPTIC" in hdul[0].header :
                 hdul[0].header["OPTIC"] = optic_name
                 print(f"The 'OPTIC' is set {hdul[0].header['OPTIC']}")
@@ -374,9 +377,17 @@ def KevinFitsUpdater(
             hdul[0].header['CCD-TEMP'] = 'N'
             print(f"The 'CCD-TEMP' is set {hdul[0].header['CCD-TEMP']}...")
 
-        if not "EXPOSURE" in hdul[0].header :
+        if "EXPOSURE" in hdul[0].header :
+            if not "EXPTIME" in hdul[0].header :
+                hdul[0].header["EXPTIME"] = hdul[0].header["EXPOSURE"]
+                print(f"The 'EXPTIME' is set {hdul[0].header['EXPOSURE']}...")
+        elif "EXPTIME" in hdul[0].header :
             hdul[0].header["EXPOSURE"] = hdul[0].header["EXPTIME"]
             print(f"The 'EXPOSURE' is set {hdul[0].header['EXPTIME']}...")
+        else :
+            hdul[0].header["EXPTIME"] = 'N'
+            hdul[0].header["EXPOSURE"] = 'N'
+            print(f"The 'EXPTIME' and 'EXPOSURE' are set 'N'...")
 
         #hdul[0].header['GAIN'] = GAINDIC[CCDNAME]
         hdul[0].header['GAIN'] = CCDDIC[hdul[0].header['CCDNAME']]['GAIN']

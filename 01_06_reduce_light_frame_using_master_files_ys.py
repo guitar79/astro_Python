@@ -35,49 +35,62 @@ if not os.path.exists('{0}'.format(log_dir)):
 #%%
 #######################################################
 # read all files in base directory for processing
-OBSRAWDIR = astro_utilities.CCD_obs_dir
-BASEDIR = astro_utilities.base_dir
-BASEDIRs = sorted(Python_utilities.getFullnameListOfsubDir(BASEDIR))
-print ("BASEDIRs: {}".format(BASEDIRs))
-print ("len(BASEDIRs): {}".format(len(BASEDIRs)))
+BASEDIR = Path(r"r:\CCD_obs")
+BASEDIR = Path("/mnt/Rdata/CCD_obs") 
+#BASEDIR = Path("/mnt/OBS_data") 
+DOINGDIR = Path(BASEDIR/ "RnE_2022/GSON300_STF-8300M")
+#DOINGDIR = Path(BASEDIR/ "CCD_new_files1")
+
+#DOINGDIRs = sorted(Python_utilities.getFullnameListOfsubDirs(DOINGDIR))
+DOINGDIRs = sorted([x for x in DOINGDIR.iterdir() if x.is_dir()])
+#print ("DOINGDIRs: ", format(DOINGDIRs))
+print ("len(DOINGDIRs): ", format(len(DOINGDIRs)))
+#######################################################
 
 #%%
-for BASEDIR in BASEDIRs[:4] :
-    print ("Starting...\n{}".format(BASEDIR))
+for DOINGDIR in DOINGDIRs[4:] :
+    #DOINGDIR = Path(DOINGDIR)
+    print("DOINGDIR", DOINGDIR)
+    fits_in_dir = sorted(list(DOINGDIR.glob('*.fit*')))
+    #print("fits_in_dir", fits_in_dir)
+    print("len(fits_in_dir)", len(fits_in_dir))
 
-    BASEDIR = Path(BASEDIR)
-    
-    MASTERDIR = BASEDIR / astro_utilities.master_dir
-    REDUCEDDIR = BASEDIR / astro_utilities.reduced_dir
+    if len(fits_in_dir) == 0 :
+        print(f"There is no fits fils in {DOINGDIR}")
+        pass
+    else : 
+        print(f"Starting: {str(DOINGDIR.parts[-1])}")
 
-    if not REDUCEDDIR.exists():
-        os.makedirs(str(REDUCEDDIR))
-        print("{} is created...".format(str(REDUCEDDIR)))
+        MASTERDIR = DOINGDIR / astro_utilities.master_dir
+        REDUCEDDIR = DOINGDIR / astro_utilities.reduced_dir
 
-    #%%
-    summary = yfu.make_summary(BASEDIR/"*.fit")
-    #print(summary)
-    print("len(summary):", len(summary))
+        if not REDUCEDDIR.exists():
+            os.makedirs(str(REDUCEDDIR))
+            print("{} is created...".format(str(REDUCEDDIR)))
 
-    df_light = summary.loc[summary["IMAGETYP"] == "LIGHT"].copy()
-    df_light = df_light.reset_index(drop=True)
+        summary = yfu.make_summary(DOINGDIR/"*.fit*")
+        #print(summary)
+        print("len(summary):", len(summary))
+        print("summary:", summary)
+        #print(summary["file"][0])
 
-    # %%
-    for _, row in df_light.iterrows():
-        try:
-            fpath = Path(row["file"])
-            ccd = yfu.load_ccd(fpath)
-            filt = ccd.header["FILTER"]
-            expt = ccd.header["EXPTIME"]
-            red = yfu.ccdred(
-                ccd,
-                output=Path(f"{REDUCEDDIR}/{fpath.stem}.fit"),
-                mdarkpath=str(MASTERDIR / "master_dark_{:.0f}sec.fits".format(expt)),
-                mflatpath=str(MASTERDIR / "master_flat_{}_norm.fits".format(filt.upper())),
-                # flat_norm_value=1,  # 1 = skip normalization, None = normalize by mean
-                overwrite=True
-            )
-        except Exception as err: 
-            print ('Error messgae .......')
-            print (err)
+        df_light = summary.loc[summary["IMAGETYP"] == "LIGHT"].copy()
+        df_light = df_light.reset_index(drop=True)
+
+        for _, row in df_light.iterrows():
+            try:
+                fpath = Path(row["file"])
+                ccd = yfu.load_ccd(fpath)
+                filt = ccd.header["FILTER"]
+                expt = ccd.header["EXPTIME"]
+                red = yfu.ccdred(
+                    ccd,
+                    output=Path(f"{REDUCEDDIR}/{fpath.stem}.fit"),
+                    mdarkpath=str(MASTERDIR / "master_dark_{:.0f}sec.fits".format(expt)),
+                    mflatpath=str(MASTERDIR / "master_flat_{}_norm.fits".format(filt.upper())),
+                    # flat_norm_value=1,  # 1 = skip normalization, None = normalize by mean
+                    overwrite=True
+                )
+            except FileNotFoundError: 
+                Python_utilities.write_log(err_log_file, "FileNotFoundError")
  

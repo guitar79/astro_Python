@@ -7,6 +7,7 @@ Created on Thu Nov 22 01:00:19 2018
 
 #%%
 from datetime import datetime, timedelta
+import time
 import os
 import shutil
 from pathlib import Path
@@ -31,8 +32,8 @@ def mkdir(fpath, mode=0o777, exist_ok=True):
 # creat log.format(fullname, , )=======================================================
 
 def write_log(log_file, log_str):
-    import time
-    timestamp = time.strftime('%Y-%m-%d %H:%M:%S')
+    timestamp = datetime.now()
+    timestamp = timestamp.strftime(r'%Y-%m-%d %H:%M:%S')
     msg = '[' + timestamp + '] ' + log_str
     print(msg)
     with open(log_file, 'a') as f:
@@ -40,7 +41,7 @@ def write_log(log_file, log_str):
 
 def write_log_old(log_file, log_str):
     import time
-    timestamp = time.strftime('%Y-%m-%d %H:%M:%S')
+    timestamp = time.strftime(r'%Y-%m-%d %H:%M:%S')
     msg = '[' + timestamp + '] ' + log_str
     print(msg)
     with open(log_file, 'a') as f:
@@ -144,6 +145,20 @@ def getFullnameListOfallsubDirs1(dirName):
         if os.path.isdir(d):
             allFiles.extend(getFullnameListOfallsubDirs1(d))
 
+    return allFiles
+
+# =============================================================================
+# getFullnameListOfallsubDirs
+# =============================================================================
+def getFpaths(dirName):
+    ##############################################3
+    import os
+    allFiles = list()
+    for it in os.scandir(dirName):
+        if it.is_dir():
+            allFiles.append(it.path)
+            allFiles.extend(getFullnameListOfallsubDirs(it))
+    allFiles = [w+"/" for w in allFiles]
     return allFiles
 
 
