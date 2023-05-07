@@ -21,8 +21,8 @@ import ysfitsutilpy as yfu
 import ysphotutilpy as ypu
 import ysvisutilpy as yvu
 
-import astro_utilities
-import Python_utilities
+import _astro_utilities
+import _Python_utilities
 
 #%%
 #######################################################
@@ -41,10 +41,10 @@ if not os.path.exists('{0}'.format(log_dir)):
 BASEDIR = "../RnE_2022/"
 BASEDIR = "../RnE_2022/RiLA600_STX-16803_2bin/"
 BASEDIR = "../Post_process/GSON300_STF-8300M_1bin/"
-OBSRAWDIR = Path(astro_utilities.CCD_obs_dir)
+OBSRAWDIR = Path(_astro_utilities.CCD_obs_dir)
 
 #%%
-BASEDIRs = sorted(Python_utilities.getFullnameListOfsubDir(BASEDIR))
+BASEDIRs = sorted(_Python_utilities.getFullnameListOfsubDir(BASEDIR))
 print ("BASEDIRs: {}".format(BASEDIRs))
 
 #%%
@@ -71,7 +71,7 @@ for BASEDIR in BASEDIRs[:] :
 
     #%%
     SearchRAWCAL = OBSRAWDIR / f"{Ccd_name}_{Bin_name}" / "cal"
-    bdRAWDIRs = sorted(Python_utilities.getFullnameListOfallsubDirs(SearchRAWCAL))
+    bdRAWDIRs = sorted(_Python_utilities.getFullnameListOfallsubDirs(SearchRAWCAL))
     #print("bdRAWDIRs: ", bdRAWDIRs)
     print("len(bdRAWDIRs): ", len(bdRAWDIRs))
 
@@ -89,14 +89,14 @@ for BASEDIR in BASEDIRs[:] :
     #print(type(Obs_date))
     #print(Obs_date)
     #print(b_date[0]-Obs_date)
-    near_idx = Python_utilities.nearest_ind(b_date, Obs_date)
+    near_idx = _Python_utilities.nearest_ind(b_date, Obs_date)
     print(near_idx)
     
     
         
 
 #%%
-OBSRAWDIRs = sorted(Python_utilities.getFullnameListOfallsubDirs(SCRAWLIGHT))
+OBSRAWDIRs = sorted(_Python_utilities.getFullnameListOfallsubDirs(SCRAWLIGHT))
 OBSRAWDIRs = [w for w in OBSRAWDIRs if ((Object_name) in w
                                     or (".tmp") in w)]
 
@@ -158,8 +158,8 @@ for BASEDIR in BASEDIRs[4:] :
 
     BASEDIR = Path(BASEDIR)
     
-    MASTERDIR = BASEDIR / astro_utilities.master_dir
-    REDUCEDDIR = BASEDIR / astro_utilities.reduced_dir
+    MASTERDIR = BASEDIR / _astro_utilities.master_dir
+    REDUCEDDIR = BASEDIR / _astro_utilities.reduced_dir
 
     if not REDUCEDDIR.exists():
         os.makedirs(str(REDUCEDDIR))
@@ -167,16 +167,16 @@ for BASEDIR in BASEDIRs[4:] :
 
 
 
-BASEDIRs = sorted(Python_utilities.getFullnameListOfsubDir(BASEDIR))
+BASEDIRs = sorted(_Python_utilities.getFullnameListOfsubDir(BASEDIR))
 print ("BASEDIRs: {}".format(BASEDIRs))
 print ("len(BASEDIRs): {}".format(len(BASEDIRs)))
 
    
-    OBSRAWDIR = BASEDIR / astro_utilities.CCD_obs_dir
-    MASTERDIR = BASEDIR / astro_utilities.master_dir
-    REDUCEDDIR = BASEDIR / astro_utilities.reduced_dir
-    SOLVEDDIR = BASEDIR / astro_utilities.solved_dir
-    RESULTDIR = BASEDIR / astro_utilities.DAOfinder_result_dir
+    OBSRAWDIR = BASEDIR / _astro_utilities.CCD_obs_dir
+    MASTERDIR = BASEDIR / _astro_utilities.master_dir
+    REDUCEDDIR = BASEDIR / _astro_utilities.reduced_dir
+    SOLVEDDIR = BASEDIR / _astro_utilities.solved_dir
+    RESULTDIR = BASEDIR / _astro_utilities.DAOfinder_result_dir
 
     #%%
     summary = yfu.make_summary(BASEDIR/"*.fit*")
@@ -206,10 +206,10 @@ print ("len(BASEDIRs): {}".format(len(BASEDIRs)))
                                 "{}_{}".format(BASEDIR.parts[-1].split("_")[6], 
                                             BASEDIR.parts[-1].split("_")[8]) / "cal" 
             print("calBDDIR: ", calBDDIR)
-            calBDDIRs = sorted(Python_utilities.getFullnameListOfallsubDirs(calBDDIR))
+            calBDDIRs = sorted(_Python_utilities.getFullnameListOfallsubDirs(calBDDIR))
             print("calBDDIRs: ", calBDDIRs)
 
-            #CCDOBSDIRs = sorted(Python_utilities.getFullnameListOfallsubDirs(CCD_obs_dir))
+            #CCDOBSDIRs = sorted(_Python_utilities.getFullnameListOfallsubDirs(CCD_obs_dir))
 
 
        

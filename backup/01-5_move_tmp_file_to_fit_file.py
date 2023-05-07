@@ -7,7 +7,7 @@ Created on Thu Nov 22 01:00:19 2018
 import os
 import shutil
 from datetime import datetime
-import Python_utilities
+import _Python_utilities
 
 log_dir = "logs/"
 log_file = "{}{}.log".format(log_dir, os.path.basename(__file__)[:-3])
@@ -21,7 +21,7 @@ if not os.path.exists('{0}'.format(log_dir)):
 BASEDIR = "../CCD_obs_raw/"
 
 #####################################################################
-fullnames = Python_utilities.getFullnameListOfallFiles(BASEDIR)
+fullnames = _Python_utilities.getFullnameListOfallFiles(BASEDIR)
 print ("fullnames: {}".format(fullnames))
 
 fullnames_tmp = [w for w in fullnames if ".tmp" in w]
@@ -39,5 +39,5 @@ for fullname in fullnames_tmp[:] :
                         r"{}.fit".format(fullname[:-4]))
 
     except Exception as err:
-        Python_utilities.write_log(err_log_file,
+        _Python_utilities.write_log(err_log_file,
                     '{2} ::: {0} with solve {1} '.format(err, fullname, datetime.now()))

@@ -18,8 +18,8 @@ import ysfitsutilpy as yfu
 import ysphotutilpy as ypu
 import ysvisutilpy as yvu
 
-import astro_utilities
-import Python_utilities
+import _astro_utilities
+import _Python_utilities
 
 #%%
 #######################################################
@@ -39,16 +39,17 @@ BASEDIR = Path(r"r:\CCD_obs")
 BASEDIR = Path("/mnt/Rdata/CCD_obs") 
 #BASEDIR = Path("/mnt/OBS_data") 
 DOINGDIR = Path(BASEDIR/ "RnE_2022/GSON300_STF-8300M")
+DOINGDIR = Path(BASEDIR/ "RnE_2022/RiLA600_STX-16803_1bin")
 #DOINGDIR = Path(BASEDIR/ "CCD_new_files1")
 
-#DOINGDIRs = sorted(Python_utilities.getFullnameListOfsubDirs(DOINGDIR))
+#DOINGDIRs = sorted(_Python_utilities.getFullnameListOfsubDirs(DOINGDIR))
 DOINGDIRs = sorted([x for x in DOINGDIR.iterdir() if x.is_dir()])
 #print ("DOINGDIRs: ", format(DOINGDIRs))
 print ("len(DOINGDIRs): ", format(len(DOINGDIRs)))
 #######################################################
 
 #%%
-for DOINGDIR in DOINGDIRs[4:] :
+for DOINGDIR in DOINGDIRs[:] :
     #DOINGDIR = Path(DOINGDIR)
     print("DOINGDIR", DOINGDIR)
     fits_in_dir = sorted(list(DOINGDIR.glob('*.fit*')))
@@ -61,8 +62,8 @@ for DOINGDIR in DOINGDIRs[4:] :
     else : 
         print(f"Starting: {str(DOINGDIR.parts[-1])}")
 
-        MASTERDIR = DOINGDIR / astro_utilities.master_dir
-        REDUCEDDIR = DOINGDIR / astro_utilities.reduced_dir
+        MASTERDIR = DOINGDIR / _astro_utilities.master_dir
+        REDUCEDDIR = DOINGDIR / _astro_utilities.reduced_dir
 
         if not REDUCEDDIR.exists():
             os.makedirs(str(REDUCEDDIR))
@@ -92,5 +93,5 @@ for DOINGDIR in DOINGDIRs[4:] :
                     overwrite=True
                 )
             except FileNotFoundError: 
-                Python_utilities.write_log(err_log_file, "FileNotFoundError")
+                _Python_utilities.write_log(err_log_file, "FileNotFoundError")
  

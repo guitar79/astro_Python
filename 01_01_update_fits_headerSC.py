@@ -19,8 +19,8 @@ import ysfitsutilpy as yfu
 import ysphotutilpy as ypu
 import ysvisutilpy as yvu
 
-import Python_utilities
-import astro_utilities
+import _Python_utilities
+import _astro_utilities
 #%%
 #######################################################
 # for log file
@@ -38,10 +38,10 @@ if not os.path.exists('{0}'.format(log_dir)):
 BASEDIR = Path(r"r:\CCD_obs")
 BASEDIR = Path("/mnt/Rdata/CCD_obs") 
 #BASEDIR = Path("/mnt/OBS_data") 
-DOINGDIR = Path(BASEDIR/ astro_utilities.CCD_NEW_dir)
-#DOINGDIR = Path(BASEDIR/ "CCD_new_files1")
+DOINGDIR = Path(BASEDIR/ _astro_utilities.CCD_NEW_dir)
+#DOINGDIR = Path(BASEDIR/ _astro_utilities.CCD_obs_raw_dir)
 
-DOINGDIRs = sorted(Python_utilities.getFullnameListOfallsubDirs(DOINGDIR))
+DOINGDIRs = sorted(_Python_utilities.getFullnameListOfallsubDirs(DOINGDIR))
 #print ("DOINGDIRs: ", format(DOINGDIRs))
 print ("len(DOINGDIRs): ", format(len(DOINGDIRs)))
 #######################################################
@@ -72,9 +72,9 @@ for DOINGDIR in DOINGDIRs[:] :
                 print (row["file"])
                 fpath = Path(row["file"])
                 try:
-                    hdul = astro_utilities.KevinFitsUpdater(fpath)
+                    hdul = _astro_utilities.KevinFitsUpdater(fpath)
                     print("hdul: ", hdul)
 
                 except Exception as err :
                     print("X"*60)
-                    Python_utilities.write_log(err_log_file, err)
+                    _Python_utilities.write_log(err_log_file, err)

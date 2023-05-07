@@ -22,8 +22,8 @@ import ysfitsutilpy as yfu
 #import ysphotutilpy as ypu
 import ysvisutilpy as yvu
 
-import astro_utilities
-import Python_utilities
+import _astro_utilities
+import _Python_utilities
 
 #######################################################
 # for log file
@@ -41,10 +41,10 @@ if not os.path.exists('{0}'.format(log_dir)):
 BASEDIR = Path(r"r:\CCD_obs") 
 BASEDIR = Path("/mnt/Rdata/CCD_obs") 
 #BASEDIR = Path("/mnt/OBS_data") 
-DOINGDIR = BASEDIR / astro_utilities.CCD_NEW_dir
+DOINGDIR = BASEDIR / _astro_utilities.CCD_NEW_dir
 #DOINGDIR = BASEDIR / "CCD_new_files1"
                
-DOINGDIRs = sorted(Python_utilities.getFullnameListOfallsubDirs(DOINGDIR))
+DOINGDIRs = sorted(_Python_utilities.getFullnameListOfallsubDirs(DOINGDIR))
 #print ("DOINGDIRs: ", format(DOINGDIRs))
 print ("len(DOINGDIRs): ", format(len(DOINGDIRs)))
 
@@ -95,10 +95,10 @@ for DOINGDIR in DOINGDIRs[:] :
                 new_fname += ccdtemp+"c_"+str(int(hdul[0].header["XBINNING"]))+"bin.fit"
                 print("new_fname: ", new_fname)
                 hdul.close()
-                new_folder = astro_utilities.get_new_foldername_from_filename(new_fname)
+                new_folder = _astro_utilities.get_new_foldername_from_filename(new_fname)
                 #print("new_folder: ", new_folder)
 
-                new_fpath =  BASEDIR /astro_utilities.CCD_obs_raw_dir / new_folder / new_fname
+                new_fpath =  BASEDIR /_astro_utilities.CCD_obs_raw_dir / new_folder / new_fname
                 print("new_fpath: ", new_fpath)
 
                 if not new_fpath.parent.exists():
@@ -106,7 +106,7 @@ for DOINGDIR in DOINGDIRs[:] :
                     print(f'{str(new_fpath.parts[-2])} is created')  
                 #os.makedirs(str(new_fpath.parent), exist_ok=True)
                 if new_fpath.exists():
-                    duplicate_fpath = BASEDIR / astro_utilities.CCD_duplicate_dir / new_fpath.name
+                    duplicate_fpath = BASEDIR / _astro_utilities.CCD_duplicate_dir / new_fpath.name
                     #os.rename(str(new_fpath), str(duplicate_fpath))
                     shutil.move(str(new_fpath), str(duplicate_fpath))
                     print (f"move duplicate file to {str(duplicate_fpath)}")
@@ -116,15 +116,15 @@ for DOINGDIR in DOINGDIRs[:] :
                 print(f"move {str(fpath.name)} to {str(new_fpath)}")
             except Exception as err :
                 print("X"*60)
-                Python_utilities.write_log(err_log_file, err)
+                _Python_utilities.write_log(err_log_file, err)
                 pass
 #%%   
 #############################################################################
 #Check and delete empty folder....
 #############################################################################
 for i in range(4):
-    DOINGDIR = Path( BASEDIR/ astro_utilities.CCD_NEW_dir)           
-    DOINGDIRs = sorted(Python_utilities.getFullnameListOfallsubDirs(DOINGDIR))
+    DOINGDIR = Path( BASEDIR/ _astro_utilities.CCD_NEW_dir)           
+    DOINGDIRs = sorted(_Python_utilities.getFullnameListOfallsubDirs(DOINGDIR))
     #print ("DOINGDIRs: ", format(DOINGDIRs))
     print ("len(DOINGDIRs): ", format(len(DOINGDIRs)))
 
@@ -133,7 +133,7 @@ for i in range(4):
             shutil.rmtree(f"{str(DOINGDIR)}") # Delete..
             print (f"rmtree {str(DOINGDIR)}")
         else : 
-            fpaths = Python_utilities.getFullnameListOfallFiles(str(DOINGDIR))
+            fpaths = _Python_utilities.getFullnameListOfallFiles(str(DOINGDIR))
             print("fpaths", fpaths)
 
             for fpath in fpaths[:]:

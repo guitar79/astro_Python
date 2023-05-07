@@ -19,8 +19,8 @@ import ysfitsutilpy as yfu
 import ysphotutilpy as ypu
 import ysvisutilpy as yvu
 
-import astro_utilities
-import Python_utilities
+import _astro_utilities
+import _Python_utilities
 
 #%%
 #######################################################
@@ -40,13 +40,15 @@ BASEDIR = Path("/mnt/Rdata/CCD_obs")
 #BASEDIR = Path("/mnt/OBS_data") 
 #DOINGDIR = Path(BASEDIR/ "RnE_2022/GSON300_STF-8300M")
 #DOINGDIR = Path(BASEDIR/ "CCD_new_files")
-DOINGDIR = ( BASEDIR/ astro_utilities.CCD_NEW_dir)
+DOINGDIR = ( BASEDIR/ _astro_utilities.CCD_NEW_dir)
+#DOINGDIR = ( BASEDIR/ _astro_utilities.CCD_obs_raw_dir)
 
-DOINGDIRs = sorted(Python_utilities.getFullnameListOfallsubDirs(DOINGDIR))
+DOINGDIRs = sorted(_Python_utilities.getFullnameListOfallsubDirs(DOINGDIR))
 #DOINGDIRs = sorted([x for x in DOINGDIR.iterdir() if x.is_dir()])
 #print ("DOINGDIRs: ", format(DOINGDIRs))
 print ("len(DOINGDIRs): ", format(len(DOINGDIRs)))
 
+count = 0
 #%%
 for DOINGDIR in DOINGDIRs :
     DOINGDIR = Path(DOINGDIR)
@@ -69,6 +71,8 @@ for DOINGDIR in DOINGDIRs :
         print("type(summary): ", type(summary))
 
         for _, row in summary.iterrows():
+            count += 1
+            print(f'Starting #{count}th files')
             try: 
                 # 파일명 출력
                 print (row["file"])
@@ -89,5 +93,5 @@ for DOINGDIR in DOINGDIRs :
 
             except Exception as err :
                 print("X"*60)
-                Python_utilities.write_log(err_log_file, err)
+                _Python_utilities.write_log(err_log_file, err)
             

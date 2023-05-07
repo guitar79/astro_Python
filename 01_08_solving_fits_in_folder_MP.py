@@ -11,20 +11,18 @@ Astrometry plate solving을 수행합니다.
 (터짐 주의)
 """
 #%%
-from glob import glob
-from pathlib import Path
 import os
-import numpy as np
-import shutil
-from datetime import datetime 
+import subprocess
+from datetime import datetime
 from astropy.io import fits
+from pathlib import Path
+import shutil 
+import _Python_utilities
+import _astro_utilities
 
 import ysfitsutilpy as yfu
 import ysphotutilpy as ypu
 import ysvisutilpy as yvu
-
-import Python_utilities
-import astro_utilities
 
 #%%
 #######################################################
@@ -72,38 +70,50 @@ class Multiprocessor():
         return rets
 #######################################################
 
-#%%
 #######################################################
 # read all files in base directory for processing
-BASEDIR = astro_utilities.base_dir
+BASEDIR = Path(r"r:\CCD_obs")
+BASEDIR = Path("/mnt/Rdata/CCD_obs") 
+#BASEDIR = Path("/mnt/OBS_data") 
+DOINGDIR = Path(BASEDIR/ "RnE_2022/GSON300_STF-8300M")
+#DOINGDIR = Path(BASEDIR/ "CCD_new_files1")
 
-BASEDIRs = sorted(Python_utilities.getFullnameListOfsubDir(BASEDIR))
-print ("BASEDIRs: {}".format(BASEDIRs))
-print ("len(BASEDIRs): {}".format(len(BASEDIRs)))
-
+#DOINGDIRs = sorted(_Python_utilities.getFullnameListOfsubDirs(DOINGDIR))
+DOINGDIRs = sorted([x for x in DOINGDIR.iterdir() if x.is_dir()])
+#print ("DOINGDIRs: ", format(DOINGDIRs))
+print ("len(DOINGDIRs): ", format(len(DOINGDIRs)))
+#######################################################
 #%%
-for BASEDIR in BASEDIRs [:]:
-    print ("Starting...\n{}".format(BASEDIR))
+for DOINGDIR in DOINGDIRs[:] :
+    result = ''
+    #DOINGDIR = Path(DOINGDIR)
+    print("DOINGDIR", DOINGDIR)
+    fits_in_dir = sorted(list(DOINGDIR.glob('*.fit*')))
+    #print("fits_in_dir", fits_in_dir)
+    print("len(fits_in_dir)", len(fits_in_dir))
 
-    BASEDIR = Path(BASEDIR)
-
-    RESULTDIR = BASEDIR / astro_utilities.DAOfinder_result_dir
-    SOLVEDDIR = BASEDIR / astro_utilities.solved_dir2
-    MASTERDIR = BASEDIR / astro_utilities.master_dir
-    REDUCEDDIR = BASEDIR / astro_utilities.reduced_dir2
-    MASTERDIR = BASEDIR / astro_utilities.master_dir
-
-    if not (SOLVEDDIR).exists():
-        os.makedirs(str(SOLVEDDIR))
-
-    summary = yfu.make_summary(REDUCEDDIR/"*.fit*")
-    #summary = yfu.make_summary(BASEDIR/"*.fit*")
-
-    if summary.empty:
-        print("The dataframe(summary) is empty")
+    if len(fits_in_dir) == 0 :
+        print(f"There is no fits fils in {DOINGDIR}")
         pass
-    else:
+    else : 
+        print(f"Starting: {str(DOINGDIR.parts[-1])}")
+    
+        MASTERDIR = DOINGDIR / _astro_utilities.master_dir
+        REDUCEDDIR = DOINGDIR / _astro_utilities.reduced_dir2
+        SOLVEDDIR = DOINGDIR / _astro_utilities.solved_dir2
+
+        if not SOLVEDDIR.exists():
+            os.makedirs("{}".format(str(SOLVEDDIR)))
+            print("{} is created...".format(str(SOLVEDDIR))) 
+
+        summary = yfu.make_summary(REDUCEDDIR/"*Light*.fit*")
+        print("len(summary):", len(summary))
+        print("summary:", summary)
+        #print(summary["file"][0])
+
         df_light = summary.loc[summary["IMAGETYP"] == "LIGHT"].copy()
+        df_light = df_light.reset_index(drop=True)
+        print("df_light:\n{}".format(df_light))
 
         if df_light.empty:
             print("The dataframe(df_light) is empty")
@@ -121,8 +131,11 @@ for BASEDIR in BASEDIRs [:]:
             for batch in range(num_batches):
                 myMP.restart()
                 for fullname in fullnames[batch*num_batches:(batch+1)*num_batches]:
-                    #myMP.run(astro_utilities.KevinSolver, fullname, solved_dir)
-                    myMP.run(astro_utilities.AstrometrySolver, fullname, str(SOLVEDDIR))
+                    #myMP.run(_astro_utilities.KevinSolver, fullname, solved_dir)
+                    myMP.run(_astro_utilities.AstrometrySolver, fullname, 
+                                                                str(SOLVEDDIR), 
+                                                                4,
+                                                                0.93,)
 
                 print("Batch " + str(batch))
                 #myMP.wait()

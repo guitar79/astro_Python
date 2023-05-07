@@ -10,7 +10,7 @@ import numpy as np
 import os
 import astropy.units as u
 from ccdproc import CCDData, ccd_process
-import Python_utilities
+import _Python_utilities
 
 import matplotlib.pyplot as plt
 from mpl_toolkits.axes_grid1 import make_axes_locatable
@@ -27,7 +27,7 @@ if not os.path.exists('{0}'.format(log_dir)):
 BASEDIR = "../Post_processing/M35_Light_-_2018-10-31_-_TMB130ss_STF-8300M_-_1bin/"
 
 ### make all fits file list...
-fullnames = Python_utilities.getFullnameListOfallFiles("{}/input".format(BASEDIR))
+fullnames = _Python_utilities.getFullnameListOfallFiles("{}/input".format(BASEDIR))
 #print ("fullnames: {}".format(fullnames))
 print ("len(fullnames): {}".format(len(fullnames)))
 

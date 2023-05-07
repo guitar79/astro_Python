@@ -6,7 +6,7 @@ Created on Thu Nov 22 01:00:19 2018
 #%%
 import os
 from astropy.io import fits
-import Python_utilities
+import _Python_utilities
 
 log_dir = "logs/"
 log_file = "{}{}.log".format(log_dir, os.path.basename(__file__)[:-3])
@@ -81,9 +81,9 @@ BASEDIRs = ['../CCD_obs_raw/']
 fullnames = []
 for dirName in BASEDIRs :
     try :
-        fullnames.extend(Python_utilities.getFullnameListOfallFiles("{}".format(dirName)))
+        fullnames.extend(_Python_utilities.getFullnameListOfallFiles("{}".format(dirName)))
     except Exception as err :
-        #Python_utilities.write_log(err_log_file, err)
+        #_Python_utilities.write_log(err_log_file, err)
         print(err)
         continue
 fullnames = sorted(fullnames)
@@ -126,6 +126,6 @@ for fullname in fullnames :
                 cur.execute(qry)
                 conn.commit()
             except Exception as err :
-                #Python_utilities.write_log(err_log_file, err)
+                #_Python_utilities.write_log(err_log_file, err)
                 print("err with {}".format(fullname))
                 continue

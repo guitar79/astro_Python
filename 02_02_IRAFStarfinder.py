@@ -21,8 +21,8 @@ import ysfitsutilpy as yfu
 import ysphotutilpy as ypu
 import ysvisutilpy as yvu
 
-import Python_utilities
-import astro_utilities
+import _Python_utilities
+import _astro_utilities
 
 from astropy.nddata import Cutout2D
 from astropy.io import fits
@@ -59,9 +59,9 @@ if not os.path.exists('{0}'.format(log_dir)):
 #######################################################
 
 #%%
-BASEDIR = astro_utilities.base_dir
+BASEDIR = _astro_utilities.base_dir
 
-BASEDIRs = sorted(Python_utilities.getFullnameListOfsubDir(BASEDIR))
+BASEDIRs = sorted(_Python_utilities.getFullnameListOfsubDir(BASEDIR))
 print ("BASEDIRs: {}".format(BASEDIRs))
 print ("len(BASEDIRs): {}".format(len(BASEDIRs)))
 
@@ -69,8 +69,8 @@ for BASEDIR in BASEDIRs :
     print ("Starting...\n{}".format(BASEDIR))
 
     BASEDIR = Path(BASEDIR)
-    SOLVEDDIR = BASEDIR / astro_utilities.solved_dir2
-    IRAFRESULTDIR = BASEDIR / astro_utilities.IRAFfinder_result_dir
+    SOLVEDDIR = BASEDIR / _astro_utilities.solved_dir2
+    IRAFRESULTDIR = BASEDIR / _astro_utilities.IRAFfinder_result_dir
 
     if not IRAFRESULTDIR.exists():
         os.makedirs("{}".format(str(IRAFRESULTDIR)))

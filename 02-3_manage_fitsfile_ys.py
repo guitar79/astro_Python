@@ -24,7 +24,7 @@ import numpy as np
 import astropy.units as u
 from astropy.stats import sigma_clip
 from ccdproc import combine, ccd_process, CCDData
-import Python_utilities
+import _Python_utilities
 import ysfitsutilpy as yfu
 import ysphotutilpy as ypu
 import ysvisutilpy as yvu
@@ -51,7 +51,7 @@ BASEDIR = "../RnE_2022/KLEOPATRA_Light_-_2022-11-04_-_RiLA600_STX-16803_-_2bin/"
 #BASEDIR = "../RnE_2022/"
 #BASEDIR = "../CCD_obs_raw/"
 #%%
-# BASEDIRs = sorted(Python_utilities.getFullnameListOfsubDir(BASEDIR))
+# BASEDIRs = sorted(_Python_utilities.getFullnameListOfsubDir(BASEDIR))
 # print ("BASEDIRs1: {}".format(BASEDIRs))
 # BASEDIRs = [w for w in BASEDIRs \
 #         if not (w.endswith("{}/".format(master_dir)) \

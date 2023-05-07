@@ -33,8 +33,8 @@ import ysfitsutilpy as yfu
 import ysphotutilpy as ypu
 import ysvisutilpy as yvu
 
-import astro_utilities
-import Python_utilities
+import _astro_utilities
+import _Python_utilities
 
 #%%
 #######################################################
@@ -53,8 +53,8 @@ if not os.path.exists('{0}'.format(log_dir)):
 BASEDIR = "../RnE_2022/"
 BASEDIR = "../RnE_2022/RiLA600_STX-16803_2bin/"
 BASEDIR = "../RnE_2022/GSON300_STF-8300M/"
-BASEDIR = astro_utilities.base_dir
-OBSRAWDIR = Path(astro_utilities.CCD_obs_dir)
+BASEDIR = _astro_utilities.base_dir
+OBSRAWDIR = Path(_astro_utilities.CCD_obs_dir)
 
 PostBASEDIR = Path("../Post_process/")
 
@@ -69,7 +69,7 @@ SearchRAWLIGHT = Path(OBSRAWDIR / f"{Ccd_name}_{Bin_name}")
 print("SearchRAWLIGHT:", SearchRAWLIGHT)
 
 #%%
-OBSRAWDIRs = sorted(Python_utilities.getFullnameListOfallsubDirs(SearchRAWLIGHT))
+OBSRAWDIRs = sorted(_Python_utilities.getFullnameListOfallsubDirs(SearchRAWLIGHT))
 OBSRAWDIRs = [w for w in OBSRAWDIRs if ((Object_name) in w
                                     or (".tmp") in w)]
 print ("OBSRAWDIRs: {}".format(OBSRAWDIRs))

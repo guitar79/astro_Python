@@ -9,8 +9,8 @@ Created on Thu Nov 22 01:00:19 2018
 """
 #%%
 import os
-import Python_utilities
-import astro_utilities
+import _Python_utilities
+import _astro_utilities
 
 #%%
 #######################################################
@@ -32,7 +32,7 @@ if not os.path.exists('{0}'.format(log_dir)):
 BASEDIR = "../Rne_2022/"
 BASEDIR = "/mnt/Rdata/NMSC/GK2A/AMI/PRIMARY/L1B/COMPLETE/EA/"
 
-result = Python_utilities.removeAllEmptyDirs(BASEDIR)
+result = _Python_utilities.removeAllEmptyDirs(BASEDIR)
 
 
 # %%

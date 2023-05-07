@@ -13,8 +13,8 @@ from datetime import datetime
 from astropy.io import fits
 import os
 
-import Python_utilities
-import astro_utilities
+import _Python_utilities
+import _astro_utilities
 #%%
 #######################################################
 # for log file
@@ -33,7 +33,7 @@ BASEDIR = "../CCD_new_files/"
 #BASEDIR = "../Rne_2022/"
 #BASEDIR = "../CCD_obs_raw/"
 
-fullnames = astro_utilities.getFullnameListOfallFiles(BASEDIR)
+fullnames = _astro_utilities.getFullnameListOfallFiles(BASEDIR)
 
 print ("fullnames: {}".format(fullnames))
 print ("len(fullnames): {}".format(len(fullnames)))
@@ -105,12 +105,12 @@ for fullname in fullnames[:] :
                                         '{} value added'.format(checkKEY))                    
                 hdul.flush()  # changes are written back to original.fits
                 print('*'*30)
-                Python_utilities.write_log(log_file, 
+                _Python_utilities.write_log(log_file, 
                     '{1} ::: fits header is append with {0} ...'\
                     .format(fullname, datetime.now()))
         except Exception as err :
             print("X"*60)
-            Python_utilities.write_log(err_log_file,
+            _Python_utilities.write_log(err_log_file,
                 '{2} ::: \n{1} with {0} ...'\
                 .format(fullname, err, datetime.now()))
 
@@ -243,13 +243,13 @@ for fullname in fullnames[:] :
                 hdul.flush()  # changes are written back to original.fits
                 print('*'*30)
                 print('*'*35)
-                Python_utilities.write_log(log_file, 
+                _Python_utilities.write_log(log_file, 
                     '{1} ::: fits header is append with {0} ...'\
                     .format(fullname, datetime.now()))
     
         except Exception as err :
             print("X"*60)
-            Python_utilities.write_log(err_log_file,
+            _Python_utilities.write_log(err_log_file,
                 '{2} ::: \n{1} with {0} ...'\
                 .format(fullname, err, datetime.now()))
 # %%

@@ -11,8 +11,8 @@ from datetime import datetime
 from astropy.io import fits
 from pathlib import Path
 import shutil 
-import Python_utilities
-import astro_utilities
+import _Python_utilities
+import _astro_utilities
 
 import ysfitsutilpy as yfu
 import ysphotutilpy as ypu
@@ -38,14 +38,14 @@ BASEDIR = Path("/mnt/Rdata/CCD_obs")
 DOINGDIR = Path(BASEDIR/ "RnE_2022/GSON300_STF-8300M")
 #DOINGDIR = Path(BASEDIR/ "CCD_new_files1")
 
-#DOINGDIRs = sorted(Python_utilities.getFullnameListOfsubDirs(DOINGDIR))
+#DOINGDIRs = sorted(_Python_utilities.getFullnameListOfsubDirs(DOINGDIR))
 DOINGDIRs = sorted([x for x in DOINGDIR.iterdir() if x.is_dir()])
 #print ("DOINGDIRs: ", format(DOINGDIRs))
 print ("len(DOINGDIRs): ", format(len(DOINGDIRs)))
 #######################################################
 
 #%%
-for DOINGDIR in DOINGDIRs[4:] :
+for DOINGDIR in DOINGDIRs[:] :
     #DOINGDIR = Path(DOINGDIR)
     print("DOINGDIR", DOINGDIR)
     fits_in_dir = sorted(list(DOINGDIR.glob('*.fit*')))
@@ -58,16 +58,16 @@ for DOINGDIR in DOINGDIRs[4:] :
     else : 
         print(f"Starting: {str(DOINGDIR.parts[-1])}")
 
-        MASTERDIR = DOINGDIR / astro_utilities.master_dir
-        REDUCEDDIR = DOINGDIR / astro_utilities.reduced_dir2
-        SOLVEDDIR = DOINGDIR / astro_utilities.solved_dir
+        MASTERDIR = DOINGDIR / _astro_utilities.master_dir
+        REDUCEDDIR = DOINGDIR / _astro_utilities.reduced_dir2
+        SOLVEDDIR = DOINGDIR / _astro_utilities.solved_dir2
 
         if not SOLVEDDIR.exists():
             os.makedirs("{}".format(str(SOLVEDDIR)))
             print("{} is created...".format(str(SOLVEDDIR)))
 
-        summary = yfu.make_summary(DOINGDIR/"*.fit*")
-        #print(summary)
+        #summary = yfu.make_summary(DOINGDIR/"*.fit*")
+        summary = yfu.make_summary(REDUCEDDIR/"*Light*.fit*")
         print("len(summary):", len(summary))
         print("summary:", summary)
         #print(summary["file"][0])
@@ -75,19 +75,20 @@ for DOINGDIR in DOINGDIRs[4:] :
         df_light = summary.loc[summary["IMAGETYP"] == "LIGHT"].copy()
         df_light = df_light.reset_index(drop=True)
 
-        for _, row in df_light.iterrows():
-            try:
-                print('#'*40,
-                    "\n{2:.01f}%  ({0}/{1}) {3}".format(n, len(df_light), (n/len(df_light))*100, os.path.basename(__file__)))
-                print ("Starting...\nfullname: {}".format(row["file"]))
+        print("df_light:\n{}".format(df_light))
 
-                solved = astro_utilities.AstrometrySolver(row["file"], str(SOLVEDDIR))
-            
-            except Exception as err: 
-                print ('Error messgae .......')
-                Python_utilities.write_log(err_log_file, err)
+        if df_light.empty:
+            print("The dataframe(df_light) is empty")
+            pass
+        else:
+            for _, row in df_light.iterrows():
+                try:
+                    print ("Starting...\nfullname: {}".format(row["file"]))
 
-
-
+                    solved = _astro_utilities.AstrometrySolver(row["file"], 
+                                                            str(SOLVEDDIR), 
+                                                            4,
+                                                            0.93,)
                 
-
+                except Exception as err: 
+                    _Python_utilities.write_log(err_log_file, err)

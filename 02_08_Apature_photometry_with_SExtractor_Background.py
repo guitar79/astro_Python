@@ -22,8 +22,8 @@ from matplotlib.colors import LogNorm
 from mpl_toolkits.axes_grid1 import make_axes_locatable
 from astropy.io import fits
 from astropy.wcs import WCS
-import Python_utilities
-import astro_utilities
+import _Python_utilities
+import _astro_utilities
 from astropy.stats import sigma_clip, sigma_clipped_stats
 plt.rcParams.update({'figure.max_open_warning': 0})
 
@@ -131,7 +131,7 @@ BASEDIR = "../Post_processing/M35_Light_-_2018-10-31_-_TMB130ss_STF-8300M_-_1bin
 BASEDIR = "../Rne_2022/AMPELLA_Light_-_2022-09-06_-_GSON300_STF-8300M_-_1bin/"
 BASEDIR = "../Rne_2022/INTERAMNIA_Light_-_2022-09-21_-_GSON300_STF-8300M_-_1bin/"
 
-fullnames = Python_utilities.getFullnameListOfallFiles(BASEDIR)
+fullnames = _Python_utilities.getFullnameListOfallFiles(BASEDIR)
 #print ("fullnames: {}".format(fullnames))
 print ("len(fullnames): {}".format(len(fullnames)))
 ######################################################

@@ -14,8 +14,8 @@ from datetime import datetime
 from concurrent.futures import ThreadPoolExecutor, as_completed
 from astropy.io import fits
 from time import time
-import Python_utilities
-import astro_utilities
+import _Python_utilities
+import _astro_utilities
 import threading
 
 #%%
@@ -47,7 +47,7 @@ if not os.path.exists('{0}'.format(destination_BASEDIR_name)):
     os.makedirs('{0}'.format(destination_BASEDIR_name))
 
 # make all fits file list...
-fullnames = Python_utilities.getFullnameListOfallFiles(BASEDIR)
+fullnames = _Python_utilities.getFullnameListOfallFiles(BASEDIR)
 #print ("fullnames: {}".format(fullnames))
 print ("len(fullnames): {}".format(len(fullnames)))
 
@@ -62,7 +62,7 @@ def threaded_process(items_chunk):
     """ Your main process which runs in thread for each chunk"""
     for fullname in items_chunk:                                               
         try:                                                                    
-            astro_utilities.KevinSolver(fullname)
+            _astro_utilities.KevinSolver(fullname)
         except Exception:                                                       
             print('error with {}'.format(fullname))  
 
@@ -80,7 +80,7 @@ thread_list = []
 for thr in range(n_threads):
     for fullname in array_chunk[thr]:
         #thread = threading.Thread(target=threaded_process, args=(array_chunk[thr]),)
-        thread = threading.Thread(target=astro_utilities.KevinSolver, args=(fullname,))
+        thread = threading.Thread(target=_astro_utilities.KevinSolver, args=(fullname,))
         thread.daemon = True
         thread_list.append(thread)
         thread_list[thr].start()
@@ -93,7 +93,7 @@ for thr in range(n_threads):
 #############################################################################
 #Check existence tmp file and rename ...
 #############################################################################
-fullnames = Python_utilities.getFullnameListOfallFiles(BASEDIR)
+fullnames = _Python_utilities.getFullnameListOfallFiles(BASEDIR)
 print ("fullnames: {}".format(fullnames))
 
 fullnames_wcs = [w for w in fullnames if ((w.endswith(".tmp")) or (w.endswith(".new")))]
@@ -119,24 +119,24 @@ for fullname in fullnames_wcs[:] :
             print("fits_info: {}".format(fits_info))
             print("*"*60)
             
-            Python_utilities.write_log(log_file, \
+            _Python_utilities.write_log(log_file, \
                         '{1} ::: {0} fits info modified ...'\
                         .format(fullname, datetime.now()))                
             
-            new_filename = astro_utilities.get_new_filename(fullname)
-            new_foldername = astro_utilities.get_new_foldername_from_filename(new_filename)
+            new_filename = _astro_utilities.get_new_filename(fullname)
+            new_foldername = _astro_utilities.get_new_foldername_from_filename(new_filename)
             print ("new_filename: {}".format(new_filename))
             new_foldername = "{}{}".format(destination_BASEDIR_name, new_foldername)
             print ("new_foldername: {}".format(new_foldername))
             
             if not os.path.exists('{0}'.format(new_foldername)):
                 os.makedirs('{0}'.format(new_foldername))
-                Python_utilities.write_log(log_file, \
+                _Python_utilities.write_log(log_file, \
                      '{1} ::: {0} is created'.format(new_foldername, datetime.now()))    
         
             if new_filename[-6:].lower() == "_-.fit" :
                 if os.path.exists('{0}{1}_wcs.fit'.format(new_foldername, new_filename[:-6])):
-                    Python_utilities.write_log(log_file, 
+                    _Python_utilities.write_log(log_file, 
                          '{0}{1}_wcs.fit is already exist...'.format(new_foldername, new_filename))
                     os.rename(r"{}".format(fullname), 
                               r"{}{}".format(target_duplicate_files_dir, new_filename))
@@ -149,7 +149,7 @@ for fullname in fullnames_wcs[:] :
                               r'{0}{1}'.format(new_foldername, new_filename))
                     #shutil.move(r'{0}'.format(fullname), 
                     #            r'{0}{1}'.format(new_foldername, new_filename))
-                    Python_utilities.write_log(log_file, \
+                    _Python_utilities.write_log(log_file, \
                              '{0} is moved to {1}{2}'.format(fullname, new_foldername, new_filename))
                     
             elif new_filename[-8:].lower() == "_wcs.fit" : 
@@ -164,16 +164,16 @@ for fullname in fullnames_wcs[:] :
                     #shutil.move(r'{0}{1}_wcs.fit'.format(new_foldername, new_filename[:-8]), \
                     #            r"{0}{1}_wcs.fit".format(target_duplicate_files_dir, new_filename[:-8]))
                 shutil.move(r'{0}'.format(fullname), r'{0}{1}'.format(new_foldername, new_filename))
-                Python_utilities.write_log(log_file, \
+                _Python_utilities.write_log(log_file, \
                     '{0} is moved to {1}{2}'.format(fullname, new_foldername, new_filename))
             
             elif fullname[-4:].lower() == ".fit" \
                 or fullname[-4:].lower() == "fits" : 
                 os.rename(r"{}".format(fullname), r"{}{}".format(new_foldername, new_filename))
                 #shutil.move(r"{}".format(fullname), r"{}{}".format(new_foldername, new_filename))
-                Python_utilities.write_log(log_file, \
+                _Python_utilities.write_log(log_file, \
                     '{0} is moved to {1}{2}'.format(fullname, new_foldername, new_filename))
         
     except Exception as err:
-        Python_utilities.write_log(err_log_file,
+        _Python_utilities.write_log(err_log_file,
                     '{2} ::: {0} There is no {1} '.format(err, fullname, datetime.now()))    

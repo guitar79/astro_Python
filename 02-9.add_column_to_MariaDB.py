@@ -1,6 +1,6 @@
 import os
 from astropy.io import fits
-import Python_utilities
+import _Python_utilities
 
 #########################################
 log_dir = "logs/"

@@ -9,9 +9,9 @@ import os
 import subprocess
 from datetime import datetime
 from astropy.io import fits
-import Python_utilities
+import _Python_utilities
 import pandas as pd
-import astro_utilities
+import _astro_utilities
 
 log_dir = "logs/"
 log_file = "{}{}.log".format(log_dir, os.path.basename(__file__)[:-3])
@@ -25,7 +25,7 @@ BASEDIR = "../CCD_new_files/"
 #BASEDIR = "../CCD_wcs_one/"
 BASEDIR = "../CCD_obs_raw/"
 
-fullnames = Python_utilities.getFullnameListOfallFiles(BASEDIR)
+fullnames = _Python_utilities.getFullnameListOfallFiles(BASEDIR)
 print ("fullnames: {}".format(fullnames))
 
 fullnames_wcs = [w for w in fullnames if ".wcs" in w]
@@ -66,9 +66,9 @@ for fullname in fullnames_wcs[:] :
 
         
 
-    #astro_utilities.ASTAPSolver(fullname)
+    #_astro_utilities.ASTAPSolver(fullname)
 '''
 except Exception as err:
-    Python_utilities.write_log(err_log_file,
+    _Python_utilities.write_log(err_log_file,
             '{2} ::: {0} with solve {1} '.format(err, fullname, datetime.now()))
             '''

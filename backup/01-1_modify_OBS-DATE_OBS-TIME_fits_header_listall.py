@@ -9,8 +9,8 @@ Created on Thu Nov 22 01:00:19 2018
 from datetime import datetime
 from astropy.io import fits
 import os
-import Python_utilities
-import astro_utilities
+import _Python_utilities
+import _astro_utilities
 
 log_dir = "logs/"
 log_file = "{}{}.log".format(log_dir, os.path.basename(__file__)[:-3])
@@ -23,7 +23,7 @@ if not os.path.exists('{0}'.format(log_dir)):
 BASEDIR = "../CCD_new_files/"
 #BASEDIR = "../CCD_wcs_One/"
 
-fullnames = sorted(astro_utilities.getFullnameListOfallFiles(BASEDIR))
+fullnames = sorted(_astro_utilities.getFullnameListOfallFiles(BASEDIR))
 
 print ("fullnames: {}".format(fullnames))
 
@@ -52,12 +52,12 @@ for fullname in fullnames[:] :
 
                 hdul.flush()  # changes are written back to original.fits
                 print('*'*60)
-                Python_utilities.write_log(log_file,
+                _Python_utilities.write_log(log_file,
                     '{1} ::: fits header is update with {0} ...'\
                     .format(fullname, datetime.now()))
     
     except Exception as err :
         print("X"*60)
-        Python_utilities.write_log(err_log_file,
+        _Python_utilities.write_log(err_log_file,
             '{2} ::: \n{1} with {0} ...'\
             .format(fullname, err, datetime.now()))

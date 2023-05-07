@@ -17,8 +17,8 @@ import ysfitsutilpy as yfu
 import ysphotutilpy as ypu
 import ysvisutilpy as yvu
 
-import astro_utilities
-import Python_utilities
+import _astro_utilities
+import _Python_utilities
 
 #%%
 #######################################################
@@ -40,7 +40,7 @@ BASEDIR = Path("/mnt/Rdata/CCD_obs")
 DOINGDIR = Path(BASEDIR/ "RnE_2022/GSON300_STF-8300M")
 #DOINGDIR = Path(BASEDIR/ "CCD_new_files1")
 
-#DOINGDIRs = sorted(Python_utilities.getFullnameListOfsubDirs(DOINGDIR))
+#DOINGDIRs = sorted(_Python_utilities.getFullnameListOfsubDirs(DOINGDIR))
 DOINGDIRs = sorted([x for x in DOINGDIR.iterdir() if x.is_dir()])
 #print ("DOINGDIRs: ", format(DOINGDIRs))
 print ("len(DOINGDIRs): ", format(len(DOINGDIRs)))
@@ -60,7 +60,7 @@ for DOINGDIR in DOINGDIRs[4:] :
     else : 
         print(f"Starting: {str(DOINGDIR.parts[-1])}")
     
-        MASTERDIR = DOINGDIR / astro_utilities.master_dir
+        MASTERDIR = DOINGDIR / _astro_utilities.master_dir
 
         if not MASTERDIR.exists():
             os.makedirs("{}".format(str(MASTERDIR)))
@@ -103,7 +103,7 @@ for DOINGDIR in DOINGDIRs[4:] :
                             )
             except Exception as err :
                 print("X"*60)
-                Python_utilities.write_log(err_log_file, err)
+                _Python_utilities.write_log(err_log_file, err)
 
             try: 
                 #dark_fits = summary[summary["IMAGETYP"] == "DARK"]["file"]
@@ -127,7 +127,7 @@ for DOINGDIR in DOINGDIRs[4:] :
                             )
             except Exception as err :
                 print("X"*60)
-                Python_utilities.write_log(err_log_file, err)
+                _Python_utilities.write_log(err_log_file, err)
 
             try:
                 flat_fits = summary[summary["IMAGETYP"] == "FLAT"]["file"] 
@@ -162,4 +162,4 @@ for DOINGDIR in DOINGDIRs[4:] :
                             )
             except Exception as err :
                 print("X"*60)
-                Python_utilities.write_log(err_log_file, err)
+                _Python_utilities.write_log(err_log_file, err)

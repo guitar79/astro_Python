@@ -36,8 +36,8 @@ import ysfitsutilpy as yfu
 import ysphotutilpy as ypu
 import ysvisutilpy as yvu
 
-import Python_utilities
-import astro_utilities
+import _Python_utilities
+import _astro_utilities
 
 #%%
 #######################################################
@@ -52,9 +52,9 @@ if not os.path.exists('{0}'.format(log_dir)):
 #######################################################
 #%%
 #######################################################
-BASEDIR = astro_utilities.base_dir
+BASEDIR = _astro_utilities.base_dir
 
-BASEDIRs = sorted(Python_utilities.getFullnameListOfsubDir(BASEDIR))
+BASEDIRs = sorted(_Python_utilities.getFullnameListOfsubDir(BASEDIR))
 print ("BASEDIRs: {}".format(BASEDIRs))
 print ("len(BASEDIRs): {}".format(len(BASEDIRs)))
 #%%
@@ -87,8 +87,8 @@ for BASEDIR in BASEDIRs[:]:
 
     BASEDIR = Path(BASEDIR)
 
-    SOLVEDDIR = BASEDIR / astro_utilities.solved_dir2
-    AsteroidRESULTDIR = BASEDIR / astro_utilities.Asteroid_result_dir
+    SOLVEDDIR = BASEDIR / _astro_utilities.solved_dir2
+    AsteroidRESULTDIR = BASEDIR / _astro_utilities.Asteroid_result_dir
 
     if not AsteroidRESULTDIR.exists():
         os.makedirs("{}".format(str(AsteroidRESULTDIR)))

@@ -17,16 +17,12 @@ from matplotlib.colors import LogNorm
 from matplotlib import rcParams
 from mpl_toolkits.axes_grid1 import make_axes_locatable
 
-import ysfitsutilpy as yfu
-import ysphotutilpy as ypu
-import ysvisutilpy as yvu
-
-import Python_utilities
-import astro_utilities
-
-from astropy.nddata import Cutout2D
+from astropy.nddata import CCDData
+import astropy.units as u
 from astropy.io import fits
 from astropy.wcs import WCS
+from astropy.nddata import Cutout2D
+from astropy.stats import sigma_clip, sigma_clipped_stats
 
 from photutils import DAOStarFinder
 from photutils import IRAFStarFinder
@@ -43,6 +39,14 @@ from ccdproc import CCDData, ccd_process
 from astropy.time import Time
 from astropy.table import Table, vstack
 from astropy.coordinates import SkyCoord
+
+import ysfitsutilpy as yfu
+import ysphotutilpy as ypu
+import ysvisutilpy as yvu
+
+import _Python_utilities
+import _astro_utilities
+import _tool_visualization as vis
 
 plt.rcParams.update({'figure.max_open_warning': 0})
 
@@ -61,155 +65,160 @@ if not os.path.exists('{0}'.format(log_dir)):
 #%%
 #######################################################
 # read all files in base directory for processing
-BASEDIR = astro_utilities.base_dir
+BASEDIR = Path(r"r:\CCD_obs")
+BASEDIR = Path("/mnt/Rdata/CCD_obs") 
+#BASEDIR = Path("/mnt/OBS_data") 
+DOINGDIR = Path(BASEDIR/ "RnE_2022/GSON300_STF-8300M")
+#DOINGDIR = Path(BASEDIR/ "CCD_new_files1")
 
-BASEDIRs = sorted(Python_utilities.getFullnameListOfsubDir(BASEDIR))
-print ("BASEDIRs: {}".format(BASEDIRs))
-print ("len(BASEDIRs): {}".format(len(BASEDIRs)))
+#DOINGDIRs = sorted(_Python_utilities.getFullnameListOfsubDirs(DOINGDIR))
+DOINGDIRs = sorted([x for x in DOINGDIR.iterdir() if x.is_dir()])
+#print ("DOINGDIRs: ", format(DOINGDIRs))
+print ("len(DOINGDIRs): ", format(len(DOINGDIRs)))
+#######################################################
 
-for BASEDIR in BASEDIRs :
-    print ("Starting...\n{}".format(BASEDIR))
+#%%
+#####################################################################
+# Observed location
+LOCATION = dict(lon = 127.0, lat = 37.3, elevation = 130)
 
-    BASEDIR = Path(BASEDIR)
-    SOLVEDDIR = BASEDIR / astro_utilities.solved_dir2
-    DAORESULTDIR = BASEDIR / astro_utilities.DAOfinder_result_dir
-    
-    if not DAORESULTDIR.exists():
-        os.makedirs("{}".format(str(DAORESULTDIR)))
-        print("{} is created...".format(str(DAORESULTDIR)))
+# It is used as a rough estimate, so no need to be accurate:
+PIX2ARCSEC = 0.98 * u.arcsec
 
-    #summary = yfu.make_summary(BASEDIR/"*.fit*")
-    summary = yfu.make_summary(SOLVEDDIR/"*.fit*")
+# Used for any `astropy.SkyCoord` object:
+SKYC_KW = dict(unit = u.deg, frame = 'icrs')
 
-    if summary.empty:
-            print("The dataframe(summary) is empty")
-            pass
-    else:
-        print("len(summary):", len(summary))
-        print("summary:", summary)
+# Initial guess of FWHM in pixel
+FWHM_INIT = 6
 
-    #%%
-    df_light = summary.loc[summary["IMAGETYP"] == "LIGHT"].copy()
-    df_light = df_light.reset_index(drop=True)
-    print("df_light:\n{}".format(df_light))
+# Photometry parameters
+R_AP = 1.5 * FWHM_INIT # Aperture radius
+R_IN = 4 * FWHM_INIT   # Inner radius of annulus
+R_OUT = 6 * FWHM_INIT  # Outer radius of annulus
+#######################################################
+#%%
+for DOINGDIR in DOINGDIRs[:] :
+    #DOINGDIR = Path(DOINGDIR)
+    print("DOINGDIR", DOINGDIR)
+    fits_in_dir = sorted(list(DOINGDIR.glob('*.fit*')))
+    #print("fits_in_dir", fits_in_dir)
+    print("len(fits_in_dir)", len(fits_in_dir))
 
-    for _, row  in df_light.iterrows():
-        fpath = Path(row["file"])
-        print("type(fpath)", type(fpath))
-        print("fpath", fpath)
+    if len(fits_in_dir) == 0 :
+        print(f"There is no fits fils in {DOINGDIR}")
+        pass
+    else : 
+        print(f"Starting: {str(DOINGDIR.parts[-1])}")
 
-        hdul = fits.open(fpath)
-        hdr = hdul[0].header
-        img = hdul[0].data
-        print("img: {}".format(img))
-        print("img.shape: {}".format(img.shape))
+        MASTERDIR = DOINGDIR / _astro_utilities.master_dir
+        REDUCEDDIR = DOINGDIR / _astro_utilities.reduced_dir2
+        SOLVEDDIR = DOINGDIR / _astro_utilities.solved_dir2
+        DAORESULTDIR = DOINGDIR / _astro_utilities.DAOfinder_result_dir
+        
+        if not DAORESULTDIR.exists():
+            os.makedirs("{}".format(str(DAORESULTDIR)))
+            print("{} is created...".format(str(DAORESULTDIR)))
 
-        # Set WCS and print for your information
-        w = WCS(hdr)
-        print("WCS: {}".format(w))
+        #summary = yfu.make_summary(BASEDIR/"*.fit*")
+        summary = yfu.make_summary(SOLVEDDIR/"*.fit*")
 
-        thresh = detect_threshold(data=img, nsigma=3)
-        thresh = thresh[0][0]
-        print('detect_threshold', thresh)
-
-        #%%
-        try:
-            FWHM   = 6
-
-            DAOfind = DAOStarFinder(
-                                    fwhm = FWHM, 
-                                    threshold = thresh, 
-                                    sharplo = 0.2, sharphi = 1.0,  # default values: sharplo=0.2, sharphi=1.0,
-                                    roundlo = -1.0, roundhi = 1.0,  # default values -1 and +1
-                                    sigma_radius = 1.5,           # default values 1.5
-                                    ratio = 1.0,                  # 1.0: circular gaussian
-                                    exclude_border = True         # To exclude sources near edges
-                                    )
-            # The DAOStarFinder object ("DAOfind") gets at least one input: the image.
-            # Then it returns the astropy table which contains the aperture photometry results:
-            DAOfound = DAOfind(img)
-            print('{} star(s) founded by DAOStarFinder...'.format(len(DAOfound)))
+        if summary.empty:
+                print("The dataframe(summary) is empty")
+                pass
+        else:
+            print("len(summary):", len(summary))
+            print("summary:", summary)
 
             #%%
-            if len(DAOfound)==0 :
-                print ('No star was founded by DAOStarFinder...\n'*3)
-            else : 
+            df_light = summary.loc[summary["IMAGETYP"] == "LIGHT"].copy()
+            df_light = df_light.reset_index(drop=True)
+            print("df_light:\n{}".format(df_light))
 
-                # Use the object "found" for aperture photometry:
-                N_stars = len(DAOfound)
-                print('{} star(s) founded by DAOStarFinder...'.format(N_stars))
-                DAOfound.pprint(max_width=1800)
-
-                # save XY coordinates:
-                DAOfound.write("{}/{}_DAOStarfinder_fwhm{}.csv".\
-                                format(DAORESULTDIR, fpath.stem, FWHM), 
-                                overwrite = True,
-                                format='ascii.fast_csv')
-                #%%
-                print('type(DAOfound): {}'.format(type(DAOfound)))
-                print('DAOfound: {}'.format(DAOfound))
-
-                DAOcoord = np.array([DAOfound['xcentroid'], DAOfound['ycentroid']]).T
-                print('type(DAOcoord): {}'.format(type(DAOcoord)))
-                print('DAOcoord: {}'.format(DAOcoord))
-
-                #%%
-                # Save apertures as circular, 4 pixel radius, at each (X, Y)
-                DAOapert = CAp((DAOcoord), r=4.)  
-                print('type(DAOapert): {}'.format(type(DAOapert)))
-                print('DAOapert: {}'.format(DAOapert))
-                print('dir(DAOapert): {}'.format(dir(DAOapert)))
-
-                DAOannul = CAn(positions = (DAOcoord), r_in = 4*FWHM, r_out = 6*FWHM) 
-                print('type(DAOannul): {}'.format(type(DAOannul)))
-                print('DAOannul: {}'.format(DAOannul))
+            for _, row  in df_light.iterrows():
+                fpath = Path(row["file"])
+                print("type(fpath)", type(fpath))
+                print("fpath", fpath)
                 
-                #%%
-                plt.figure(figsize=(20,20))
-                ax = plt.gca()
+                try:
+                    # hdul = fits.open(fpath)
+                    # hdr = hdul[0].header
+                    # img = hdul[0].data
+                    # print("img: {}".format(img))
+                    # print("img.shape: {}".format(img.shape))
+                    ccd = CCDData.read(fpath, unit="adu")
+                    print("ccd.data: ", ccd.data)
+                    print("ccd.data.shape: ", ccd.data.shape)
 
-                ###########################################################
-                # input some text for explaination. 
-                plt.title("Result of DAOStarfinder", fontsize = 28, 
-                    ha='center')
+                    # Set WCS and print for your information
+                    w = ccd.wcs
+                    print("WCS: ", w)
+                    FWHM = FWHM_INIT
+                    avg, med, std = sigma_clipped_stats(ccd.data)  # by default, 3-sigma 5-iteration.
+                    thresh = 5.*std
+                    DAOfind = DAOStarFinder(
+                                            fwhm = FWHM, 
+                                            threshold = thresh, 
+                                            sharplo = 0.2, sharphi = 1.0,  # default values: sharplo=0.2, sharphi=1.0,
+                                            roundlo = -1.0, roundhi = 1.0,  # default values -1 and +1
+                                            sigma_radius = 1.5,           # default values 1.5
+                                            ratio = 1.0,                  # 1.0: circular gaussian
+                                            exclude_border = True         # To exclude sources near edges
+                                            )
 
-                plt.annotate('filename: {}'.format(fpath.stem), fontsize=10,
-                    xy=(1, 0), xytext=(-500, -40), va='top', ha='left',
-                    xycoords='axes fraction', textcoords='offset points')
-                            
-                plt.annotate('FWHM: {}'.format(FWHM), fontsize=10,
-                    xy=(1, 0), xytext=(-1100, -30), va='top', ha='left',
-                    xycoords='axes fraction', textcoords='offset points')
-                    
-                plt.annotate('Sky threshold: {:02f}'.format(thresh), fontsize=10,
-                    xy=(1, 0), xytext=(-1100, -40), va='top', ha='left',
-                    xycoords='axes fraction', textcoords='offset points')
+                    DAOfound = DAOfind(ccd.data - med)
+                    DAOfound['RADEC'] = w.pixel_to_world(DAOfound['xcentroid'], 
+                                                        DAOfound['ycentroid'])  
 
-                plt.annotate('Number of star(s): {}'.format(len(DAOfound)), fontsize=10,
-                    xy=(1, 0), xytext=(-1100, -50), va='top', ha='left',
-                    xycoords='axes fraction', textcoords='offset points')
+                    print(f"Threshold = {DAOfind.threshold:.2f} counts")
+                    print(f"Found {len(DAOfound)} sources")
 
-                im = plt.imshow(img, 
-                                vmin = thresh, 
-                                vmax = thresh * 3,
-                                #zscale=True,
-                                origin='lower'
-                                )
+                    # save XY coordinates:
+                    DAOfound.write(f"{DAORESULTDIR}/{fpath.stem}_DAOStarfinder_fwhm_{FWHM}.csv",
+                                    overwrite = True,
+                                    #format='ascii.fast_csv'
+                                    )
+                    print(f"{DAORESULTDIR}/{fpath.stem}_DAOStarfinder_fwhm_{FWHM}.csv is created...")
 
-                DAOannul.plot(color='red', lw=2., alpha=0.4)
-                
-                divider = make_axes_locatable(ax)
-                cax = divider.append_axes("right", size="3%", pad=0.05)
-                plt.colorbar(im, cax=cax)
+                    pos = np.transpose((DAOfound['xcentroid'], DAOfound['ycentroid']))
+                    aps1 = CAp(pos, r=R_IN)
+                    aps2 = CAp(pos, r=R_OUT)
+                    fig, axs = plt.subplots(1, 1, figsize=(10, 7), sharex=False, sharey=False, gridspec_kw=None)
 
-                plt.savefig(
-                            "{}/{}_DAOStarfinder_fwhm{}.png".\
-                                format(DAORESULTDIR, fpath.stem, FWHM)
-                            )
-                print("{}/{}_DAOStarfinder_fwhm{}.png is created...".\
-                                format(DAORESULTDIR, fpath.stem, FWHM))
-                #plt.show()
-                plt.close() 
+                    im = vis.norm_imshow(axs, ccd.data, zscale=True)
+                    aps1.plot(color='r', lw=1, alpha=0.5)
+                    aps2.plot(color='cyan', lw=1, alpha=0.5)
 
-        except Exception as err:
-            print('{0} with {1} '.format(err, fpath.name))
+                    ###########################################################
+                    # input some text for explaination. 
+                    plt.title("Result of DAOStarfinder", fontsize = 14, 
+                        ha='center')
+
+                    plt.annotate(f'filename: {fpath.stem}', fontsize=8,
+                        xy=(1, 0), xytext=(-10, -30), va='top', ha='right',
+                        xycoords='axes fraction', textcoords='offset points')
+                                
+                    plt.annotate(f'FWHM: {FWHM}', fontsize=8,
+                        xy=(0, 0), xytext=(-10, -30), va='top', ha='left',
+                        xycoords='axes fraction', textcoords='offset points')
+                        
+                    plt.annotate(f'Sky threshold: {thresh:.02f}', fontsize=8,
+                        xy=(0, 0), xytext=(-10, -40), va='top', ha='left',
+                        xycoords='axes fraction', textcoords='offset points')
+
+                    plt.annotate(f'Number of star(s): {len(DAOfound)}', fontsize=8,
+                        xy=(0, 0), xytext=(-10, -50), va='top', ha='left',
+                        xycoords='axes fraction', textcoords='offset points')
+
+                    divider = make_axes_locatable(axs)
+                    cax = divider.append_axes("right", size="3%", pad=0.05)
+                    plt.colorbar(im, cax=cax)
+                    plt.tight_layout()
+                    plt.savefig(f"{DAORESULTDIR}/{fpath.stem}_DAOStarfinder_fwhm_{FWHM}.png")
+                    print(f"{DAORESULTDIR}/{fpath.stem}_DAOStarfinder_fwhm_{FWHM}.png is created...")
+
+                    #plt.show()
+                    plt.close()
+
+                except Exception as err:
+                    _Python_utilities.write_log(err_log_file, err)
+                    #print('{0} with {1} '.format(err, fpath.name))

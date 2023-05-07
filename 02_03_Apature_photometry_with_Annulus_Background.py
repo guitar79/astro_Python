@@ -42,8 +42,8 @@ import ysfitsutilpy as yfu
 import ysphotutilpy as ypu
 import ysvisutilpy as yvu
 
-import Python_utilities
-import astro_utilities
+import _Python_utilities
+import _astro_utilities
 
 plt.rcParams.update({'figure.max_open_warning': 0})
 
@@ -83,9 +83,9 @@ R_OUT = 6 * FWHM_INIT  # Outer radius of annulus
 #######################################################
 #%%
 #######################################################
-BASEDIR = astro_utilities.base_dir
+BASEDIR = _astro_utilities.base_dir
 
-BASEDIRs = sorted(Python_utilities.getFullnameListOfsubDir(BASEDIR))
+BASEDIRs = sorted(_Python_utilities.getFullnameListOfsubDir(BASEDIR))
 print ("BASEDIRs: {}".format(BASEDIRs))
 print ("len(BASEDIRs): {}".format(len(BASEDIRs)))
 
@@ -94,8 +94,8 @@ for BASEDIR in BASEDIRs[:]:
 
     BASEDIR = Path(BASEDIR)
     
-    SOLVEDDIR = BASEDIR / astro_utilities.solved_dir2
-    APhRESULTDIR = BASEDIR / astro_utilities.APh_result_dir
+    SOLVEDDIR = BASEDIR / _astro_utilities.solved_dir2
+    APhRESULTDIR = BASEDIR / _astro_utilities.APh_result_dir
 
     if not APhRESULTDIR.exists():
         os.makedirs("{}".format(str(APhRESULTDIR)))

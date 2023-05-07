@@ -24,7 +24,7 @@ import os
 import astropy.units as u
 from astropy.stats import sigma_clip
 from ccdproc import combine, ccd_process, CCDData
-import Python_utilities
+import _Python_utilities
 import ysfitsutilpy as yfu
 import ysphotutilpy as ypu
 import ysvisutilpy as yvu

@@ -1,5 +1,4 @@
 #%%
-# 
 import os
 from glob import glob
 from astropy.nddata import CCDData
@@ -9,8 +8,8 @@ import ysfitsutilpy as yfu
 import ysphotutilpy as ypu
 import ysvisutilpy as yvu
 
-import Python_utilities
-import astro_utilities
+import _Python_utilities
+import _astro_utilities
 
 #%%
 #######################################################
@@ -30,16 +29,17 @@ BASEDIR = Path(r"r:\CCD_obs")
 BASEDIR = Path("/mnt/Rdata/CCD_obs") 
 #BASEDIR = Path("/mnt/OBS_data") 
 DOINGDIR = Path(BASEDIR/ "RnE_2022/GSON300_STF-8300M")
+DOINGDIR = Path(BASEDIR/ "RnE_2022/RiLA600_STX-16803_1bin")
 #DOINGDIR = Path(BASEDIR/ "CCD_new_files1")
 
-#DOINGDIRs = sorted(Python_utilities.getFullnameListOfsubDirs(DOINGDIR))
+#DOINGDIRs = sorted(_Python_utilities.getFullnameListOfsubDirs(DOINGDIR))
 DOINGDIRs = sorted([x for x in DOINGDIR.iterdir() if x.is_dir()])
 #print ("DOINGDIRs: ", format(DOINGDIRs))
 print ("len(DOINGDIRs): ", format(len(DOINGDIRs)))
 #######################################################
 
 #%%
-for DOINGDIR in DOINGDIRs[:] :
+for DOINGDIR in DOINGDIRs[1:] :
     BASEDIR = Path(BASEDIR)
     print ("Starting...\n{}".format(BASEDIR))
     fits_in_dir = sorted(list(DOINGDIR.glob('*.fit*')))
@@ -52,9 +52,9 @@ for DOINGDIR in DOINGDIRs[:] :
     else : 
         print(f"Starting: {str(DOINGDIR.parts[-1])}")
 
-        MASTERDIR = DOINGDIR / astro_utilities.master_dir
-        REDUCEDDIR = DOINGDIR / astro_utilities.reduced_dir
-        REDUCEDDIR2 = DOINGDIR / astro_utilities.reduced_dir2
+        MASTERDIR = DOINGDIR / _astro_utilities.master_dir
+        REDUCEDDIR = DOINGDIR / _astro_utilities.reduced_dir
+        REDUCEDDIR2 = DOINGDIR / _astro_utilities.reduced_dir2
     
         if not REDUCEDDIR2.exists():
             os.makedirs("{}".format(str(REDUCEDDIR2)))
@@ -69,7 +69,15 @@ for DOINGDIR in DOINGDIRs[:] :
             pass
         else : 
 
-            summary = yfu.make_summary(DOINGDIR/"*.fit*")
+            summary = yfu.make_summary(DOINGDIR/"*.fit*",
+                                       keywords = ["FILTER", 'SIMPLE', 'BITPIX', 'NAXIS', 'NAXIS1', 'NAXIS2',
+                                            'EXTEND', 'BZERO', 'IMAGETYP', 'EXPOSURE', 'EXPTIME', 'DATE-LOC',
+                                            'DATE-OBS', 'XBINNING', 'YBINNING', 'EGAIN', 'XPIXSZ', 'YPIXSZ',
+                                            'INSTRUME', 'SET-TEMP', 'CCD-TEMP', 'TELESCOP', 'FOCALLEN', 'FOCRATIO',
+                                            'OBJECT', 'OBJCTRA', 'OBJCTDEC', 'OBJCTROT', 'ROWORDER', 'EQUINOX',
+                                            'SWCREATE', 'NOTES']
+                                        )
+
             #print(summary)
             print("len(summary):", len(summary))
             print("summary:", summary)
@@ -80,6 +88,7 @@ for DOINGDIR in DOINGDIRs[:] :
 
             # %%
             for filt in ["b", "v", "r", "L", "R", "G", "B"]:
+            #for filt in ["V"]:
                 summary_light_filt = summary_light.loc[summary_light["FILTER"] == filt].copy()
                 
                 if summary_light_filt.empty:
@@ -103,7 +112,7 @@ for DOINGDIR in DOINGDIRs[:] :
                         ccd.write(MASTERDIR / f"nightskyflat-{filt}.fits", overwrite=True)
                     except Exception as err: 
                         print ('Error messgae .......')
-                        Python_utilities.write_log(err_log_file, err)
+                        _Python_utilities.write_log(err_log_file, err)
 
             # %%
             for _, row in summary_light.iterrows():
@@ -116,4 +125,4 @@ for DOINGDIR in DOINGDIRs[:] :
                         output=REDUCEDDIR2/fpath.name
                     )
                 except FileNotFoundError: 
-                    Python_utilities.write_log(err_log_file, "FileNotFoundError")
+                    _Python_utilities.write_log(err_log_file, "FileNotFoundError")

@@ -38,8 +38,8 @@ import ysfitsutilpy as yfu
 import ysphotutilpy as ypu
 import ysvisutilpy as yvu
 
-import Python_utilities
-import astro_utilities
+import _Python_utilities
+import _astro_utilities
 
 from astropy.nddata import Cutout2D
 
@@ -107,7 +107,7 @@ R_OUT = 6*FWHM_INIT  # Outer radius of annulus
 
 
 #%%
-BASEDIRs = sorted(Python_utilities.getFullnameListOfsubDir(BASEDIR))
+BASEDIRs = sorted(_Python_utilities.getFullnameListOfsubDir(BASEDIR))
 print ("BASEDIRs: {}".format(BASEDIRs))
 
 for BASEDIR in BASEDIRs[:2]:

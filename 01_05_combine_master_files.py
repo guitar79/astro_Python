@@ -18,8 +18,8 @@ import ysfitsutilpy as yfu
 import ysphotutilpy as ypu
 import ysvisutilpy as yvu
 
-import astro_utilities
-import Python_utilities
+import _astro_utilities
+import _Python_utilities
 
 #%%
 #######################################################
@@ -33,9 +33,9 @@ if not os.path.exists('{0}'.format(log_dir)):
     os.makedirs('{0}'.format(log_dir))
 #######################################################
 #%%
-BASEDIR = astro_utilities.base_dir
+BASEDIR = _astro_utilities.base_dir
 
-BASEDIRs = sorted(Python_utilities.getFullnameListOfsubDir(BASEDIR))
+BASEDIRs = sorted(_Python_utilities.getFullnameListOfsubDir(BASEDIR))
 print ("BASEDIRs: {}".format(BASEDIRs))
 print ("len(BASEDIRs): {}".format(len(BASEDIRs)))
 #%%
@@ -44,7 +44,7 @@ for BASEDIR in BASEDIRs[:1] :
 
     BASEDIR = Path(BASEDIR)
     
-    MASTERDIR = BASEDIR / astro_utilities.master_dir
+    MASTERDIR = BASEDIR / _astro_utilities.master_dir
 
     if not MASTERDIR.exists():
         os.makedirs("{}".format(str(MASTERDIR)))
