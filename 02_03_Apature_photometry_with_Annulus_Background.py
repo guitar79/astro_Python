@@ -89,7 +89,7 @@ BASEDIRs = sorted(_Python_utilities.getFullnameListOfsubDir(BASEDIR))
 print ("BASEDIRs: {}".format(BASEDIRs))
 print ("len(BASEDIRs): {}".format(len(BASEDIRs)))
 
-for BASEDIR in BASEDIRs[:]:
+for BASEDIR in BASEDIRs[0:8]:
     print ("Starting...\n{}".format(BASEDIR))
 
     BASEDIR = Path(BASEDIR)
@@ -116,12 +116,12 @@ for BASEDIR in BASEDIRs[:]:
         df_light = df_light.reset_index(drop=True)
         print("df_light:\n{}".format(df_light))
 
-        for filt in ["r", "v", "b"]:
+        for filt in ["R", "V"]:
         #for filt in ["r"]:
             df_light_filt = df_light.loc[df_light["FILTER"] == filt].copy()
             
             if df_light_filt.empty:
-                print("The dataframe(df_light_filt) is empty")
+                print("The    dataframe(df_light_filt) is empty")
                 pass
             else:
                 print("df_light_filt:", df_light_filt)

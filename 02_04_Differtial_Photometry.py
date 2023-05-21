@@ -82,7 +82,7 @@ R_OUT = 6 * FWHM_INIT  # Outer radius of annulus
 
 #%%
 
-for BASEDIR in BASEDIRs[:]:
+for BASEDIR in BASEDIRs[0:8]:
     print ("Starting...\n{}".format(BASEDIR))
 
     BASEDIR = Path(BASEDIR)
@@ -105,7 +105,7 @@ for BASEDIR in BASEDIRs[:]:
         print("len(summary):", len(summary))
         print("summary:", summary)
 
-    for filt in ["r"]:
+    for filt in ["r","v", "b"]:
         summary_filt = summary.loc[summary["FILTER"] == filt].copy()
         
         if summary_filt.empty:
@@ -120,7 +120,7 @@ for BASEDIR in BASEDIRs[:]:
             print("df_light:\n{}".format(df_light))
 
             #for filt in ["r", "v", "b"]:
-            for filt in ["r"]:
+            for filt in ["r","v", "b"]:
                 df_light_filt = df_light.loc[df_light["FILTER"] == filt].copy()
             
                 if df_light_filt.empty:

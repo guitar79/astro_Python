@@ -26,15 +26,9 @@ import _Python_utilities
 #directory variables
 #########################################
 c_method = "median"
-#CCD_obs_dir = "../CCD_obs_raw/"
-#base_dir = "R:\CCD_obs\CCD_obs_raw"
-#CCD_obs_raw_dir = "/mnt/Rdata/CCD_obs/CCD_obs_raw/"
+
 CCD_obs_raw_dir = "CCD_obs_raw"
 
-#base_dir = "../RnE_2022/RiLA600_STX-16803_2bin/"
-#base_dir = "/mnt/Rdata/CCD_obs/RnE_2022/RiLA600_STX-16803_2bin/"
-#base_dir = "R:\CCD_obs\RnE_2022\RiLA600_STX-16803_2bin"
-#base_dir = "/mnt/Rdata/CCD_obs/RiLA600_2022"
 base_dir = "R:\CCD_obs\RiLA600_2022"
 CCD_NEW_dir = "CCD_new_files"
 CCD_duplicate_dir = "CCD_duplicate_files"
@@ -50,7 +44,6 @@ IRAFfinder_result_dir = "IRAFfinder_result"
 APh_result_dir = "APh_result"
 Asteroid_result_dir = "Asteroid_result"
 
-#
 master_file_dir = 'master_file_Python/'
 processing_dir = 'processing_Python/'
 integration_dir = 'integration_Python/'
@@ -136,7 +129,10 @@ CCDDIC = {"ST-8300M": {"PIXSIZE":5.4,
                         "RDNOISE":9.0},
         "QHY8": {"PIXSIZE":5.4, 
                 "GAIN": "-",
-                "RDNOISE":"-"}
+                "RDNOISE":"-"},
+        "ATR3CMOS26000KPA": {"PIXSIZE":3.76, 
+                "GAIN": "-",
+                "RDNOISE":"-"},
                         }
         
 
@@ -147,6 +143,8 @@ OPTICDIC = {"TMB130ss": {"APATURE" : 130,
             "RiLA600": {"APATURE" : 600, 
                         "FOCALLEN" : 3000}, 
             "GSON300": {"APATURE" : 300, 
+                        "FOCALLEN" : 1200}, 
+            "OON300": {"APATURE" : 300, 
                         "FOCALLEN" : 1200}, 
             "FS60CB": {"APATURE" : 60, 
                        "FOCALLEN" : 355}, 
@@ -197,6 +195,47 @@ def calPixScale (
     PIXScale = Pix_size / (F_length ) *  206.265
     return PIXScale
 
+#%%
+#########################################
+#KvinFitsMover
+#########################################
+def KevinFitsNewFname(
+    fpath,
+    fnameKEYs = ["OBJECT", "IMAGETYP", "FILTER", "DATE-OBS", 
+            "EXPOSURE", "OPTIC", "CCDNAME", "CCD-TEMP", "XBINNING"],
+    ):
+    '''
+        Parameters
+        ----------
+        fpath : string
+            The fullname of input file...
+        BASEDIR: path
+        
+        fnameKEYs : list
+            KEY of fits file header for update
+    '''
+    
+    fpath = Path(fpath)
+    hdul = fits.open(str(fpath))
+    print("fpath: ", fpath)
+    for fnameKEY in fnameKEYs: 
+        print(f"{fnameKEY}: ", hdul[0].header[fnameKEY])
+
+        try :
+            ccdtemp = str(int(hdul[0].header["CCD-TEMP"]))
+        except : 
+            ccdtemp = "N"
+        print("ccdtemp: ", ccdtemp)
+
+        new_fname = hdul[0].header["OBJECT"]+"_"+hdul[0].header["IMAGETYP"]+"_"+hdul[0].header["FILTER"]+"_"
+        new_fname += hdul[0].header["DATE-OBS"][:19].replace("T","-").replace(":","-")+"_"
+        new_fname += str(int(hdul[0].header["EXPOSURE"]))+"sec_"
+        new_fname += hdul[0].header["OPTIC"]+"_"+hdul[0].header["CCDNAME"]+"_"       
+        new_fname += ccdtemp+"c_"+str(int(hdul[0].header["XBINNING"]))+"bin.fit"
+        print("new_fname: ", new_fname)
+        hdul.close()
+    return new_fname
+        
 #%%
 #########################################
 #KvinFitsUpdater
@@ -278,10 +317,10 @@ def KevinFitsUpdater(
                         CCDNAME = 'STL-11000M'
                     else:
                         CCDNAME = ccd_name
-                else :
-                    CCDNAME = ccd_name
+            elif "ATR3CMOS26000KPA" in hdul[0].header :
+                CCDNAME = "ATR3CMOS26000KPA"
             else :
-                CCDNAME = ccd_name
+                CCDNAME = hdul[0].header['INSTRUME']
         else :
             CCDNAME = ccd_name    
         print("CCDNAME", CCDNAME)
@@ -1063,13 +1102,9 @@ def print_working_time(cht_start_time):
 fnameKEYs = ["OBJECT", "IMAGETYP", "FILTER", "DATE-OBS", 
             "EXPOSURE", "OPTIC", "CCDNAME", "CCD-TEMP", "XBINNING"]
 
-def Kevin_new_fname(fpath, ccd_obs_raw_dir):
-    if ccd_obs_raw_dir == None :
-        ccd_obs_raw_dir = CCD_obs_raw_dir
-
-    if ccd_obs_raw_dir == None :
-        ccd_obs_raw_dir = CCD_obs_raw_dir
-         
+def Kevin_new_fname(fpath):
+    # if ccd_obs_raw_dir == None :
+    #     ccd_obs_raw_dir = CCD_obs_raw_dir
     print(f'Starting get_new_filename ...\n{fpath.name}')
     
     fpath = Path(fpath)            
@@ -1335,7 +1370,7 @@ def get_new_foldername_from_filename(filename):
     if obs_LST.hour < 12 :
         obs_LST = obs_LST - timedelta(days = 1)
     filename_el[3] = obs_LST.strftime('%Y-%m-%d-%H-%M-%S')
-    if filename_el[1].lower() == 'BIAS':
+    if filename_el[1].upper() == 'BIAS':
         new_foldername = '{6}_{8}/Cal/-_{1}_-_{3}_-_-_{6}_-_{8}/'\
         .format(filename_el[0],
         filename_el[1],
@@ -1346,7 +1381,7 @@ def get_new_foldername_from_filename(filename):
         filename_el[6],
         filename_el[7],
         filename_el[8])
-    elif filename_el[1].lower() == 'DARK' :
+    elif filename_el[1].upper() == 'DARK' :
         new_foldername = '{6}_{8}/Cal/-_{1}_-_{3}_{4}_-_{6}_-_{8}/'\
         .format(filename_el[0],
         filename_el[1],
@@ -1357,7 +1392,7 @@ def get_new_foldername_from_filename(filename):
         filename_el[6],
         filename_el[7],
         filename_el[8])
-    elif filename_el[1].lower() == 'FLAT' :
+    elif filename_el[1].upper() == 'FLAT' :
         new_foldername = '{6}_{8}/Cal_{5}/-_{1}_-_{3}_-_{5}_{6}_-_{8}/'\
         .format(filename_el[0],
         filename_el[1],

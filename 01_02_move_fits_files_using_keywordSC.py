@@ -36,6 +36,7 @@ if not os.path.exists('{0}'.format(log_dir)):
     os.makedirs('{0}'.format(log_dir))
 #######################################################
 
+#%%
 #######################################################
 # read all files in base directory for processing
 BASEDIR = Path(r"r:\CCD_obs") 
@@ -47,9 +48,6 @@ DOINGDIR = BASEDIR / _astro_utilities.CCD_NEW_dir
 DOINGDIRs = sorted(_Python_utilities.getFullnameListOfallsubDirs(DOINGDIR))
 #print ("DOINGDIRs: ", format(DOINGDIRs))
 print ("len(DOINGDIRs): ", format(len(DOINGDIRs)))
-
-fnameKEYs = ["OBJECT", "IMAGETYP", "FILTER", "DATE-OBS", 
-            "EXPOSURE", "OPTIC", "CCDNAME", "CCD-TEMP", "XBINNING"]
 
 #%%
 for DOINGDIR in DOINGDIRs[:] : 
@@ -73,28 +71,11 @@ for DOINGDIR in DOINGDIRs[:] :
         print("type(summary): ", type(summary))
     
         for _, row in summary.iterrows():
-            #print (row["file"])
             fpath = Path(row["file"])            
-            hdul = fits.open(str(fpath))
             print("fpath: ", fpath)
             try:
-                
-                for fnameKEY in fnameKEYs: 
-                    print(f"{fnameKEY}: ", hdul[0].header[fnameKEY])
-
-                try :
-                    ccdtemp = str(int(hdul[0].header["CCD-TEMP"]))
-                except : 
-                    ccdtemp = "N"
-                print("ccdtemp: ", ccdtemp)
-
-                new_fname = hdul[0].header["OBJECT"]+"_"+hdul[0].header["IMAGETYP"]+"_"+hdul[0].header["FILTER"]+"_"
-                new_fname += hdul[0].header["DATE-OBS"][:19].replace("T","-").replace(":","-")+"_"
-                new_fname += str(int(hdul[0].header["EXPOSURE"]))+"sec_"
-                new_fname += hdul[0].header["OPTIC"]+"_"+hdul[0].header["CCDNAME"]+"_"       
-                new_fname += ccdtemp+"c_"+str(int(hdul[0].header["XBINNING"]))+"bin.fit"
+                new_fname = _astro_utilities.KevinFitsNewFname(str(fpath))
                 print("new_fname: ", new_fname)
-                hdul.close()
                 new_folder = _astro_utilities.get_new_foldername_from_filename(new_fname)
                 #print("new_folder: ", new_folder)
 
