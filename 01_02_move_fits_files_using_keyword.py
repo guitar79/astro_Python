@@ -20,7 +20,7 @@ import shutil
 
 import ysfitsutilpy as yfu
 import ysphotutilpy as ypu
-import ysvisutilpy as yvu
+#import ysvisutilpy as yvu
 
 import _astro_utilities
 import _Python_utilities
@@ -40,8 +40,9 @@ if not os.path.exists('{0}'.format(log_dir)):
 # read all files in base directory for processing
 BASEDIR = Path(r"r:\CCD_obs") 
 BASEDIR = Path("/mnt/Rdata/CCD_obs") 
-#BASEDIR = Path("/mnt/OBS_data") 
+BASEDIR = Path("/mnt/OBS_data") 
 DOINGDIR = ( BASEDIR/ _astro_utilities.CCD_NEW_dir)
+DOINGDIR = ( BASEDIR/ _astro_utilities.CCD_NEWUP_dir)
                 
 DOINGDIRs = sorted(_Python_utilities.getFullnameListOfallsubDirs(str(DOINGDIR)))
 #print ("DOINGDIRs: ", format(DOINGDIRs))
@@ -127,7 +128,7 @@ for DOINGDIR in DOINGDIRs[:] :
 #Check and delete empty folder....
 #############################################################################
 for i in range(4):
-    DOINGDIR = Path( BASEDIR/ _astro_utilities.CCD_NEW_dir)           
+    DOINGDIR = ( BASEDIR/ _astro_utilities.CCD_NEWUP_dir)         
     DOINGDIRs = sorted(_Python_utilities.getFullnameListOfallsubDirs(DOINGDIR))
     #print ("DOINGDIRs: ", format(DOINGDIRs))
     print ("len(DOINGDIRs): ", format(len(DOINGDIRs)))

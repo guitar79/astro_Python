@@ -25,12 +25,13 @@ import _Python_utilities
 #########################################
 #directory variables
 #########################################
+#base_dir = "R:\CCD_obs\RiLA600_2022"
+
 c_method = "median"
 
 CCD_obs_raw_dir = "CCD_obs_raw"
-
-base_dir = "R:\CCD_obs\RiLA600_2022"
 CCD_NEW_dir = "CCD_new_files"
+CCD_NEWUP_dir = "CCD_newUpdated_files"
 CCD_duplicate_dir = "CCD_duplicate_files"
 
 
@@ -133,14 +134,21 @@ CCDDIC = {"ST-8300M": {"PIXSIZE":5.4,
         "ATR3CMOS26000KPA": {"PIXSIZE":3.76, 
                 "GAIN": "-",
                 "RDNOISE":"-"},
+        "TT-2600CP": {"PIXSIZE":3.76, 
+                "GAIN": "-",
+                "RDNOISE":"-"},
+        "ASI-6200MMPro": {"PIXSIZE":3.76, 
+                "GAIN": "-",
+                "RDNOISE":"-"},
                         }
-        
 
 OPTICDIC = {"TMB130ss": {"APATURE" : 130, 
                          "FOCALLEN" : 910},
             "TMB130ss-x75": {"APATURE" : 130, 
                          "FOCALLEN" : 910*0.75}, 
             "RiLA600": {"APATURE" : 600, 
+                        "FOCALLEN" : 3000}, 
+            "RILA600": {"APATURE" : 600, 
                         "FOCALLEN" : 3000}, 
             "GSON300": {"APATURE" : 300, 
                         "FOCALLEN" : 1200}, 
@@ -209,7 +217,6 @@ def KevinFitsNewFname(
         ----------
         fpath : string
             The fullname of input file...
-        BASEDIR: path
         
         fnameKEYs : list
             KEY of fits file header for update
@@ -243,7 +250,8 @@ def KevinFitsNewFname(
 def KevinFitsUpdater(
     fpath,
     checkKEYs = ["OBJECT", "TELESCOP", "OPTIC", "CCDNAME", 'FILTER',
-            "GAIN", "EGAIN", "RDNOISE", "FOCALLEN", "FOCRATIO", "PIXSCALE", "CCD-TEMP",
+            #"GAIN", "EGAIN", "RDNOISE", "PIXSCALE",
+            "FOCALLEN", "APATURE", "CCD-TEMP",
             "XBINNING", "YBINNING", "FLIPSTAT", "EXPTIME", "EXPOSURE"],
     ):
     '''
@@ -262,15 +270,14 @@ def KevinFitsUpdater(
     print("foldername_el", foldername_el)
     print("fname_el", fname_el)
     object_name = foldername_el[0]
-    image_type = foldername_el[1]
-    filter_name = fname_el[2]
-    optic_name = foldername_el[5]
-    ccd_name = foldername_el[6]
     print("object_name", object_name)
-    print("filter_name", filter_name)
+    image_type = foldername_el[1]
+    #filter_name = fname_el[2]
+    #print("filter_name", filter_name)
+    optic_name = foldername_el[5]
     print("optic_name", optic_name)
+    ccd_name = foldername_el[6]
     print("ccd_name", ccd_name)
-
     with fits.open(str(fpath), mode="append") as hdul :
         for checkKEY in checkKEYs: 
             if not checkKEY in hdul[0].header :
@@ -317,8 +324,14 @@ def KevinFitsUpdater(
                         CCDNAME = 'STL-11000M'
                     else:
                         CCDNAME = ccd_name
-            elif "ATR3CMOS26000KPA" in hdul[0].header :
-                CCDNAME = "ATR3CMOS26000KPA"
+            elif "CMOS26000" in hdul[0].header['INSTRUME'] or \
+            "ToupTek" in hdul[0].header['INSTRUME'] :
+                CCDNAME = "TT-2600CP"
+                hdul[0].header["FILTER"] = "-"
+            elif "ASI Camera" in hdul[0].header['INSTRUME'] :
+                CCDNAME = "ASI-6200MMPro"
+                hdul[0].header["FILTER"] = "-"
+
             else :
                 CCDNAME = hdul[0].header['INSTRUME']
         else :
@@ -334,9 +347,8 @@ def KevinFitsUpdater(
             print(f"The 'DATE-OBS' is set {hdul[0].header['DATE-OBS']}")
         
         if not "IMAGETYP" in hdul[0].header :
-            hdul[0].header["IMAGETYP"] = image_type
-            
-        if "ze" in hdul[0].header["IMAGETYP"].lower() \
+            hdul[0].header["IMAGETYP"] = image_type  
+        elif "ze" in hdul[0].header["IMAGETYP"].lower() \
                 or "bi" in hdul[0].header["IMAGETYP"].lower() :
             hdul[0].header["IMAGETYP"] = "BIAS"
             print(f"The 'IMAGETYP' is set {hdul[0].header['IMAGETYP']}")
@@ -346,23 +358,24 @@ def KevinFitsUpdater(
         elif "fl" in hdul[0].header["IMAGETYP"].lower() :
             hdul[0].header["IMAGETYP"] = "FLAT"
             print(f"The 'IMAGETYP' is set {hdul[0].header['IMAGETYP']}")
-        elif "da" in hdul[0].header["IMAGETYP"].lower() \
+        elif "obj" in hdul[0].header["IMAGETYP"].lower() \
                 or "lig" in hdul[0].header["IMAGETYP"].lower() :
             hdul[0].header["IMAGETYP"] = "LIGHT"
             print(f"The 'IMAGETYP' is set {hdul[0].header['IMAGETYP']}")
         
         if "BIAS" in hdul[0].header["IMAGETYP"] \
             or "DARK" in hdul[0].header["IMAGETYP"] :
-            for _KEY in ['FILTER', 'OPTIC', 'FOCALLEN', 'FOCRATIO', 'PIXSCALE'] :
+            for _KEY in ['FILTER', 'OPTIC', 'FOCALLEN', 'APATURE', 'PIXSCALE',] :
                 hdul[0].header[_KEY] = "-"
                 print(f"The '{_KEY}' is set {hdul[0].header[_KEY]}")
 
         if "FLAT" in hdul[0].header["IMAGETYP"] \
             or "LIGHT" in hdul[0].header["IMAGETYP"] :
             if not "FILTER" in hdul[0].header :
+                filter_name = fname_el[2]
                 if  hdul[0].header["FILTER"] != filter_name.upper() :
                     hdul[0].header["FILTER"] = filter_name.upper()
-                    print(f"The timestamp = datetime.new().strftime(r'%Y-%m-%d %H:%M:%S')'FILTER' is set {hdul[0].header['FILTER']}")
+                    print(f"FILTER is set {hdul[0].header['FILTER']}")
             if not "OPTIC" in hdul[0].header :
                 hdul[0].header["OPTIC"] = optic_name
                 print(f"The 'OPTIC' is set {hdul[0].header['OPTIC']}")
@@ -380,9 +393,9 @@ def KevinFitsUpdater(
             # hdul[0].header['PIXSCALE'] = PIXSCALEDIC[hdul[0].header['OPTIC']\
             #                                          +'_'+hdul[0].header['CCDNAME']]
             #print(OPTICDIC['OPTIC']['FOCALLEN'], CCDDIC['CCDNAME']['PIXSIZE'])
-            hdul[0].header['PIXSCALE'] = calPixScale(OPTICDIC[hdul[0].header['OPTIC']]['FOCALLEN'],
-                                            CCDDIC[hdul[0].header['CCDNAME']]['PIXSIZE'])
-            print(f"The 'PIXSCALE' is set {hdul[0].header['PIXSCALE']}...")
+            # hdul[0].header['PIXSCALE'] = calPixScale(OPTICDIC[hdul[0].header['OPTIC']]['FOCALLEN'],
+            #                                 CCDDIC[hdul[0].header['CCDNAME']]['PIXSIZE'])
+            # print(f"The 'PIXSCALE' is set {hdul[0].header['PIXSCALE']}...")
         
         if (not 'TELESCOP' in hdul[0].header):
             hdul[0].header['TELESCOP'] = "-"
@@ -428,15 +441,24 @@ def KevinFitsUpdater(
             hdul[0].header["EXPOSURE"] = 'N'
             print(f"The 'EXPTIME' and 'EXPOSURE' are set 'N'...")
 
+        if not "TELESCOPE" in hdul[0].header :
+            hdul[0].header["TELESCOPE"] = "-"
+        if not "OPTIC" in hdul[0].header :
+            hdul[0].header["OPTIC"] = optic_name
+        if not "FOCALLEN" in hdul[0].header :
+            hdul[0].header["FOCALLEN"] = OPTICDIC[hdul[0].header['OPTIC']]['FOCALLEN']
+        if not "APATURE" in hdul[0].header :
+            hdul[0].header["APATURE"] = OPTICDIC[hdul[0].header['OPTIC']]["APATURE"]
+
         #hdul[0].header['GAIN'] = GAINDIC[CCDNAME]
-        hdul[0].header['GAIN'] = CCDDIC[hdul[0].header['CCDNAME']]['GAIN']
-        print(f"The 'GAIN' is set {hdul[0].header['GAIN']}...")
+        #hdul[0].header['GAIN'] = CCDDIC[hdul[0].header['CCDNAME']]['GAIN']
+        #print(f"The 'GAIN' is set {hdul[0].header['GAIN']}...")
         #hdul[0].header['EGAIN'] = GAINDIC[CCDNAME]
-        hdul[0].header['EGAIN'] = CCDDIC[hdul[0].header['CCDNAME']]['GAIN']
-        print(f"The 'EGAIN' is set {hdul[0].header['EGAIN']}...")
+        #hdul[0].header['EGAIN'] = CCDDIC[hdul[0].header['CCDNAME']]['GAIN']
+        #print(f"The 'EGAIN' is set {hdul[0].header['EGAIN']}...")
         #hdul[0].header['RDNOISE'] = RDNOISEDIC[CCDNAME]
-        hdul[0].header['RDNOISE'] = CCDDIC[hdul[0].header['CCDNAME']]['RDNOISE']
-        print(f"The 'RDNOISE' is set {hdul[0].header['RDNOISE']}...")
+        #hdul[0].header['RDNOISE'] = CCDDIC[hdul[0].header['CCDNAME']]['RDNOISE']
+        #print(f"The 'RDNOISE' is set {hdul[0].header['RDNOISE']}...")
         
         hdul[0].header['FLIPSTAT'] = " "
         print(f"The 'FLIPSTAT' is set {hdul[0].header['FLIPSTAT']}...")

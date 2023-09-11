@@ -14,10 +14,11 @@ from pathlib import Path, PosixPath, WindowsPath
 import os
 from datetime import datetime
 from astropy.io import fits
+import shutil
 
 import ysfitsutilpy as yfu
-import ysphotutilpy as ypu
-import ysvisutilpy as yvu
+#import ysphotutilpy as ypu
+#import ysvisutilpy as yvu
 
 import _Python_utilities
 import _astro_utilities
@@ -37,9 +38,11 @@ if not os.path.exists('{0}'.format(log_dir)):
 # read all files in base directory for processing
 BASEDIR = Path(r"r:\CCD_obs")
 BASEDIR = Path("/mnt/Rdata/CCD_obs") 
-#BASEDIR = Path("/mnt/OBS_data") 
+###
+BASEDIR = Path("/mnt/OBS_data") 
 DOINGDIR = Path(BASEDIR/ _astro_utilities.CCD_NEW_dir)
 #DOINGDIR = Path(BASEDIR/ _astro_utilities.CCD_obs_raw_dir)
+#DOINGDIR = Path('/mnt/Pdrive/OBS-Data/2016')
 
 DOINGDIRs = sorted(_Python_utilities.getFullnameListOfallsubDirs(DOINGDIR))
 #print ("DOINGDIRs: ", format(DOINGDIRs))
@@ -68,13 +71,18 @@ for DOINGDIR in DOINGDIRs[:] :
         print("len(summary)", len(summary))
 
         for _, row in summary.iterrows():
-                # 파일명 출력
-                print (row["file"])
-                fpath = Path(row["file"])
-                try:
-                    hdul = _astro_utilities.KevinFitsUpdater(fpath)
-                    print("hdul: ", hdul)
+            # 파일명 출력
+            print (row["file"])
+            fpath = Path(row["file"])
+            try:
+                hdul = _astro_utilities.KevinFitsUpdater(fpath)
+                print("hdul: ", hdul)
 
-                except Exception as err :
-                    print("X"*60)
-                    _Python_utilities.write_log(err_log_file, err)
+            except Exception as err :
+                print("X"*60)
+                _Python_utilities.write_log(err_log_file, err)
+    #print(str(DOINGDIR))
+    #print(str(BASEDIR/_astro_utilities.CCD_NEWUP_dir / DOINGDIR.stem))
+    
+    shutil.move(str(DOINGDIR), str(BASEDIR/_astro_utilities.CCD_NEWUP_dir / DOINGDIR.stem))
+    print(str(DOINGDIR), str(BASEDIR/_astro_utilities.CCD_NEWUP_dir / DOINGDIR.stem))

@@ -23,6 +23,8 @@ deactivate
 conda install astropy pymysql seaborn
 conda install -c conda-forge ccdproc xarray
 pip install opencv-python photutils astroquery
+pip install ysfitsutilpy ysphotutilpy chardet
+
 
 
 # 가상환경 내보내기 (export)
