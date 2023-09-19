@@ -41,7 +41,7 @@ if not os.path.exists('{0}'.format(log_dir)):
 #######################################################
 # read all files in base directory for processing
 BASEDIR = Path(r"r:\CCD_obs")
-BASEDIR = Path("/mnt/Rdata/CCD_obs") 
+BASEDIR = Path("/mnt/Rdata/OBS_data") 
 #BASEDIR = Path("/mnt/OBS_data") 
 DOINGDIR = BASEDIR/ _astro_utilities.CCD_obs_raw_dir
 

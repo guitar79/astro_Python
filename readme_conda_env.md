@@ -26,7 +26,6 @@ pip install opencv-python photutils astroquery
 pip install ysfitsutilpy ysphotutilpy chardet
 
 
-
 # 가상환경 내보내기 (export)
 conda env export > astro_Python_env.yaml
 

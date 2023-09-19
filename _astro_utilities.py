@@ -55,63 +55,6 @@ alignment_dir = 'alignment_Python/'
 # OBS instruments information 
 #######################################################
 
-GAINDIC = {"STF-8300M": 0.37, 
-        "STX-16803": 1.27, 
-        "STL-11000M": 0.8, 
-        "QSI683ws": 0.13 } 
-
-RDNOISEDIC = {"STF-8300M": 9.3, 
-            "STX-16803": 9.0, 
-            "STL-11000M": 9.6, 
-            "QSI683ws": 8.0 } 
-
-PIXSIZEEDIC = {"STF-8300M": 5.4, 
-            "STX-16803": 9.0, 
-            "STL-11000M": 9.0, 
-            "QSI683ws": 5.4 } 
-
-PIXSCALEDIC = {"FSQ106ED_STF-8300M": 2.1, 
-            "FSQ106ED-x72_STF-8300M": 2.1/0.72, 
-            "FSQ106ED-x73_STF-8300M": 2.1/0.73, 
-            "FS60CB_STF-8300M": 3.14, 
-            "RiLA600_STX-16803": 0.62, 
-            "FSQ106ED_STL-11000M": 3.5, 
-            "FSQ106ED-x72_STL-11000M": 3.5/0.72, 
-            "FSQ106ED-x73_STL-11000M": 3.5/0.73, 
-            "FSQ106ED_QSI683ws": 2.1,
-            "FSQ106ED-x72_QSI683ws": 2.1/0.72,
-            "FSQ106ED-x73_QSI683ws": 2.1/0.73,
-            "GSON300_QSI683ws": 0.93,
-            "GSON300_STF-8300M": 0.93,
-            "SVX080T_QSI683ws": 2.32,
-            "SVX080T-x80_QSI683ws": 2.32*0.8,
-            "TEC140_STL-11000M":1.89,
-            "TEC140-x75_STL-11000M":1.89*0.75,
-            "TEC140_STL-11000M":1.89,
-            "TEC140-x75_STL-11000M":1.89*0.75,
-            "TEC140_STL-11000M":1.89,
-            "TEC140-x75_STL-11000M":1.89*0.75,
-            "TMB130ss_STL-11000M":2.04,
-            "TEC130ss-x75_STL-11000M":2.04*0.75,
-            "TMB130ss_STL-11000M":2.04,
-            "TEC130ss-x75_STL-11000M":2.04*0.75,
-            "TMB130ss_STL-11000M":2.04,
-            "TEC130ss-x75_STL-11000M":2.04*0.75
-             } 
-
-# FOCALLENDIC = {"TMB130ss": 910, 
-#             "TMB130ss-x75": 910*0.75, 
-#             "RiLA600": 3000, 
-#             "GSON300": 1200, 
-#             "FS60CB": 355, 
-#             "SVX080T": 480, 
-#             "SVX080T-x80": 480*0.8, 
-#             "FSQ106ED": 530, 
-#             "FSQ106ED-x72": 530*0.72,
-#             "FSQ106ED-x73": 530*0.73,
-#             "TEC140":140*7,
-#             "TEC140-x75":140*7*0.75} 
-
 #CCDNAME, PIXSIZE, GAIN, RENOISE    
 CCDDIC = {"ST-8300M": {"PIXSIZE":5.4, 
                         "GAIN":0.37,
@@ -171,12 +114,6 @@ OPTICDIC = {"TMB130ss": {"APATURE" : 130,
             "TEC140-x75": {"APATURE": 140,
                        "FOCALLEN": 980*0.75}
                        }
-
-#Optic Acc name
-OptAccDIC = {"x80": 0.8, 
-            "x72": 0.72, 
-            "x73": 0.73, 
-            "x75": 0.75} 
 
 #######################################################
 
@@ -239,6 +176,7 @@ def KevinFitsNewFname(
         new_fname += str(int(hdul[0].header["EXPOSURE"]))+"sec_"
         new_fname += hdul[0].header["OPTIC"]+"_"+hdul[0].header["CCDNAME"]+"_"       
         new_fname += ccdtemp+"c_"+str(int(hdul[0].header["XBINNING"]))+"bin.fit"
+        #new_fname += fpath.ext
         print("new_fname: ", new_fname)
         hdul.close()
     return new_fname
@@ -250,8 +188,9 @@ def KevinFitsNewFname(
 def KevinFitsUpdater(
     fpath,
     checkKEYs = ["OBJECT", "TELESCOP", "OPTIC", "CCDNAME", 'FILTER',
-            #"GAIN", "EGAIN", "RDNOISE", "PIXSCALE",
-            "FOCALLEN", "APATURE", "CCD-TEMP",
+            #"GAIN", "EGAIN", "RDNOISE", 
+            "PIXSCALE", "FOCALLEN", "APATURE", "CCD-TEMP",
+            'XPIXSZ', 'YPIXSZ',
             "XBINNING", "YBINNING", "FLIPSTAT", "EXPTIME", "EXPOSURE"],
     ):
     '''
@@ -291,10 +230,13 @@ def KevinFitsUpdater(
     # Change something in hdul.
     with fits.open(str(fpath), mode="update") as hdul :
         
-        #if object_name != hdul[0].header["OBJECT"] : 
+        ###########################
+        #### "OBJECT"
         hdul[0].header["OBJECT"] = object_name.upper()
         print(f"The 'OBJECT' is set {object_name.upper()}")
 
+        ###########################
+        #### "CCDNAME"
         if 'INSTRUME' in hdul[0].header :
             if 'qsi' in hdul[0].header['INSTRUME'].lower() :     
                 CCDNAME = 'QSI683ws'
@@ -325,27 +267,31 @@ def KevinFitsUpdater(
                     else:
                         CCDNAME = ccd_name
             elif "CMOS26000" in hdul[0].header['INSTRUME'] or \
-            "ToupTek" in hdul[0].header['INSTRUME'] :
+                "ToupTek" in hdul[0].header['INSTRUME'] :
                 CCDNAME = "TT-2600CP"
                 hdul[0].header["FILTER"] = "-"
             elif "ASI Camera" in hdul[0].header['INSTRUME'] :
                 CCDNAME = "ASI-6200MMPro"
                 hdul[0].header["FILTER"] = "-"
-
             else :
-                CCDNAME = hdul[0].header['INSTRUME']
+                #CDNAME = hdul[0].header['INSTRUME']
+                CCDNAME = ccd_name
         else :
-            CCDNAME = ccd_name    
+            CCDNAME = ccd_name
         print("CCDNAME", CCDNAME)
 
         hdul[0].header["CCDNAME"] = CCDNAME
         print(f"The 'CCDNAME' is set {hdul[0].header['CCDNAME']}...")
 
+        ###########################
+        #### 'DATE-OBS'
         if len(hdul[0].header['DATE-OBS']) == 10 \
             and 'TIME-OBS' in hdul[0].header : 
             hdul[0].header['DATE-OBS'] += 'T' + hdul[0].header['TIME-OBS']
             print(f"The 'DATE-OBS' is set {hdul[0].header['DATE-OBS']}")
         
+        ###########################
+        #### 'IMAGETYP'
         if not "IMAGETYP" in hdul[0].header :
             hdul[0].header["IMAGETYP"] = image_type  
         elif "ze" in hdul[0].header["IMAGETYP"].lower() \
@@ -383,24 +329,19 @@ def KevinFitsUpdater(
                 hdul[0].header["OPTIC"] = optic_name
                 print(f"The 'OPTIC' is set {hdul[0].header['OPTIC']}")
 
-            #hdul[0].header['FOCALLEN'] = FOCALLENDIC[hdul[0].header['OPTIC']]
             hdul[0].header['FOCALLEN'] = OPTICDIC[hdul[0].header['OPTIC']]['FOCALLEN']
             print(f"The 'FOCALLEN' is set {hdul[0].header['FOCALLEN']}...")
             hdul[0].header['FOCRATIO'] = OPTICDIC[hdul[0].header['OPTIC']]["FOCALLEN"]/OPTICDIC[hdul[0].header['OPTIC']]["APATURE"]
             print(f"The 'FOCRATIO' is set {hdul[0].header['FOCRATIO']}...")
         
-            print(hdul[0].header['OPTIC']+'_'+hdul[0].header['CCDNAME'])
-            # hdul[0].header['PIXSCALE'] = PIXSCALEDIC[hdul[0].header['OPTIC']\
-            #                                          +'_'+hdul[0].header['CCDNAME']]
-            #print(OPTICDIC['OPTIC']['FOCALLEN'], CCDDIC['CCDNAME']['PIXSIZE'])
-            # hdul[0].header['PIXSCALE'] = calPixScale(OPTICDIC[hdul[0].header['OPTIC']]['FOCALLEN'],
-            #                                 CCDDIC[hdul[0].header['CCDNAME']]['PIXSIZE'])
-            # print(f"The 'PIXSCALE' is set {hdul[0].header['PIXSCALE']}...")
-        
+        ###########################
+        #### 
         if (not 'TELESCOP' in hdul[0].header):
             hdul[0].header['TELESCOP'] = "-"
             print(f"The 'TELESCOP' is set {hdul[0].header['TELESCOP']}...")
         
+        ###########################
+        #### 
         if (not 'XBINNING' in hdul[0].header)\
             and (hdul[0].header["CCDNAME"] == "STX-16803") :
             if hdul[0].header['NAXIS1'] == 4096 \
@@ -424,11 +365,33 @@ def KevinFitsUpdater(
         hdul[0].header['YBINNING'] = int(hdul[0].header['YBINNING'])
         print(f"The 'XBINNING', 'YBINNING' are set {hdul[0].header['XBINNING']}, \
                 {hdul[0].header['YBINNING']},...")
-            
+
+        ###########################
+        ####
+        if (not 'XPIXSZ' in hdul[0].header) \
+                and CCDNAME == 'STX-16803' :
+            hdul[0].header['XPIXSZ'] = 9 * hdul[0].header['XBINNING']
+            hdul[0].header['YPIXSZ'] = 9 * hdul[0].header['YBINNING']
+            print(f"The 'XPIXSZ' and 'YPIXSZ' are set {9 * hdul[0].header['XBINNING']} \
+                and {9 * hdul[0].header['YBINNING']}...")
+        #hdul[0].header['GAIN'] = GAINDIC[CCDNAME]
+        #hdul[0].header['GAIN'] = CCDDIC[hdul[0].header['CCDNAME']]['GAIN']
+        #print(f"The 'GAIN' is set {hdul[0].header['GAIN']}...")
+        #hdul[0].header['EGAIN'] = GAINDIC[CCDNAME]
+        #hdul[0].header['EGAIN'] = CCDDIC[hdul[0].header['CCDNAME']]['GAIN']
+        #print(f"The 'EGAIN' is set {hdul[0].header['EGAIN']}...")
+        #hdul[0].header['RDNOISE'] = RDNOISEDIC[CCDNAME]
+        #hdul[0].header['RDNOISE'] = CCDDIC[hdul[0].header['CCDNAME']]['RDNOISE']
+        #print(f"The 'RDNOISE' is set {hdul[0].header['RDNOISE']}...")
+        
+        ###########################
+        ####     
         if not "CCD-TEMP" in hdul[0].header :
             hdul[0].header['CCD-TEMP'] = 'N'
             print(f"The 'CCD-TEMP' is set {hdul[0].header['CCD-TEMP']}...")
 
+        ###########################
+        #### 
         if "EXPOSURE" in hdul[0].header :
             if not "EXPTIME" in hdul[0].header :
                 hdul[0].header["EXPTIME"] = hdul[0].header["EXPOSURE"]
@@ -441,8 +404,8 @@ def KevinFitsUpdater(
             hdul[0].header["EXPOSURE"] = 'N'
             print(f"The 'EXPTIME' and 'EXPOSURE' are set 'N'...")
 
-        if not "TELESCOPE" in hdul[0].header :
-            hdul[0].header["TELESCOPE"] = "-"
+        ###########################
+        #### 
         if not "OPTIC" in hdul[0].header :
             hdul[0].header["OPTIC"] = optic_name
         if not "FOCALLEN" in hdul[0].header :
@@ -450,16 +413,14 @@ def KevinFitsUpdater(
         if not "APATURE" in hdul[0].header :
             hdul[0].header["APATURE"] = OPTICDIC[hdul[0].header['OPTIC']]["APATURE"]
 
-        #hdul[0].header['GAIN'] = GAINDIC[CCDNAME]
-        #hdul[0].header['GAIN'] = CCDDIC[hdul[0].header['CCDNAME']]['GAIN']
-        #print(f"The 'GAIN' is set {hdul[0].header['GAIN']}...")
-        #hdul[0].header['EGAIN'] = GAINDIC[CCDNAME]
-        #hdul[0].header['EGAIN'] = CCDDIC[hdul[0].header['CCDNAME']]['GAIN']
-        #print(f"The 'EGAIN' is set {hdul[0].header['EGAIN']}...")
-        #hdul[0].header['RDNOISE'] = RDNOISEDIC[CCDNAME]
-        #hdul[0].header['RDNOISE'] = CCDDIC[hdul[0].header['CCDNAME']]['RDNOISE']
-        #print(f"The 'RDNOISE' is set {hdul[0].header['RDNOISE']}...")
-        
+        print(hdul[0].header['OPTIC']+'_'+hdul[0].header['CCDNAME'])
+        if "FLAT" in hdul[0].header["IMAGETYP"] or \
+            "LIGHT" in hdul[0].header["IMAGETYP"] :
+            if not "PIXSCALE" in hdul[0].header :
+                hdul[0].header["PIXSCALE"] = calPixScale(hdul[0].header['FOCALLEN'], 
+                                                            hdul[0].header['XPIXSZ'])
+            hdul[0].header["PIXSCALE"] = calPixScale(hdul[0].header['FOCALLEN'], 
+                                                            hdul[0].header['XPIXSZ'])
         hdul[0].header['FLIPSTAT'] = " "
         print(f"The 'FLIPSTAT' is set {hdul[0].header['FLIPSTAT']}...")
         
@@ -478,7 +439,7 @@ class KevinFitsHeader():
         self.fpath = Path(fpath)
         self.checkKEYs = ["OBJECT", "TELESCOP", "OPTIC", "CCDNAME", 'FILTER',
             "GAIN", "EGAIN", "RDNOISE", "FOCALLEN", "PIXSCALE",
-            "XBINNING", "YBINNING", "FLIPSTAT"]
+            'XPIXSZ', 'YPIXSZ', "XBINNING", "YBINNING", "FLIPSTAT"]
         '''
         Parameters
         ----------
@@ -584,8 +545,14 @@ class KevinFitsHeader():
                 self.CCDNAME = self.ccd_name
             print("CCDNAME", self.CCDNAME)
 
-            self.hdul[0].header["CCDNAME"] = self.CCDNAME
-            print(f"The 'CCDNAME' is set {self.CCDNAME}...")
+            #self.hdul[0].header["CCDNAME"] = self.CCDNAME
+            #print(f"The 'CCDNAME' is set {self.CCDNAME}...")
+
+            if (not 'XPIXSZ' in self.hdul[0].header) \
+                and self.CCDNAME == 'STX-16803' :
+                self.hdul[0].header['XPIXSZ'] = 9 * self.hdul[0].header['XBINNING']
+                self.hdul[0].header['YPIXSZ'] = 9 * self.hdul[0].header['YBINNING']
+                print(f"The 'XPIXSZ' and 'YPIXSZ' are set {9 * self.hdul[0].header['XBINNING']} and {9 * self.hdul[0].header['YBINNING']}...")
 
             if not "CCD-TEMP" in self.hdul[0].header :
                 self.hdul[0].header['CCD-TEMP'] = 'N'
@@ -595,96 +562,20 @@ class KevinFitsHeader():
                 self.hdul[0].header["EXPOSURE"] = self.hdul[0].header["EXPTIME"]
                 print(f"The 'EXPOSURE' is set {self.hdul[0].header['EXPTIME']}...")
 
-            self.hdul[0].header['GAIN'] = GAINDIC[self.CCDNAME]
+            self.hdul[0].header['GAIN'] = CCDDIC[self.CCDNAME]["GAIN"]
             print(f"The 'GAIN' is set {self.hdul[0].header['GAIN']}...")
-            self.hdul[0].header['EGAIN'] = GAINDIC[self.CCDNAME]
+            self.hdul[0].header['EGAIN'] = CCDDIC[self.CCDNAME]["EGAIN"]
             print(f"The 'EGAIN' is set {self.hdul[0].header['EGAIN']}...")
-            self.hdul[0].header['RDNOISE'] = RDNOISEDIC[self.CCDNAME]
+            self.hdul[0].header['RDNOISE'] = CCDDIC[self.CCDNAME]["RDNOISE"]
             print(f"The 'RDNOISE' is set {self.hdul[0].header['RDNOISE']}...")
             self.hdul.flush()  # changes are written back to original.fits
             print('*'*30)
             print(f"The header of {self.fpath.name} is updated..")
         return self.hdul
 
-#%%
-#########################################
-#single  KevinPSolver
-#########################################
-class KevinSolver():
-    def __init__(self, fullname, solved_dir):
-        self.fullname = fullname
-        self.solved_dir = solved_dir
-        """
-        Parameters
-        ----------
-        fullname : string
-            The fullname of input file...
 
-        solved dir: string
-            The directory where the output file              
-        """
-    def astap(self):
-        print("Starting... \n{}".format(self.fullname))
-        self.fullname_el = self.fullname.split("/")
-        self.filename_el = self.fullname_el[-1].split("_")
-
-        #Path(os.path.dirname(str(f_path))).parents[0]
-        if os.path.exists('{}/{}/{}'.format((os.path.dirname(self.fullname)), 
-                                            self.solved_dir, self.fullname_el[-1])):
-            print("{} is already solved ...".format(self.fullname_el[-1]))
-
-        else : 
-            try:    
-                with subprocess.Popen(['astap', 
-                            '-f', '{0}'.format(self.fullname), 
-                            '-o', 
-                            '{}/{}/{}.tmp'.format((os.path.dirname(self.fullname)), 
-                                self.solved_dir, self.fullname_el[-1][:-5]), 
-                            '-wcs',
-                            '-analyse2',
-                            '-update',],
-                            stdout=subprocess.PIPE) as proc :
-                    print(proc.stdout.read())
-                                
-            except Exception as err :
-                print('{1} ::: {2} with {0} ...'\
-                            .format(self.fullname, datetime.now(), err))
-
-    def astap(self):
-        print("Starting... \n{}".format(self.fullname))
-        self.fullname_el = self.fullname.split("/")
-        self.filename_el = self.fullname_el[-1].split("_")
-
-        #Path(os.path.dirname(str(f_path))).parents[0]
-        if os.path.exists('{}/{}/{}'.format((os.path.dirname(self.fullname)), 
-                                            self.solved_dir, self.fullname_el[-1])):
-            print("{} is already solved ...".format(self.fullname_el[-1]))
-
-        else : 
-            try:
-                with subprocess.Popen(['solve-field', 
-                                        '-O', #--overwrite: overwrite output files if they already exist
-                                        #'--scale-low', '0.1', '--scale-high', '0.40', #pixel scale
-                                        '-g', #--guess-scale: try to guess the image scale from the FITS headers
-                                        '--cpulimit', '120',  #will make it give up after 30 seconds.
-                                        '--nsigma', '15',
-                                        #'--downsample', '4',
-                                        '-u', 'app', #'--scale-units', 'arcsecperpix', #pixel scale
-                                        '-L', '1.2', '-U', '1.3',
-                                        #'-N',  '{}'.format(self.fullname[-1]), #--new-fits <filename>: output filename of the new FITS file containingthe WCS header; "none" to not create this file
-                                        '-p', 
-                                        '--no-plots',#: don't create any plots of the results
-                                        '-D', '{}/{}/'.format((os.path.dirname(self.fullname)), self.solved_dir),
-                                        '{0}'.format(self.fullname)], 
-                                        stdout=subprocess.PIPE) as proc :
-                    print(proc.stdout.read())
-            except Exception as err :
-                print('{1} ::: {2} with {0} ...'\
-                            .format(self.fullname, datetime.now(), err))
-#########################################
 
 #%%
-
 def fits_newpath(
         fpath,
         rename_by,
@@ -753,14 +644,16 @@ def fits_newpath(
 
     return newpath
 
+#%%
+#########################################
+#KevinPSolver
+#########################################
 
-#########################################
-# Astrometry Solver
-#########################################
-def AstrometrySolver(fpath, 
-                    solved_dir,
-                    downsample,
-                    pixscale,
+def KevinSolver(fpath, 
+                    #solved_dir,
+                    **kwargs
+                    #downsample,
+                    #pixscale,
                     ):
     """
     Parameters
@@ -774,61 +667,73 @@ def AstrometrySolver(fpath,
     pixscale : int
 
     """
-    if downsample is None :
-        pixscale = 1
+    if not 'downsample' in kwargs :
+        downsample = 1
+    else: 
+        downsample = kwargs['downsample']
     print("downsample: ", downsample)
 
-    if pixscale is None :
+    if not 'pixscale' in kwargs :
         pixscale = 1.0
-    print("pixscale: ", pixscale)
+    else : 
+        pixscale = kwargs['pixscale']
+    print(f"pixscale: {pixscale:.03f}, L: {pixscale*0.99:.03f}, U: {pixscale*1.01:.03f}")
 
     fpath = Path(fpath)
-    SOLVEDDIR = Path(solved_dir)
 
-    #print("Starting... \n{}".format(str(fpath)))
-    print("str(SOLVEDDIR):", str(SOLVEDDIR))
-    print('str(SOLVEDDIR/fpath.name):', str(SOLVEDDIR/fpath.name))
+    try :
+        if not (fpath.parent/f'{fpath.stem}.fits').exists():
+            #https://www.hnsky.org/astap.htm#astap_command_line
+            with subprocess.Popen(['astap', 
+                    '-f', str(fpath), 
+                    # '-o', 
+                    #'-fov',
+                    '-z', f'{str(downsample)}',
+                    '-wcs',
+                    '-analyse2',
+                    '-update',],
+                        stdout=subprocess.PIPE) as proc :
+                print(proc.stdout.read())
+            
+            if (fpath.parent/f'{fpath.stem}.wcs').exists() \
+                and (fpath.parent/f'{fpath.stem}.ini').exists():
+                shutil.copy(str(fpath), f"{fpath.parent / fpath.stem}.fits")
+            print(f"{fpath.name} is solved using ASTAP...")
+    except Exception as err :
+        print('{1} ::: {2} with {0} ...'\
+            .format(fpath, datetime.now(), err))  
 
-    if (SOLVEDDIR/fpath.name).exists():
-        print(f"{str((SOLVEDDIR/fpath.name))} is already exist...")
-    
-    else: 
-        try : 
+    try :
+        if not (fpath.parent/f'{fpath.stem}.fits').exists() :
+
             # solve command.
             # solve-field fullname.fit -O --cpulimit 120 --nsigma 15 -u app -L 1.2 -U 1.3 -N new_filename.fits -p --no-plots -D output_directory {0}
             with subprocess.Popen(['solve-field', 
-                                    '-O', #--overwrite: overwrite output files if they already exist
-                                    #'--scale-low', '0.1', '--scale-high', '0.40', #pixel scale
-                                    #'-g', #--guess-scale: try to guess the image scale from the FITS headers
-                                    '--cpulimit', '10',  #will make it give up after 30 seconds.
-                                    '--nsigma', '15',
-                                    '--downsample', f'{str(downsample)}',
-                                    '-u', 'app', #'--scale-units', 'arcsecperpix', #pixel scale
-                                    #'-L', '1.2', '-U', '1.3', #16803_2bin
-                                    '-L', f'{pixscale*0.9:.02f}', 
-                                    '-U', f'{pixscale*1.1:.02f}',   
-                                    '-N', f'{str(SOLVEDDIR/fpath.stem)}.fit', #--new-fits <filename>: output filename of the new FITS file containingthe WCS header; "none" to not create this file
-                                    '-p', 
-                                    #'--no-plots',#: don't create any plots of the results
-                                    '-D', str(SOLVEDDIR),
-                                    str(fpath)
-                                    ], 
-                                    stdout=subprocess.PIPE) as proc :
+                                '-O', #--overwrite: overwrite output files if they already exist
+                                #'-g', #--guess-scale: try to guess the image scale from the FITS headers
+                                '--cpulimit', '10',  #will make it give up after 30 seconds.
+                                #'--nsigma', '15',
+                                '--downsample', f'{str(downsample)}',
+                                '-u', 'app', #'--scale-units', 'arcsecperpix', #pixel scale
+                                '-L', f'{pixscale*0.99:.03f}', 
+                                '-U', f'{pixscale*1.01:.03f}',   
+                                '-N', f'{fpath.parent/ fpath.stem}.fits', #--new-fits <filename>: output filename of the new FITS file containingthe WCS header; "none" to not create this file
+                                #-p', 
+                                '--no-plots',#: don't create any plots of the results
+                                #'-D', str(SOLVEDDIR),
+                                str(fpath)
+                                ], 
+                                stdout=subprocess.PIPE) as proc :
                 print(proc.stdout.read())
-            
-            if (SOLVEDDIR/f'{fpath.stem}.new').exists():
-                print(f"{fpath.name} is solved successfully ...")
-                shutil.move(str((SOLVEDDIR/f'{fpath.stem}.new')), \
-                            str((SOLVEDDIR/f'{fpath.stem}.fit')))
-                print(f"{str(SOLVEDDIR/f'{fpath.stem}.new')} is renamed to fits ...")
-            
-            else : 
-                print(f"solving {fpath.name} is failed...")
-            
-        except Exception as err :
-            print('{1} ::: {2} with {0} ...'\
-                .format(fpath, datetime.now(), err))
+        
+    except Exception as err :
+        print('{1} ::: {2} with {0} ...'\
+            .format(fpath, datetime.now(), err))
 
+    if fpath.exists() and (fpath.parent/f'{fpath.stem}.fits').exists():
+        os.remove(str(fpath))
+        print(f"{str(fpath)} is removed...")
+        
 
 #########################################
 # makingAstrometrySH
@@ -875,239 +780,6 @@ def makingAstrometrySH(fpath,
     return result
 
 
-
-# #%%
-# #########################################
-# #single calss Astrometry Solver
-# #########################################
-# class AstrometrySolver():
-#     def __init__(self, fullname, solved_dir):
-        
-#         """
-#         Parameters
-#         ----------
-#         fullname : string
-#             The fullname of input file...
-
-#         solved dir: string
-#             The directory where the output file              
-#         """
-
-#         self.fullname = fullname
-#         self.solved_dir = solved_dir
-
-#         print("Starting... \n{}".format(self.fullname))
-#         self.fullname_el = self.fullname.split("/")
-#         self.filename_el = self.fullname_el[-1].split("_")
-
-#         print("self.solved_dir:", self.solved_dir)
-#         print('{}/{}'.format(self.solved_dir, self.fullname_el[-1]))
-
-#         if os.path.exists('{}/{}'.format(self.solved_dir, self.fullname_el[-1])):
-#             print("{} is already solved ...".format(self.fullname_el[-1]))
-        
-#         else: 
-
-#             try : 
-#                 # solve command.
-#                 # solve-field fullname.fit -O --cpulimit 120 --nsigma 15 -u app -L 1.2 -U 1.3 -N new_filename.fits -p --no-plots -D output_directory {0}
-#                 with subprocess.Popen(['solve-field', 
-#                                         '-O', #--overwrite: overwrite output files if they already exist
-#                                         #'--scale-low', '0.1', '--scale-high', '0.40', #pixel scale
-#                                         '-g', #--guess-scale: try to guess the image scale from the FITS headers
-#                                         '--cpulimit', '120',  #will make it give up after 30 seconds.
-#                                         '--nsigma', '15',
-#                                         #'--downsample', '4',
-#                                         '-u', 'app', #'--scale-units', 'arcsecperpix', #pixel scale
-#                                         '-L', '1.2', '-U', '1.3',
-#                                         #'-N',  '{}'.format(self.fullname[-1]), #--new-fits <filename>: output filename of the new FITS file containingthe WCS header; "none" to not create this file
-#                                         '-p', 
-#                                         '--no-plots',#: don't create any plots of the results
-#                                         '-D', '{}/'.format(solved_dir),
-#                                         '{0}'.format(self.fullname)], 
-#                                         stdout=subprocess.PIPE) as proc :
-#                     print(proc.stdout.read())
-                
-#                 if os.path.exists('{}/{}.new'.format(self.solved_dir, self.fullname_el[-1][:-5])):
-#                     print("{} is solved successful ...".format(self.fullname_el[-1]))
-                    
-#                     shutil.move('{}/{}.new'.format(self.solved_dir, self.fullname_el[-1][:-5]), \
-#                                 '{}/{}'.format(self.solved_dir, self.fullname_el[-1]))
-#                     print("{} is renamed to fits ...".format(self.fullname_el[-1]))
-                
-#                 else : 
-#                     print("{} solving fail ...".format(self.fullname_el[-1]))
-                
-#             except Exception as err :
-#                     print('{1} ::: {2} with {0} ...'\
-#                             .format(self.fullname, datetime.now(), err))
-#########################################
-
-
-# #%%
-# #########################################
-# #single  Astrometry Solver1
-# #########################################
-# class AstrometrySolver1():
-#     def __init__(self, fullname, solved_dir):
-        
-#         """
-#         Parameters
-#         ----------
-#         fullname : Path-like
-#             The fullname of input file...
-
-#         solved dir: string
-#             The directory where the output file              
-#         """
-
-#         self.fullname = fullname
-#         self.solved_dir = solved_dir
-
-#         print("Starting... \n{}".format(self.fullname))
-#         self.fullname_el = self.fullname.split("/")
-#         self.filename_el = self.fullname_el[-1].split("_")
-
-#         print("self.solved_dir:", self.solved_dir)
-#         print('{}/{}'.format(self.solved_dir, self.fullname_el[-1]))
-
-#         if os.path.exists('{}/{}'.format(self.solved_dir, self.fullname_el[-1])):
-#             print("{} is already solved ...".format(self.fullname_el[-1]))
-        
-#         else: 
-
-#             try : 
-#                 # solve command.
-#                 # solve-field fullname.fit -O --cpulimit 120 --nsigma 15 -u app -L 1.2 -U 1.3 -N new_filename.fits -p --no-plots -D output_directory {0}
-#                 with subprocess.Popen(['solve-field', 
-#                                         '-O', #--overwrite: overwrite output files if they already exist
-#                                         #'--scale-low', '0.1', '--scale-high', '0.40', #pixel scale
-#                                         '-g', #--guess-scale: try to guess the image scale from the FITS headers
-#                                         '--cpulimit', '120',  #will make it give up after 30 seconds.
-#                                         '--nsigma', '15',
-#                                         #'--downsample', '4',
-#                                         '-u', 'app', #'--scale-units', 'arcsecperpix', #pixel scale
-#                                         '-L', '1.2', '-U', '1.3',
-#                                         #'-N',  '{}'.format(self.fullname[-1]), #--new-fits <filename>: output filename of the new FITS file containingthe WCS header; "none" to not create this file
-#                                         '-p', 
-#                                         '--no-plots',#: don't create any plots of the results
-#                                         '-D', '{}/'.format(solved_dir),
-#                                         '{0}'.format(self.fullname)], 
-#                                         stdout=subprocess.PIPE) as proc :
-#                     print(proc.stdout.read())
-                
-#                 if os.path.exists('{}/{}.new'.format(self.solved_dir, self.fullname_el[-1][:-5])):
-#                     print("{} is solved successful ...".format(self.fullname_el[-1]))
-                    
-#                     shutil.move('{}/{}.new'.format(self.solved_dir, self.fullname_el[-1][:-5]), \
-#                                 '{}/{}'.format(self.solved_dir, self.fullname_el[-1]))
-#                     print("{} is renamed to fits ...".format(self.fullname_el[-1]))
-                
-#                 else : 
-#                     print("{} solving fail ...".format(self.fullname_el[-1]))
-                    
-#             except Exception as err :
-#                     print('{1} ::: {2} with {0} ...'\
-#                             .format(self.fullname, datetime.now(), err))
-# #########################################
-#%%
-# #########################################
-# #single ASTAPSolver
-# #########################################
-# class ASTAPSolver():
-#     def __init__(self, fullname, solved_dir):
-#         self.fullname = fullname
-#         self.solved_dir = solved_dir
-#         """
-#         Parameters
-#         ----------
-#         fullname : string
-#             The fullname of input file...
-
-#         solved dir: string
-#             The directory where the output file              
-#         """
-
-#         print("Starting... \n{}".format(self.fullname))
-#         self.fullname_el = self.fullname.split("/")
-#         self.filename_el = self.fullname_el[-1].split("_")
-
-#         print("self.solved_dir:", self.solved_dir)
-#         print('{}/{}'.format(self.solved_dir, self.fullname_el[-1]))
-
-#         if os.path.exists('{}/{}'.format(self.solved_dir, self.fullname_el[-1])):
-#             print("{} is already solved ...".format(self.fullname_el[-1]))
-        
-#         else : 
-
-#             try:
-#                 # solve command.
-#                 # astap -f fullname.fit -o output_file.fits -wcs -analyse2 -update
-#                 #astap -f ../RnE_2022/KLEOPATRA_LIGHT_-_2022-11-04_-_RiLA600_STX-16803_-_2bin/KLEOPATRA_LIGHT_v_2022-11-04-11-48-17_160sec_RiLA600_STX-16803_-20C_2bin.fit -o ../RnE_2022/KLEOPATRA_LIGHT_-_2022-11-04_-_RiLA600_STX-16803_-_2bin/solved1/11.fit -update
-#                 with subprocess.Popen(['astap', 
-#                             '-f', '{0}'.format(self.fullname), 
-#                             '-o', 
-#                             '{}/{}'.format(self.solved_dir, 
-#                                     self.fullname_el[-1]), 
-#                             '-wcs',
-#                             '-analyse2',
-#                             '-update',],
-#                                 stdout=subprocess.PIPE) as proc :
-#                     print(proc.stdout.read())
-                
-#             except Exception as err :
-#                     print('{1} ::: {2} with {0} ...'\
-#                             .format(self.fullname, datetime.now(), err))
-               
-
-#########################################
-
-#########################################
-#single ASTAPSolver
-#########################################
-def ASTAPSolver(fullname, solved_dir):
-
-    """
-    Parameters
-    ----------
-    fullname : string
-        The fullname of input file...
-
-    solved dir: string
-        The directory where the output file              
-    """
-
-    print("Starting... \n{}".format(fullname))
-    fullname_el = fullname.split("/")
-    filename_el = fullname_el[-1].split("_")
-
-    print("solved_dir:", solved_dir)
-    print('{}/{}'.format(solved_dir, fullname_el[-1]))
-
-    if os.path.exists('{}/{}'.format(solved_dir, fullname_el[-1])):
-        print("{} is already solved ...".format(fullname_el[-1]))
-    
-    else : 
-
-        try:
-            # solve command.
-            # astap -f fullname.fit -o output_file.fits -wcs -analyse2 -update
-            #astap -f ../RnE_2022/KLEOPATRA_LIGHT_-_2022-11-04_-_RiLA600_STX-16803_-_2bin/KLEOPATRA_LIGHT_v_2022-11-04-11-48-17_160sec_RiLA600_STX-16803_-20C_2bin.fit -o ../RnE_2022/KLEOPATRA_LIGHT_-_2022-11-04_-_RiLA600_STX-16803_-_2bin/solved1/11.fit -update
-            with subprocess.Popen(['astap', 
-                        '-f', '{0}'.format(fullname), 
-                        '-o', 
-                        '{}/{}'.format(solved_dir, 
-                                fullname_el[-1]), 
-                        '-wcs',
-                        '-analyse2',
-                        '-update',],
-                            stdout=subprocess.PIPE) as proc :
-                print(proc.stdout.read())
-            
-        except Exception as err :
-            print('{1} ::: {2} with {0} ...'\
-                        .format(fullname, datetime.now(), err))
-
 #%%        
 # =============================================================================
 # for checking time
@@ -1145,8 +817,9 @@ def Kevin_new_fname(fpath):
     new_fname += hdul[0].header["DATE-OBS"][:19].replace("T","-").replace(":","-")+"_"
     new_fname += str(int(hdul[0].header["EXPOSURE"]))+"sec_"
     new_fname += hdul[0].header["OPTIC"]+"_"+hdul[0].header["CCDNAME"]+"_"       
-    new_fname += ccdtemp+"c_"+str(hdul[0].header["XBINNING"])+"bin.fit"
-    #print("new_fname: ", new_fname)
+    new_fname += ccdtemp+"c_"+str(hdul[0].header["XBINNING"])+"bin"
+    new_fname += fpath.suffix
+    print("new_fname: ", new_fname)
     hdul.close()
     return new_fname
 #%%

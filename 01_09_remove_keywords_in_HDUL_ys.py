@@ -36,7 +36,7 @@ if not os.path.exists('{0}'.format(log_dir)):
 #%%
 #######################################################
 # read all files in base directory for processing
-BASEDIR = Path("/mnt/Rdata/CCD_obs") 
+BASEDIR = Path("/mnt/Rdata/OBS_data") 
 #BASEDIR = Path("/mnt/OBS_data") 
 #DOINGDIR = Path(BASEDIR/ "RnE_2022/GSON300_STF-8300M")
 #DOINGDIR = Path(BASEDIR/ "CCD_new_files")
