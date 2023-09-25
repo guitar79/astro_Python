@@ -36,22 +36,19 @@ if not os.path.exists('{0}'.format(log_dir)):
 #######################################################
 # read all files in base directory for processing
 BASEDIR = Path("/mnt/Rdata/OBS_data") 
-
-DOINGDIR = Path(BASEDIR / "ccd_test_folder")
-
-DOINGDIR = Path('/mnt/Rdata/OBS_data/CCD_obs_raw')
+DOINGDIR = Path('/mnt/Rdata/OBS_data/CCD_obs_raw/')
+DOINGDIR = Path('/mnt/Rdata/OBS_data/CCD_obs_raw/STX-16803_1bin' )
 
 DOINGDIRs = sorted(_Python_utilities.getFullnameListOfallsubDirs(DOINGDIR))
-print ("len(DOINGDIRs): ", format(len(DOINGDIRs)))
+print ("len(DOINGDIRs): ", len(DOINGDIRs))
 remove = 'BIAS'
 DOINGDIRs = [x for x in DOINGDIRs if remove not in x]
 remove = 'DARK'
 DOINGDIRs = [x for x in DOINGDIRs if remove not in x]
 remove = 'FLAT'
 DOINGDIRs = [x for x in DOINGDIRs if remove not in x]
-#print ("DOINGDIRs: ", format(DOINGDIRs))
-print ("len(DOINGDIRs): ", format(len(DOINGDIRs)))
-#######################################################
+#print ("DOINGDIRs: ", DOINGDIRs)
+print ("len(DOINGDIRs): ", len(DOINGDIRs))
 #######################################################
 #%%
 #######################################################
@@ -85,7 +82,6 @@ class Multiprocessor():
             p.join()
         return rets
 #######################################################
-
 #%%
 for DOINGDIR in DOINGDIRs[:] :
     DOINGDIR = Path(DOINGDIR)
@@ -117,7 +113,7 @@ for DOINGDIR in DOINGDIRs[:] :
             print("df_light:\n{}".format(df_light))
 
             myMP = Multiprocessor()
-            num_cpu = 6
+            num_cpu = 7
             values = []
             fullnames = df_light["file"].tolist()
             num_batches = len(fullnames) // num_cpu + 1
@@ -138,7 +134,7 @@ for DOINGDIR in DOINGDIRs[:] :
 
                     myMP.run(_astro_utilities.KevinSolver, (str(fpath)), 
                                                     #str(SOLVEDDIR), 
-                                                    downsample = 4,
+                                                    downsample = 2,
                                                     pixscale = PIXc,)
 
                 print("Batch " + str(batch))

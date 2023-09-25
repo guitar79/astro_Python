@@ -118,8 +118,7 @@ OPTICDIC = {"TMB130ss": {"APATURE" : 130,
 #######################################################
 
 def calPixScale (
-    F_length, 
-    #Opt_acc, 
+    F_length,
     Pix_size) :
     '''
         Parameters
@@ -127,9 +126,6 @@ def calPixScale (
         F_length : float or int
             Focal Length of Telescope with out accesery (mm)
         
-        #Opt_acc : float
-        #    magnification of optical accesery (no unit)
-
         Pix_Size : float
             pixel size of detector (um), 
     
@@ -677,35 +673,12 @@ def KevinSolver(fpath,
         pixscale = 1.0
     else : 
         pixscale = kwargs['pixscale']
-    print(f"pixscale: {pixscale:.03f}, L: {pixscale*0.99:.03f}, U: {pixscale*1.01:.03f}")
+    print(f"pixscale: {pixscale:.03f}, L: {pixscale*0.97:.03f}, U: {pixscale*1.03:.03f}")
 
     fpath = Path(fpath)
-
-    try :
-        if not (fpath.parent/f'{fpath.stem}.fits').exists():
-            #https://www.hnsky.org/astap.htm#astap_command_line
-            with subprocess.Popen(['astap', 
-                    '-f', str(fpath), 
-                    # '-o', 
-                    #'-fov',
-                    '-z', f'{str(downsample)}',
-                    '-wcs',
-                    '-analyse2',
-                    '-update',],
-                        stdout=subprocess.PIPE) as proc :
-                print(proc.stdout.read())
-            
-            if (fpath.parent/f'{fpath.stem}.wcs').exists() \
-                and (fpath.parent/f'{fpath.stem}.ini').exists():
-                shutil.copy(str(fpath), f"{fpath.parent / fpath.stem}.fits")
-            print(f"{fpath.name} is solved using ASTAP...")
-    except Exception as err :
-        print('{1} ::: {2} with {0} ...'\
-            .format(fpath, datetime.now(), err))  
-
+    
     try :
         if not (fpath.parent/f'{fpath.stem}.fits').exists() :
-
             # solve command.
             # solve-field fullname.fit -O --cpulimit 120 --nsigma 15 -u app -L 1.2 -U 1.3 -N new_filename.fits -p --no-plots -D output_directory {0}
             with subprocess.Popen(['solve-field', 
@@ -725,6 +698,29 @@ def KevinSolver(fpath,
                                 ], 
                                 stdout=subprocess.PIPE) as proc :
                 print(proc.stdout.read())
+    
+    except Exception as err :
+        print('{1} ::: {2} with {0} ...'\
+            .format(fpath, datetime.now(), err))  
+
+    try :
+        if not (fpath.parent/f'{fpath.stem}.fits').exists():
+            #https://www.hnsky.org/astap.htm#astap_command_line
+            with subprocess.Popen(['astap', 
+                                '-f', str(fpath), 
+                                # '-o', 
+                                #'-fov',
+                                '-z', f'{str(downsample)}',
+                                '-wcs',
+                                '-analyse2',
+                                '-update',],
+                                stdout=subprocess.PIPE) as proc :
+                print(proc.stdout.read())
+            
+            if (fpath.parent/f'{fpath.stem}.wcs').exists() \
+                and (fpath.parent/f'{fpath.stem}.ini').exists():
+                shutil.copy(str(fpath), f"{fpath.parent / fpath.stem}.fits")
+                print(f"{fpath.name} is solved using ASTAP...")
         
     except Exception as err :
         print('{1} ::: {2} with {0} ...'\
@@ -789,271 +785,19 @@ def print_working_time(cht_start_time):
     working_time = (datetime.now() - cht_start_time) #total days for downloading
     return print('working time ::: %s' % (working_time))
 
-#%%
+
+#%%        
 # =============================================================================
-#     
-# =============================================================================
-fnameKEYs = ["OBJECT", "IMAGETYP", "FILTER", "DATE-OBS", 
-            "EXPOSURE", "OPTIC", "CCDNAME", "CCD-TEMP", "XBINNING"]
-
-def Kevin_new_fname(fpath):
-    # if ccd_obs_raw_dir == None :
-    #     ccd_obs_raw_dir = CCD_obs_raw_dir
-    print(f'Starting get_new_filename ...\n{fpath.name}')
-    
-    fpath = Path(fpath)            
-    hdul = fits.open(str(fpath))
-    print("fpath: ", fpath)
-    
-    for fnameKEY in fnameKEYs: 
-        print(f"{fnameKEY}: ", hdul[0].header[fnameKEY])
-
-    try :
-        ccdtemp = str(int(hdul[0].header["CCD-TEMP"]))
-    except : 
-        ccdtemp = "N"
-
-    new_fname = hdul[0].header["OBJECT"]+"_"+hdul[0].header["IMAGETYP"]+"_"+hdul[0].header["FILTER"]+"_"
-    new_fname += hdul[0].header["DATE-OBS"][:19].replace("T","-").replace(":","-")+"_"
-    new_fname += str(int(hdul[0].header["EXPOSURE"]))+"sec_"
-    new_fname += hdul[0].header["OPTIC"]+"_"+hdul[0].header["CCDNAME"]+"_"       
-    new_fname += ccdtemp+"c_"+str(hdul[0].header["XBINNING"])+"bin"
-    new_fname += fpath.suffix
-    print("new_fname: ", new_fname)
-    hdul.close()
-    return new_fname
-#%%
-# =============================================================================
-# get new filename from fits    
-# =============================================================================
-def get_new_filename(fullname, **kargs):
-    print('Starting get_new_filename ...\n{0}'.format(fullname))
-    from astropy.io import fits
-    hdul = fits.open(fullname)
-    if hdul[0].header['NAXIS1'] == 4096 \
-        and hdul[0].header['NAXIS2'] == 4096 :
-        for binning in ['XBINNING', 'YBINNING'] :
-            if not binning in hdul[0].header :
-                with fits.open('{0}'.format(fullname), mode="append") as hdul1 :
-                    hdul1[0].header.append(binning, '1', 'Binning factor in ')
-                    hdul1.flush()
-            elif hdul[0].header[binning]  is None :
-                with fits.open('{0}'.format(fullname), mode="update") as hdul1 :
-                    hdul1[0].header[binning] = '1'
-                    hdul1.flush()
-            hdul[0].header[binning] = '1'
-        hdul[0].header['INSTRUME'] = 'STX-16803' 
-        #hdul[0].header['TELESCOP'] = 'RiLA600' 
-        hdul[0].header['OPTIC'] = 'RiLA600' 
-    
-    if hdul[0].header['NAXIS1'] == 2048 \
-        and hdul[0].header['NAXIS2'] == 2048 :
-        for binning in ['XBINNING', 'YBINNING'] :
-            if not binning in hdul[0].header :
-                with fits.open('{0}'.format(fullname), mode="append") as hdul1 :
-                    hdul1[0].header.append(binning, '2', 'Binning factor in ')
-                    hdul1.flush()
-            elif hdul[0].header[binning] is None :
-                with fits.open('{0}'.format(fullname), mode="update") as hdul1 :
-                    hdul1[0].header[binning] = '2'
-                    hdul1.flush()
-            hdul[0].header[binning] = '2'
-        hdul[0].header['INSTRUME'] = 'STX-16803' 
-        #hdul[0].header['TELESCOP'] = 'RiLA600' 
-        hdul[0].header['OPTIC'] = 'RiLA600' 
-
-    if hdul[0].header['NAXIS1'] == 1024 \
-        and hdul[0].header['NAXIS2'] == 1024 :
-        for binning in ['XBINNING', 'YBINNING'] :
-            if not binning in hdul[0].header :
-                with fits.open('{0}'.format(fullname), mode="append") as hdul1 :
-                    hdul1[0].header.append(binning, '3', 'Binning factor in ')
-                    hdul1.flush()
-            elif hdul[0].header[binning] is None :
-                with fits.open('{0}'.format(fullname), mode="update") as hdul1 :
-                    hdul1[0].header[binning] = '3'
-                    hdul1.flush()
-            hdul[0].header[binning] = '3'
-        hdul[0].header['INSTRUME'] = 'STX-16803' 
-        #hdul[0].header['TELESCOP'] = 'RiLA600' 
-        hdul[0].header['OPTIC'] = 'RiLA600' 
-
-
-    if not 'INSTRUME' in hdul[0].header : 
-        if hdul[0].header['CCDNAME'].lower() :     
-            instrument = hdul[0].header['CCDNAME']
-        else:
-            instrument = 'UNKNOWN'
-    elif  'qsi' in hdul[0].header['INSTRUME'].lower() :     
-        instrument = 'QSI683ws'
-    elif  'st-8300' in hdul[0].header['INSTRUME'].lower() :     
-        instrument = 'ST-8300M'
-    elif  'stf-8300' in hdul[0].header['INSTRUME'].lower() :     
-        instrument = 'STF-8300M'
-    elif  'stl-11000' in hdul[0].header['INSTRUME'].lower() :     
-        instrument = 'STL-11000M'
-    else :
-        instrument = hdul[0].header['INSTRUME']
-    instrument = instrument.replace(" ","+")
-    
-    if 'CCD-TEMP' in hdul[0].header :     
-        ccd_temp_el = str(hdul[0].header['CCD-TEMP']).split('.')
-    else : 
-        ccd_temp_el = 'NAN'
-    
-    if 'DATE-OBS' in hdul[0].header and 'TIME-OBS' in hdul[0].header : 
-        if len(hdul[0].header['DATE-OBS']) == 10 :
-            with fits.open('{0}'.format(fullname), mode="append") as hdul1 :        
-                hdul[0].header['DATE-OBS'] += 'T{}'.format(hdul[0].header['TIME-OBS'])
-                hdul1.flush()
-                
-    if 'TIME-OBS' in hdul[0].header : 
-        obs_date  = hdul[0].header['DATE-OBS'][:10]+'-'+hdul[0].header['TIME-OBS']
-    elif 'DATE-OBS' in hdul[0].header :
-        obs_date = hdul[0].header['DATE-OBS'][:19]
-    else :
-        obs_date = "No-obsdate"
-    obs_date = obs_date.replace("T", "-")
-    obs_date = obs_date.replace(":", '-')
-
-    if 'EXPOSURE' in hdul[0].header : 
-        esposure = "{:03d}".format(int(hdul[0].header['EXPOSURE']))
-    elif 'EXPTIME' in hdul[0].header : 
-        esposure = "{:03d}".format(int(hdul[0].header['EXPTIME']))
-    else : 
-        esposure = 'No_exptime' 
-   
-    if not 'OBJECT' in hdul[0].header : 
-        object_name = '-'
-    
-    elif 'DARK ' in hdul[0].header['OBJECT'] : 
-        image_type = 'DARK'
-        filter_name = '-'
-        object_name = '-'
-        optic = '-'
-    elif 'BIAS ' in hdul[0].header['OBJECT'] : 
-        image_type = 'BIAS'
-        filter_name = '-'
-        object_name = '-'        
-        optic = '-'
-    elif 'BIAS ' in hdul[0].header['OBJECT'] : 
-        image_type = 'BIAS'
-        filter_name = '-'
-        object_name = '-'        
-        optic = '-'
-    elif 'FLAT ' in hdul[0].header['OBJECT'] : 
-        image_type = 'FLAT'
-        object_name = '-'
-    elif hdul[0].header['OBJECT'] =='' : 
-        object_name = '-'
-    else : 
-        object_name = hdul[0].header['OBJECT']
-    
-    if not 'FILTER' in hdul[0].header : 
-        filter_name = '-'
-    elif hdul[0].header['FILTER'] == 'Ha' :
-        filter_name = 'H'
-    elif hdul[0].header['FILTER'] == 'S2' :
-        filter_name = 'S'
-    elif hdul[0].header['FILTER'] == 'O3' :
-        filter_name = 'O'
-    elif hdul[0].header['FILTER'] == 'Luminance' :
-        filter_name = 'L'
-    elif hdul[0].header['FILTER'] == 'Blue' :
-        filter_name = 'B'
-    elif hdul[0].header['FILTER'] == 'Green' :
-        filter_name = 'L'
-    elif hdul[0].header['FILTER'] == 'Red' :
-        filter_name = 'R'
-    else : 
-        filter_name = hdul[0].header['FILTER'] 
-
-
-    if not 'IMAGETYP' in hdul[0].header : 
-        image_type = '-'
-        if 'FILTER' in hdul[0].header:
-            filter_name = hdul[0].header['FILTER']
-        else :
-            filter_name = "-"
-
-        if 'OBJECT' in hdul[0].header:
-            object_name = hdul[0].header['OBJECT']
-        else:
-            object_name = "-"
-    elif hdul[0].header['IMAGETYP'][:1].lower() == 'b' \
-        or hdul[0].header['IMAGETYP'][:1].lower() == 'z':
-        image_type = 'BIAS'
-        filter_name = '-'
-        object_name = '-'
-        optic = '-'
-    elif hdul[0].header['IMAGETYP'][:1].lower() == 'd':
-        image_type = 'DARK'
-        filter_name = '-'
-        object_name = '-'
-        optic = '-'
-    elif hdul[0].header['IMAGETYP'][:1].lower() == 'f':
-        image_type = 'FLAT'
-        object_name = '-'
-    elif hdul[0].header['IMAGETYP'][:1].lower() == 'l' :
-        image_type = 'LIGHT'
-        #filter_name = hdul[0].header['FILTER'] 
-        object_name = hdul[0].header['OBJECT']   
-    elif hdul[0].header['IMAGETYP'][0:1] == 'o' :
-        image_type = 'LIGHT'
-        filter_name = hdul[0].header['FILTER'] 
-        object_name = hdul[0].header['OBJECT']
-        
-    
-    if not 'XBINNING' in hdul[0].header \
-        or not 'YBINNING' in hdul[0].header : 
-        xbin = '-'
-        ybin = '-'
-    else : 
-        xbin = hdul[0].header['XBINNING']
-        ybin = hdul[0].header['YBINNING']
-
-    if isinstance(xbin, float) : 
-        xbin = int(xbin)
-        xbin = str(xbin)
-    if isinstance(ybin, float) : 
-        ybin = int(ybin)
-        ybin = str(ybin)
-    
-    object_name = object_name.replace('_', '-')
-    object_name = object_name.replace(':', '-')
-    object_name = object_name.replace('.', '-')
-    object_name = object_name.replace(' ', '')
-    object_name = object_name.replace('NGC', 'N')
-    object_name = object_name.replace('ngc', 'N')
-    object_name = object_name.replace('BIAS', '-')
-    object_name = object_name.replace('BIAS', '-')
-    object_name = object_name.replace('DARK', '-')
-    object_name = object_name.replace('DARK', '-')
-    object_name = object_name.replace('FLAT', '-')
-    object_name = object_name.replace('FLAT', '-')
-    
-    if not 'OPTIC' in hdul[0].header : 
-        optic = 'OPTIC'
-    else :
-        optic = hdul[0].header['OPTIC']
-        
-    new_filename = '{0}_{1}_{2}_{3}_{4}sec_{5}_{6}_{7}C_{8}bin.fit'\
-        .format(object_name.upper(),
-        image_type,
-        filter_name,
-        obs_date,
-        esposure,
-        optic,
-        instrument,
-        ccd_temp_el[0],
-        xbin)
-    hdul.close()
-    return new_filename
-
-
 def get_new_foldername_from_filename(filename):
+    """
+    Parameters
+    ----------
+    filename : str, path-like
+        The path to the original FITS file.
+    """
     #print('Starting get_new_foldername ...\n{0}'.format(filename))   
-    filename_el = filename[:-4].split("_")
+    filename_stem = filename.split(".")
+    filename_el = filename_stem[-2].split("_")
     #print("filename_el: ", filename_el)
     timez = 9
 

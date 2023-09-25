@@ -19,7 +19,6 @@ import time
 from datetime import datetime, timedelta
 import ysfitsutilpy as yfu
 import ysphotutilpy as ypu
-import ysvisutilpy as yvu
 
 import _astro_utilities
 import _Python_utilities
@@ -40,63 +39,138 @@ if not os.path.exists('{0}'.format(log_dir)):
 #%%
 #######################################################
 # read all files in base directory for processing
-BASEDIR = Path(r"r:\CCD_obs")
 BASEDIR = Path("/mnt/Rdata/OBS_data") 
-#BASEDIR = Path("/mnt/OBS_data") 
-DOINGDIR = BASEDIR/ _astro_utilities.CCD_obs_raw_dir
+DOINGDIR = Path('/mnt/Rdata/OBS_data/CCD_obs_raw/')
 
-DOINGDIRs = sorted(_Python_utilities.getFullnameListOfsubDirs(DOINGDIR))
-#print ("DOINGDIRs: ", format(DOINGDIRs))
-print ("len(DOINGDIRs): ", format(len(DOINGDIRs)))
+CCDDIRs = sorted(_Python_utilities.getFullnameListOfsubDirs(DOINGDIR))
+print ("CCDDIRs: ", CCDDIRs)
+print ("len(CCDDIRs): ", len(CCDDIRs))
 
-for DOINGDIR in DOINGDIRs[:1] :
-    DOINGDIR = Path(DOINGDIR)
-    ccd_fpath = Path(f"{DOINGDIR/DOINGDIR.parts[-1]}.csv")
+#%%
+#######################################################
+checkTime_ccd = 1
+checkTime_ccdoptic = 1
+checkTime_eachdir = -2
+for CCDDIR in CCDDIRs[:] :
+    doing_status = False
+    CCDDIR = Path(CCDDIR)
+    ccd_fpath = Path(CCDDIR.parents[0] / f"summary_{CCDDIR.parts[-1]}.csv")
     print("ccd_fpath", ccd_fpath)
-    DOINGSUBDIRs = sorted(_Python_utilities.getFullnameListOfallsubDirs(str(DOINGDIR)))
-    t = os.path.getmtime(ccd_fpath)
-    ccd_fpath_dt = datetime.fromtimestamp(t)
-    #print("ccd_fpath_dt: ", ccd_fpath_dt)
-    if ccd_fpath.exists() \
-        and ccd_fpath_dt < datetime.now() + timedelta(weeks=-2) :
-        print(f"{str(ccd_fpath)} is already exist and is not old...")
-            
-    else : 
-        summary_all = pd.DataFrame()
 
-        for DOINGSUBDIR in DOINGSUBDIRs[:1] :
-            DOINGSUBDIR = Path(DOINGSUBDIR)
-            print("DOINGSUBDIR", DOINGSUBDIR)
-            fits_in_dir = sorted(list(DOINGSUBDIR.glob('*.fit*')))
-            print("fits_in_dir", fits_in_dir)
-            print("len(fits_in_dir)", len(fits_in_dir))
-            if len(fits_in_dir) == 0 :
-                print(f"There is no fits fils in {DOINGSUBDIR}")
-                pass
+    summary_ccd = pd.DataFrame(columns=['file'])
+    print(summary_ccd)   
+
+    if not ccd_fpath.exists() :
+        print(f"{str(ccd_fpath)} is not exist...")
+        doing_status = True
+    else : 
+        t = os.path.getmtime(ccd_fpath)
+        ccd_fpath_dt = datetime.fromtimestamp(t)
+        print("ccd_fpath_dt: ", ccd_fpath_dt)
+        doing_status = False
+        if ccd_fpath_dt < datetime.now() + timedelta(days=checkTime_ccd) :
+            print(f"{str(ccd_fpath)} is older more than {checkTime_ccd} days ...")
+            doing_status = True
+    
+    ########################
+    #doing_status = True
+    ########################
+
+    if doing_status == False :
+        summary_ccd = pd.read_csv(str(ccd_fpath))
+                
+    else : 
+        CCDOPTICDIRs = sorted(_Python_utilities.getFullnameListOfsubDirs(str(CCDDIR)))
+        print ("CCDOPTICDIRs: ", CCDOPTICDIRs)
+        print ("len(CCDOPTICDIRs): ", len(CCDOPTICDIRs))
+
+        # remove = 'Cal'
+        # CCDOPTICDIRs = [x for x in CCDOPTICDIRs if remove not in x]
+        # print ("CCDOPTICDIRs: ", CCDOPTICDIRs)
+        # print ("len(CCDOPTICDIRs): ", len(CCDOPTICDIRs))
+
+        for CCDOPTICDIR in CCDOPTICDIRs[:] :
+            doing_status = False
+            CCDOPTICDIR = Path(CCDOPTICDIR)
+            ccdoptic_fpath = Path(CCDOPTICDIR.parents[0] / f"summary_{CCDOPTICDIR.parts[-1]}.csv")
+            print("ccdoptic_fpath", ccdoptic_fpath)
+
+            summary_ccdoptic = pd.DataFrame(columns=['file'])
+            print(summary_ccdoptic)
+
+            if not ccdoptic_fpath.exists() :
+                print(f"{str(ccdoptic_fpath)} is not exist...")
+                doing_status = True
             else : 
-                save_fpath2 = DOINGSUBDIR / f"{DOINGSUBDIR.parts[-1]}.csv"
-                save_fpath = DOINGSUBDIR / f"summary_{DOINGSUBDIR.parts[-1]}.csv"
-                print (f"Starting...\n{DOINGSUBDIR.name}")
-                if save_fpath2.exists():
-                    os.remove(str(save_fpath2))
-                    print (f"{str(save_fpath2)} is deleted...")
-                
-                t = os.path.getmtime(save_fpath)
-                save_fpath_dt = datetime.fromtimestamp(t)
-                #print("save_fpath_dt: ", save_fpath_dt)
-                if save_fpath.exists() \
-                    and save_fpath_dt < datetime.now() + timedelta(weeks=-2) :
-                    print(f"{str(save_fpath)} is already exist and is not old...")
-                    summary = pd.read_csv(str(save_fpath))
-                
-                else : 
-                    summary = yfu.make_summary(DOINGSUBDIR/"*.fit*",
-                                output = save_fpath,
-                                verbose = False
-                                )
+                t = os.path.getmtime(ccdoptic_fpath)
+                ccdoptic_fpath_dt = datetime.fromtimestamp(t)
+                print("ccdoptic_fpath_dt: ", ccdoptic_fpath_dt)
+                doing_status = False
+                if ccdoptic_fpath_dt < datetime.now() + timedelta(days=checkTime_ccdoptic) :
+                    print(f"{str(ccdoptic_fpath)} is older more than {checkTime_ccdoptic} days ...")
+                    doing_status = True
+
+            if doing_status == False :
+                summary_ccdoptic = pd.read_csv(str(ccdoptic_fpath))
+            
+            else : 
+                DOINGDIRs = sorted(_Python_utilities.getFullnameListOfsubDirs(str(CCDOPTICDIR)))
+                # remove = 'Cal'
+                # CCDOPTICDIRs = [x for x in CCDOPTICDIRs if remove not in x]
+                # print ("DOINGDIRs: ", DOINGDIRs)
+                # print ("len(DOINGDIRs): ", len(DOINGDIRs))
+
+                for DOINGSUBDIR in DOINGDIRs[:] :
+                    DOINGSUBDIR = Path(DOINGSUBDIR)
+                    print("DOINGSUBDIR", DOINGSUBDIR)
+
+                    doing_status = False
+                    DOINGSUBDIR = Path(DOINGSUBDIR)
+                    save_fpath = DOINGSUBDIR.parents[0] / f"summary_{DOINGSUBDIR.parts[-1]}.csv"
+                    print (f"Starting...\n{DOINGSUBDIR.name}")
+
+                    if not save_fpath.exists() :
+                        print(f"{str(save_fpath)} is not exist...")
+                        doing_status = True
+                    else :
+                        t = os.path.getmtime(save_fpath)
+                        save_fpath_dt = datetime.fromtimestamp(t)
+                        #print("save_fpath_dt: ", save_fpath_dt)
+                        if save_fpath_dt < datetime.now() + timedelta(days=checkTime_eachdir) :
+                            print(f"{str(ccd_fpath)} is older more then {checkTime_eachdir} days ...")
+                            doing_status = True
+                        else:
+                            doing_status = False
+                    
+                    ########################
+                    #doing_status = True
+                    ########################
+                    if doing_status == False :
+                        summary = pd.read_csv(str(save_fpath))
+
+                    else : 
+                        fits_in_dir = sorted(list(DOINGSUBDIR.glob('*.fit*')))
+                        print("fits_in_dir", fits_in_dir)
+                        print("len(fits_in_dir)", len(fits_in_dir))
+                        if len(fits_in_dir) == 0 :
+                            print(f"There is no fits fils in {DOINGSUBDIR}")
+                            summary = pd.DataFrame(columns=['file'])
+                            pass
+                        else : 
+                            summary = yfu.make_summary(DOINGSUBDIR/"*.fit*",
+                                    output = save_fpath,
+                                    verbose = True,
+                                    )
+                    summary.set_index('file')
+                    summary.to_csv(str(save_fpath))
                     print(f"{save_fpath} is created...")
-                summary_all = pd.concat([summary_all, summary], axis = 0)
-        
-        summary_all.reset_index(inplace=True)
-        summary_all.to_csv(str(ccd_fpath))
-        print(f"{ccd_fpath} is created...")
+                    summary_ccdoptic = pd.concat([summary_ccdoptic, summary], axis = 0)
+            
+            summary_ccdoptic.set_index('file')
+            summary_ccdoptic.to_csv(str(ccdoptic_fpath))
+            print(f"{ccdoptic_fpath} is created...")
+    
+        summary_ccd = pd.concat([summary_ccd, summary_ccdoptic], axis = 0)
+    summary_ccd.set_index('file')
+    summary_ccd.to_csv(str(ccd_fpath))
+    print(f"{ccd_fpath} is created...(ccd_fpath)")  

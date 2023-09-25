@@ -16,7 +16,7 @@ from ccdproc import combine, ccd_process, CCDData
 
 import ysfitsutilpy as yfu
 import ysphotutilpy as ypu
-import ysvisutilpy as yvu
+#import ysvisutilpy as yvu
 
 import _astro_utilities
 import _Python_utilities
@@ -36,15 +36,20 @@ if not os.path.exists('{0}'.format(log_dir)):
 #######################################################
 # read all files in base directory for processing
 BASEDIR = Path("/mnt/Rdata/OBS_data") 
-
 DOINGDIR = Path(BASEDIR / "ccd_test_folder")
-DOINGDIR = Path('/mnt/Rdata/OBS_data/CCD_obs_raw/STX-16803_2bin/LIGHT_RILA600')
+DOINGDIR = Path('/mnt/Rdata/OBS_data/CCD_obs_raw/STX-16803_1bin' )
 
 DOINGDIRs = sorted(_Python_utilities.getFullnameListOfallsubDirs(DOINGDIR))
+print ("len(DOINGDIRs): ", format(len(DOINGDIRs)))
+remove = 'BIAS'
+DOINGDIRs = [x for x in DOINGDIRs if remove not in x]
+remove = 'DARK'
+DOINGDIRs = [x for x in DOINGDIRs if remove not in x]
+remove = 'FLAT'
+DOINGDIRs = [x for x in DOINGDIRs if remove not in x]
 #print ("DOINGDIRs: ", format(DOINGDIRs))
 print ("len(DOINGDIRs): ", format(len(DOINGDIRs)))
 #######################################################
-
 #%%
 for DOINGDIR in DOINGDIRs[:] :
     DOINGDIR = Path(DOINGDIR)
@@ -68,20 +73,26 @@ for DOINGDIR in DOINGDIRs[:] :
         df_light = df_light.reset_index(drop=True)
         print("df_light:\n{}".format(df_light))
 
-        #%%
-        for _, row  in df_light.iterrows():
-            fpath = Path(row["file"])
-            print("fpath.name ;", fpath.name)
-            ccd = yfu.load_ccd(str(fpath))
-            
-            if 'PIXSCALE' in ccd.header:
-                PIXc = ccd.header['PIXSCALE']
-            else : 
-                PIXc = _astro_utilities.calPixScale(ccd.header['FOCALLEN'], ccd.header['XPIXSZ'])
-            print("PIXc : ", PIXc)
+        if df_light.empty:
+            print("The dataframe(df_light) is empty")
+            pass
+        else:
+            df_light = df_light.reset_index(drop=True)
+            print("df_light:\n{}".format(df_light))
 
-            solved = _astro_utilities.KevinSolver((str(fpath)), 
-                                                    #str(SOLVEDDIR), 
-                                                    downsample = 2,
-                                                    pixscale = PIXc,
-                                                    )
+            for _, row  in df_light.iterrows():
+                fpath = Path(row["file"])
+                print("fpath.name ;", fpath.name)
+                ccd = yfu.load_ccd(str(fpath))
+                
+                if 'PIXSCALE' in ccd.header:
+                    PIXc = ccd.header['PIXSCALE']
+                else : 
+                    PIXc = _astro_utilities.calPixScale(ccd.header['FOCALLEN'], ccd.header['XPIXSZ'])
+                print("PIXc : ", PIXc)
+
+                solved = _astro_utilities.KevinSolver((str(fpath)), 
+                                                        #str(SOLVEDDIR), 
+                                                        downsample = 2,
+                                                        pixscale = PIXc,
+                                                        )

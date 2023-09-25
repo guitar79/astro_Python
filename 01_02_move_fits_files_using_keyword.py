@@ -96,7 +96,7 @@ for DOINGDIR in DOINGDIRs[:] :
                         except:
                             new_fname += (row[KEY])+"c_"
                     if KEY == "XBINNING" : 
-                        new_fname += str(row[KEY])+"bin.fit"
+                        new_fname += str(row[KEY])+f"bin{fpath.suffix}"
                     
                 print(new_fname)
                 
