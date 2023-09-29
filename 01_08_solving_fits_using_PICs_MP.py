@@ -38,6 +38,8 @@ if not os.path.exists('{0}'.format(log_dir)):
 BASEDIR = Path("/mnt/Rdata/OBS_data") 
 DOINGDIR = Path('/mnt/Rdata/OBS_data/CCD_obs_raw/')
 DOINGDIR = Path('/mnt/Rdata/OBS_data/CCD_obs_raw/STX-16803_1bin' )
+#DOINGDIR = Path('/mnt/Rdata/OBS_data/CCD_obs_raw/STX-16803_2bin' )
+#DOINGDIR = Path('/mnt/Rdata/OBS_data/CCD_obs_raw/QSI683ws_1bin/LIGHT_RiLA600')
 
 DOINGDIRs = sorted(_Python_utilities.getFullnameListOfallsubDirs(DOINGDIR))
 print ("len(DOINGDIRs): ", len(DOINGDIRs))

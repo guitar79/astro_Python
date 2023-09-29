@@ -17,7 +17,7 @@ from astropy.io import fits
 
 import ysfitsutilpy as yfu
 import ysphotutilpy as ypu
-import ysvisutilpy as yvu
+#import ysvisutilpy as yvu
 
 import _astro_utilities
 import _Python_utilities

@@ -18,7 +18,7 @@ from pathlib import Path
 import numpy as np
 from ccdproc import combine
 import shutil
-
+from astropy.io import fits
 import _Python_utilities
 
 #%%
@@ -729,8 +729,84 @@ def KevinSolver(fpath,
     if fpath.exists() and (fpath.parent/f'{fpath.stem}.fits').exists():
         os.remove(str(fpath))
         print(f"{str(fpath)} is removed...")
-        
 
+
+#%%
+#########################################
+#KevinPSolver
+#########################################
+
+def KevinNova(fpath, 
+                    #solved_dir,
+                    **kwargs
+                    #downsample,
+                    #pixscale,
+                    ):
+    """
+    Parameters
+    ----------
+    fpath : path-like
+        The path to the original FITS file.
+
+    solved dir: string
+        The directory where the output file
+
+    """
+    submission_id = None
+
+    if not 'solve_timeout' in kwargs :
+        solve_timeout = 600
+    else: 
+        solve_timeout = kwargs['solve_timeout']
+    print("solve_timeout: ", solve_timeout)
+
+    fpath = Path(fpath)
+
+    hdul = fits.open(str(fpath))
+    if not 'B_1_1' in hdul[0].header :
+        print("it's not solved file...")
+        try_again = True    
+
+    while try_again:
+        try:
+            if not submission_id:
+                wcs_header = ast.solve_from_image(str(fpath),
+                                    force_image_upload=True,
+                                    solve_timeout = solve_timeout,
+                                    submission_id=submission_id)
+            else:
+                wcs_header = ast.monitor_submission(submission_id,
+                                                    solve_timeout = solve_timeout)
+        except TimeoutError as e:
+            submission_id = e.args[1]
+        else:
+            # got a result, so terminate
+            try_again = False
+
+    if wcs_header:
+        # Code to execute when solve succeeds
+        print("fits file solved successfully...")
+        shutil.copy(str(fpath), str(fpath.parents[0] / f"{fpath.stem}.tmp"))
+
+        with fits.open(str(fpath.parents[0] / f"{fpath.stem}.tmp"), mode='update') as filehandle:
+            for card in wcs_header :
+                try: 
+                    print(card, wcs_header[card], wcs_header.comments[card])
+                    filehandle[0].header.set(card, wcs_header[card], wcs_header.comments[card])
+                except : 
+                    print(card)
+            filehandle.flush
+
+
+        #shutil.move(str(fpath.parents[0] / f"{fpath.stem}.tmp"), str(fpath.parents[0] / f"{fpath.stem}.fits"))
+        #print(str(fpath.parents[0] / f'{fpath.stem}.fits')+" is created...")
+    else:
+        # Code to execute when solve fails
+        print("fits file solving failure...")
+    
+    return None
+   
+    
 #########################################
 # makingAstrometrySH
 #########################################

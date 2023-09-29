@@ -40,7 +40,6 @@ if not os.path.exists('{0}'.format(log_dir)):
 #######################################################
 # read all files in base directory for processing
 BASEDIR = Path("/mnt/Rdata/OBS_data") 
-
 DOINGDIR = Path(BASEDIR / "ccd_test_folder")
 
 #DOINGDIRs = sorted(_Python_utilities.getFullnameListOfallfilessubDirs(DOINGDIR))
@@ -60,39 +59,51 @@ for fpath in fpaths[:] :
     submission_id = None
     solve_timeout = 600
 
-    hdul = fits.open(str(fpath))
-    if not 'B_1_1' in hdul[0].header :
-        print("it's not solved file...")
-        try_again = True    
+    try:
 
-    while try_again:
-        try:
-            if not submission_id:
-                wcs_header = ast.solve_from_image(str(fpath),
-                                    force_image_upload=True,
-                                    solve_timeout = solve_timeout,
-                                    submission_id=submission_id)
+        hdul = fits.open(str(fpath))
+        if not 'B_1_1' in hdul[0].header :
+            print("it's not solved file...")
+            try_again = True    
+
+        while try_again:
+            try:
+                if not submission_id:
+                    wcs_header = ast.solve_from_image(str(fpath),
+                                        force_image_upload=True,
+                                        solve_timeout = solve_timeout,
+                                        submission_id=submission_id)
+                else:
+                    wcs_header = ast.monitor_submission(submission_id,
+                                                        solve_timeout = solve_timeout)
+            except TimeoutError as e:
+                submission_id = e.args[1]
             else:
-                wcs_header = ast.monitor_submission(submission_id,
-                                                    solve_timeout = solve_timeout)
-        except TimeoutError as e:
-            submission_id = e.args[1]
+                # got a result, so terminate
+                try_again = False
+
+        if wcs_header:
+            # Code to execute when solve succeeds
+            print("fits file solved successfully...")
+            shutil.copy(str(fpath), str(fpath.parents[0] / f"{fpath.stem}.tmp"))
+
+            with fits.open(str(fpath.parents[0] / f"{fpath.stem}.tmp"), mode='update') as filehandle:
+                print("filehandle[0].header :", filehandle[0].header)
+                for card in wcs_header :
+                    try: 
+                        print(card, wcs_header[card], wcs_header.comments[card])
+                        filehandle[0].header.set(card, wcs_header[card], wcs_header.comments[card])
+                    except : 
+                        print(card)
+                filehandle.flush
+
+            shutil.move(str(fpath.parents[0] / f"{fpath.stem}.tmp"), str(fpath.parents[0] / f"{fpath.stem}.fits"))
+            print(str(fpath.parents[0] / f'{fpath.stem}.fits')+" is created...")
         else:
-            # got a result, so terminate
-            try_again = False
-
-    if wcs_header:
-        # Code to execute when solve succeeds
-        print("fits file solved successfully...")
-        shutil.copy(str(fpath), str(fpath.parents[0] / f"{fpath.stem}.tmp"))
-
-        with fits.open(str(fpath.parents[0] / f"{fpath.stem}.tmp"), mode='update') as filehandle:
-            print("filehandle[0].header :", filehandle[0].header)
-            filehandle[0].header = wcs_header
-            filehandle.flush
-
-        shutil.move(str(fpath.parents[0] / f"{fpath.stem}.tmp"), str(fpath.parents[0] / f"{fpath.stem}.fits"))
-        print(str(fpath.parents[0] / f'{fpath.stem}.fits')+" is created...")
-    else:
-        # Code to execute when solve fails
-        print("fits file solving failure...")
+            # Code to execute when solve fails
+            print("fits file solving failure...")
+ 
+    except Exception as err:
+        print("X"*30, f'\n{err}')
+        # _Python_utilities.write_log(err_log_file, err)
+        pass
