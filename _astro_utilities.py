@@ -825,9 +825,13 @@ def ASTAPSolver(fpath,
     else: 
         downsample = kwargs['downsample']
     print("downsample: ", downsample)
-
+    
     if not 'pixscale' in kwargs :
-        pixscale = 1.0
+        hdul = fits.open(fpath)
+        if 'PIXSCALE' in hdul[0].header:
+            pixscale = hdul[0].header['PIXSCALE']
+        else : 
+            pixscale = calPixScale(hdul[0].header['FOCALLEN'], hdul[0].header['XPIXSZ'])
     else : 
         pixscale = kwargs['pixscale']
     print(f"pixscale: {pixscale:.03f}, L: {pixscale*0.97:.03f}, U: {pixscale*1.03:.03f}")
@@ -907,7 +911,7 @@ def checkASTAPPSolve(fpath,
 #########################################
 # checkASTAPPSolver
 #########################################
-def checkPSolve(fpath, 
+def checkPSolve1(fpath, 
                     #solved_dir,
                     **kwargs,
                     #downsample,
@@ -945,8 +949,64 @@ def checkPSolve(fpath,
                 LOCAL = True
     else :
         ASTAP = False
+    
+    hdul.close()
     return SOLVE, ASTAP, LOCAL
 
+#%%
+#########################################
+# checkASTAPPSolver
+#########################################
+def checkPSolve(fpath, 
+                    #solved_dir,
+                    **kwargs,
+                    #downsample,
+                    #pixscale,
+                    ):
+    """
+    Parameters
+    ----------
+    fpath : path-like
+        The path to the original FITS file.
+
+    solved dir: string
+        The directory where the output file
+
+    pixscale : int
+
+    """
+
+    fpath = Path(fpath)
+    hdul = fits.open(fpath)
+    PSKeys = ["CD1_1", "CD1_2", "CD2_1", "CD2_2", ]
+    
+    chk = 0
+    LOCAL = False
+    for PSKey in PSKeys :
+        if PSKey in hdul[0].header : 
+            chk += 1
+    
+    if chk == 4 : 
+        SOLVE = True
+        LOCAL = False
+        ASTAP = False
+        for comment in hdul[0].header["COMMENT"]:
+            if "scale:" in comment :
+                LOCAL = True
+                        
+        if "PLTSOLVD" in hdul[0].header:
+            try : 
+                if hdul[0].header["PLTSOLVD"] == "T" :
+                    ASTAP = True
+            except : 
+                ASTAP = False
+    else : 
+        SOLVE = False
+        ASTAP = False
+        LOCAL = False
+
+    hdul.close()
+    return SOLVE, ASTAP, LOCAL
 
 #%%
 #########################################
