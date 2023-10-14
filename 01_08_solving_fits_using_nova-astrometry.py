@@ -8,17 +8,10 @@ Created on Thu Nov 22 01:00:19 2018
 from glob import glob
 from pathlib import Path
 import os
-import numpy as np
-import matplotlib.pyplot as plt
-import astropy.units as u
-from astropy.stats import sigma_clip
-from ccdproc import combine, ccd_process, CCDData
-
-import ysfitsutilpy as yfu
-import ysphotutilpy as ypu
 
 import _astro_utilities
 import _Python_utilities
+import ysfitsutilpy as yfu
 
 import shutil
 from astroquery.astrometry_net import AstrometryNet
@@ -40,70 +33,100 @@ if not os.path.exists('{0}'.format(log_dir)):
 #######################################################
 # read all files in base directory for processing
 BASEDIR = Path("/mnt/Rdata/OBS_data") 
-DOINGDIR = Path(BASEDIR / "ccd_test_folder")
+DOINGDIR = Path('/mnt/Rdata/OBS_data/CCD_obs_raw/')
+DOINGDIR = Path('/mnt/Rdata/OBS_data/CCD_obs_raw/STX-16803_1bin' )
+#DOINGDIR = Path('/mnt/Rdata/OBS_data/CCD_obs_raw/STX-16803_2bin' )
+#DOINGDIR = Path('/mnt/Rdata/OBS_data/CCD_obs_raw/QSI683ws_1bin/LIGHT_RiLA600')
+DOINGDIR = Path('/mnt/Rdata/OBS_data/CCD_obs_raw/STF-8300M_2bin')
+DOINGDIR = Path('/mnt/Rdata/OBS_data/CCD_obs_raw/STF-8300M_1bin')
+DOINGDIR = Path('/mnt/Rdata/OBS_data/CCD_obs_raw/TT-2600CP_1bin/LIGHT_OON300')
 
-#DOINGDIRs = sorted(_Python_utilities.getFullnameListOfallfilessubDirs(DOINGDIR))
-#print ("len(DOINGDIRs): ", len(DOINGDIRs))
+DOINGDIRs = sorted(_Python_utilities.getFullnameListOfallsubDirs(DOINGDIR))
+print ("len(DOINGDIRs): ", len(DOINGDIRs))
+remove = '/Cal'
+DOINGDIRs = [x for x in DOINGDIRs if remove not in x]
+# remove = 'BIAS'
+# DOINGDIRs = [x for x in DOINGDIRs if remove not in x]
+# remove = 'DARK'
+# DOINGDIRs = [x for x in DOINGDIRs if remove not in x]
+# remove = 'FLAT'
+# DOINGDIRs = [x for x in DOINGDIRs if remove not in x]
+print ("DOINGDIRs: ", DOINGDIRs)
+print ("len(DOINGDIRs): ", len(DOINGDIRs))
 #######################################################
-fpaths = sorted(list(DOINGDIR.glob("*.fit")))
-print("fpaths;", fpaths)
-
+#%%
+#######################################################
 ast = AstrometryNet()
 ast.api_key = 'bldvwzzuvktnwfph'
+
+
 #%%
-for fpath in fpaths[:] :
-    #fpath = Path(fpaths[0])
-    #fpath = fpaths[5]
-    print(fpath)
+for DOINGDIR in DOINGDIRs[:50] :
+    DOINGDIR = Path(DOINGDIR)
+    print("DOINGDIR", DOINGDIR)
+    fits_in_dir = sorted(list(DOINGDIR.glob('*.fit')))
+    #print("fits_in_dir", fits_in_dir)
+    print("len(fits_in_dir)", len(fits_in_dir))
 
-    submission_id = None
-    solve_timeout = 600
-
-    try:
-
-        hdul = fits.open(str(fpath))
-        if not 'B_1_1' in hdul[0].header :
-            print("it's not solved file...")
-            try_again = True    
-
-        while try_again:
-            try:
-                if not submission_id:
-                    wcs_header = ast.solve_from_image(str(fpath),
-                                        force_image_upload=True,
-                                        solve_timeout = solve_timeout,
-                                        submission_id=submission_id)
-                else:
-                    wcs_header = ast.monitor_submission(submission_id,
-                                                        solve_timeout = solve_timeout)
-            except TimeoutError as e:
-                submission_id = e.args[1]
-            else:
-                # got a result, so terminate
-                try_again = False
-
-        if wcs_header:
-            # Code to execute when solve succeeds
-            print("fits file solved successfully...")
-            shutil.copy(str(fpath), str(fpath.parents[0] / f"{fpath.stem}.tmp"))
-
-            with fits.open(str(fpath.parents[0] / f"{fpath.stem}.tmp"), mode='update') as filehandle:
-                print("filehandle[0].header :", filehandle[0].header)
-                for card in wcs_header :
-                    try: 
-                        print(card, wcs_header[card], wcs_header.comments[card])
-                        filehandle[0].header.set(card, wcs_header[card], wcs_header.comments[card])
-                    except : 
-                        print(card)
-                filehandle.flush
-
-            shutil.move(str(fpath.parents[0] / f"{fpath.stem}.tmp"), str(fpath.parents[0] / f"{fpath.stem}.fits"))
-            print(str(fpath.parents[0] / f'{fpath.stem}.fits')+" is created...")
-        else:
-            # Code to execute when solve fails
-            print("fits file solving failure...")
- 
-    except Exception as err:
-        print("X"*30, f'\n{err}')
-        # _Python_utilities.write_log(err_log_file, err)
+    if len(fits_in_dir) == 0 :
+        print(f"There is no fits fils in {DOINGDIR}")
         pass
+    else : 
+        print(f"Starting: {str(DOINGDIR.parts[-1])}")
+        summary = yfu.make_summary(DOINGDIR/"*.fit")
+        print("len(summary):", len(summary))
+        print("summary:", summary)
+        #print(summary["file"][0])
+
+        for _, row in summary.iterrows():
+            # 파일명 출력
+            fpath = Path(row["file"])
+            print(fpath)
+
+            try: 
+                submission_id = None
+                solve_timeout = 600
+
+                hdul = fits.open(str(fpath))
+                if not 'B_1_1' in hdul[0].header :
+                    print("it's not solved file...")
+                    try_again = True    
+
+                while try_again:
+                    try:
+                        if not submission_id:
+                            wcs_header = ast.solve_from_image(str(fpath),
+                                                force_image_upload=True,
+                                                solve_timeout = solve_timeout,
+                                                submission_id=submission_id)
+                        else:
+                            wcs_header = ast.monitor_submission(submission_id,
+                                                                solve_timeout = solve_timeout)
+                    except TimeoutError as e:
+                        submission_id = e.args[1]
+                    else:
+                        # got a result, so terminate
+                        try_again = False
+
+                if wcs_header:
+                    # Code to execute when solve succeeds
+                    print("fits file solved successfully...")
+                    shutil.copy(str(fpath), str(fpath.parents[0] / f"{fpath.stem}.tmp"))
+
+                    with fits.open(str(fpath.parents[0] / f"{fpath.stem}.tmp"), mode='update') as filehandle:
+                        for card in wcs_header :
+                            try: 
+                                print(card, wcs_header[card], wcs_header.comments[card])
+                                filehandle[0].header.set(card, wcs_header[card], wcs_header.comments[card])
+                            except : 
+                                print(card)
+                        filehandle.flush
+
+                    shutil.move(str(fpath.parents[0] / f"{fpath.stem}.tmp"), str(fpath.parents[0] / f"{fpath.stem}.fits"))
+                    print(str(fpath.parents[0] / f'{fpath.stem}.fits')+" is created...")
+                else:
+                    # Code to execute when solve fails
+                    print("fits file solving failure...")
+            except Exception as err :
+                print(err)
+                continue

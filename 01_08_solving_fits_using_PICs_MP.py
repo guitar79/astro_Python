@@ -38,17 +38,22 @@ if not os.path.exists('{0}'.format(log_dir)):
 BASEDIR = Path("/mnt/Rdata/OBS_data") 
 DOINGDIR = Path('/mnt/Rdata/OBS_data/CCD_obs_raw/')
 DOINGDIR = Path('/mnt/Rdata/OBS_data/CCD_obs_raw/STX-16803_1bin' )
-#DOINGDIR = Path('/mnt/Rdata/OBS_data/CCD_obs_raw/STX-16803_2bin' )
-#DOINGDIR = Path('/mnt/Rdata/OBS_data/CCD_obs_raw/QSI683ws_1bin/LIGHT_RiLA600')
+DOINGDIR = Path('/mnt/Rdata/OBS_data/CCD_obs_raw/STX-16803_2bin' )
+DOINGDIR = Path('/mnt/Rdata/OBS_data/CCD_obs_raw/QSI683ws_1bin/')
+#DOINGDIR = Path('/mnt/Rdata/OBS_data/CCD_obs_raw/STF-8300M_2bin')
+#DOINGDIR = Path('/mnt/Rdata/OBS_data/CCD_obs_raw/STF-8300M_1bin')
+#DOINGDIR = Path('/mnt/Rdata/OBS_data/CCD_obs_raw/TT-2600CP_1bin/LIGHT_OON300')
 
 DOINGDIRs = sorted(_Python_utilities.getFullnameListOfallsubDirs(DOINGDIR))
 print ("len(DOINGDIRs): ", len(DOINGDIRs))
-remove = 'BIAS'
+remove = '/Cal'
 DOINGDIRs = [x for x in DOINGDIRs if remove not in x]
-remove = 'DARK'
-DOINGDIRs = [x for x in DOINGDIRs if remove not in x]
-remove = 'FLAT'
-DOINGDIRs = [x for x in DOINGDIRs if remove not in x]
+# remove = 'BIAS'
+# DOINGDIRs = [x for x in DOINGDIRs if remove not in x]
+# remove = 'DARK'
+# DOINGDIRs = [x for x in DOINGDIRs if remove not in x]
+# remove = 'FLAT'
+# DOINGDIRs = [x for x in DOINGDIRs if remove not in x]
 #print ("DOINGDIRs: ", DOINGDIRs)
 print ("len(DOINGDIRs): ", len(DOINGDIRs))
 #######################################################

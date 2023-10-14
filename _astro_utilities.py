@@ -14,7 +14,6 @@ from astropy.io import fits
 import subprocess
 from datetime import datetime, timedelta
 import os
-from pathlib import Path
 import numpy as np
 from ccdproc import combine
 import shutil
@@ -160,7 +159,6 @@ def KevinFitsNewFname(
     print("fpath: ", fpath)
     for fnameKEY in fnameKEYs: 
         print(f"{fnameKEY}: ", hdul[0].header[fnameKEY])
-
         try :
             ccdtemp = str(int(hdul[0].header["CCD-TEMP"]))
         except : 
@@ -176,7 +174,8 @@ def KevinFitsNewFname(
         print("new_fname: ", new_fname)
         hdul.close()
     return new_fname
-        
+
+
 #%%
 #########################################
 #KvinFitsUpdater
@@ -204,7 +203,7 @@ def KevinFitsUpdater(
     fname_el = fpath.parts[-1].split('_')
     print("foldername_el", foldername_el)
     print("fname_el", fname_el)
-    object_name = foldername_el[0]
+    object_name = foldername_el[0].replace(" ","")
     print("object_name", object_name)
     image_type = foldername_el[1]
     #filter_name = fname_el[2]
@@ -313,11 +312,12 @@ def KevinFitsUpdater(
 
         if "FLAT" in hdul[0].header["IMAGETYP"] \
             or "LIGHT" in hdul[0].header["IMAGETYP"] :
+            filter_name = fname_el[2]
             if not "FILTER" in hdul[0].header :
-                filter_name = fname_el[2]
-                if  hdul[0].header["FILTER"] != filter_name.upper() :
-                    hdul[0].header["FILTER"] = filter_name.upper()
-                    print(f"FILTER is set {hdul[0].header['FILTER']}")
+                hdul[0].header["FILTER"] = filter_name.upper()
+            elif hdul[0].header["FILTER"] != filter_name.upper() :
+                hdul[0].header["FILTER"] = filter_name.upper()
+            print(f"FILTER is set {hdul[0].header['FILTER']}")
             if not "OPTIC" in hdul[0].header :
                 hdul[0].header["OPTIC"] = optic_name
                 print(f"The 'OPTIC' is set {hdul[0].header['OPTIC']}")
@@ -644,7 +644,6 @@ def fits_newpath(
 #########################################
 #KevinPSolver
 #########################################
-
 def KevinSolver(fpath, 
                     #solved_dir,
                     **kwargs
@@ -733,10 +732,9 @@ def KevinSolver(fpath,
 
 #%%
 #########################################
-#KevinPSolver
+# LOCALPSolver
 #########################################
-
-def KevinNova(fpath, 
+def LOCALPSolver(fpath, 
                     #solved_dir,
                     **kwargs
                     #downsample,
@@ -751,62 +749,206 @@ def KevinNova(fpath,
     solved dir: string
         The directory where the output file
 
-    """
-    submission_id = None
+    pixscale : int
 
-    if not 'solve_timeout' in kwargs :
-        solve_timeout = 600
+    """
+    if not 'downsample' in kwargs :
+        downsample = 1
     else: 
-        solve_timeout = kwargs['solve_timeout']
-    print("solve_timeout: ", solve_timeout)
+        downsample = kwargs['downsample']
+    print("downsample: ", downsample)
+
+    if not 'pixscale' in kwargs :
+        pixscale = 1.0
+    else : 
+        pixscale = kwargs['pixscale']
+    print(f"pixscale: {pixscale:.03f}, L: {pixscale*0.97:.03f}, U: {pixscale*1.03:.03f}")
 
     fpath = Path(fpath)
-
-    hdul = fits.open(str(fpath))
-    if not 'B_1_1' in hdul[0].header :
-        print("it's not solved file...")
-        try_again = True    
-
-    while try_again:
-        try:
-            if not submission_id:
-                wcs_header = ast.solve_from_image(str(fpath),
-                                    force_image_upload=True,
-                                    solve_timeout = solve_timeout,
-                                    submission_id=submission_id)
-            else:
-                wcs_header = ast.monitor_submission(submission_id,
-                                                    solve_timeout = solve_timeout)
-        except TimeoutError as e:
-            submission_id = e.args[1]
-        else:
-            # got a result, so terminate
-            try_again = False
-
-    if wcs_header:
-        # Code to execute when solve succeeds
-        print("fits file solved successfully...")
-        shutil.copy(str(fpath), str(fpath.parents[0] / f"{fpath.stem}.tmp"))
-
-        with fits.open(str(fpath.parents[0] / f"{fpath.stem}.tmp"), mode='update') as filehandle:
-            for card in wcs_header :
-                try: 
-                    print(card, wcs_header[card], wcs_header.comments[card])
-                    filehandle[0].header.set(card, wcs_header[card], wcs_header.comments[card])
-                except : 
-                    print(card)
-            filehandle.flush
-
-
-        #shutil.move(str(fpath.parents[0] / f"{fpath.stem}.tmp"), str(fpath.parents[0] / f"{fpath.stem}.fits"))
-        #print(str(fpath.parents[0] / f'{fpath.stem}.fits')+" is created...")
-    else:
-        # Code to execute when solve fails
-        print("fits file solving failure...")
     
-    return None
-   
+    # try :
+        # solve command.
+        # solve-field fullname.fit -O --cpulimit 120 --nsigma 15 -u app -L 1.2 -U 1.3 -N new_filename.fits -p --no-plots -D output_directory {0}
+    with subprocess.Popen(['solve-field', 
+                                '-O', #--overwrite: overwrite output files if they already exist
+                                #'-g', #--guess-scale: try to guess the image scale from the FITS headers
+                                '--cpulimit', '10',  #will make it give up after 30 seconds.
+                                #'--nsigma', '15',
+                                '--downsample', f'{str(downsample)}',
+                                '-u', 'app', #'--scale-units', 'arcsecperpix', #pixel scale
+                                '-L', f'{pixscale*0.99:.03f}', 
+                                '-U', f'{pixscale*1.01:.03f}',   
+                                '-N', f'{fpath.parent/ fpath.stem}.new', #--new-fits <filename>: output filename of the new FITS file containingthe WCS header; "none" to not create this file
+                                #-p', 
+                                '--no-plots',#: don't create any plots of the results
+                                #'-D', str(SOLVEDDIR),
+                                str(fpath)
+                                ], 
+                                stdout=subprocess.PIPE) as proc :
+        print(proc.stdout.read())
     
+    # except Exception as err :
+    #     print('{1} ::: {2} with {0} ...'\
+    #         .format(fpath, datetime.now(), err))  
+
+    if fpath.exists() and (fpath.parent/f'{fpath.stem}.new').exists():
+        #os.remove(str(fpath))
+        #print(str(fpath))
+        shutil.move(str(fpath.parent/f'{fpath.stem}.new'), str(fpath.parent/f'{fpath.stem}.fits'))
+        print(str(fpath.parent/f'{fpath.stem}.new'), str(fpath))
+        #print(f"{str(fpath)} is removed...")
+
+#%%
+#########################################
+#ASTAPPSolver
+#########################################
+def ASTAPSolver(fpath, 
+                    #solved_dir,
+                    **kwargs
+                    #downsample,
+                    #pixscale,
+                    ):
+    """
+    Parameters
+    ----------
+    fpath : path-like
+        The path to the original FITS file.
+
+    solved dir: string
+        The directory where the output file
+
+    pixscale : int
+
+    """
+    if not 'downsample' in kwargs :
+        downsample = 1
+    else: 
+        downsample = kwargs['downsample']
+    print("downsample: ", downsample)
+
+    if not 'pixscale' in kwargs :
+        pixscale = 1.0
+    else : 
+        pixscale = kwargs['pixscale']
+    print(f"pixscale: {pixscale:.03f}, L: {pixscale*0.97:.03f}, U: {pixscale*1.03:.03f}")
+
+    if type(fpath) == str :
+        fpath = Path(fpath)
+    
+    #try :
+    #https://www.hnsky.org/astap.htm#astap_command_line
+    with subprocess.Popen(['astap', 
+                        '-f', str(fpath), 
+                        #'-o', 
+                        #'-fov',
+                        '-z', f'{str(downsample)}',
+                        '-wcs',
+                        '-analyse2',
+                        '-update',],
+                        stdout=subprocess.PIPE) as proc :
+        print(proc.stdout.read())
+    
+    if (fpath.parent/f'{fpath.stem}.wcs').exists() \
+        and (fpath.parent/f'{fpath.stem}.ini').exists() \
+        and (fpath.parent/f'{fpath.stem}.tmp').exists() :
+        #shutil.move(str(fpath), f"{fpath.parent / fpath.stem}.fits")
+        print(f"{fpath.parent / fpath.stem}.tmp")
+        print(f"{fpath.parent / fpath.stem}.fits")
+        #shutil.copy(f"{fpath.parent / fpath.stem}.tmp", f"{fpath.parent / fpath.stem}.fits")
+        shutil.move(f"{fpath.parent / fpath.stem}.tmp", f"{fpath.parent / fpath.stem}.fits")
+        print(f"{fpath.name} is solved using ASTAP...")
+    
+    #except Exception as err :
+        # print('{1} ::: {2} with {0} ...'\
+        #     .format(fpath, datetime.now(), err))
+
+    # if fpath.exists() and (fpath.parent/f'{fpath.stem}.fits').exists():
+    #     os.remove(str(fpath))
+    #     print(f"{str(fpath)} is removed...")
+
+
+#%%
+#########################################
+# checkASTAPPSolver
+#########################################
+def checkASTAPPSolve(fpath, 
+                    #solved_dir,
+                    **kwargs,
+                    #downsample,
+                    #pixscale,
+                    ):
+    """
+    Parameters
+    ----------
+    fpath : path-like
+        The path to the original FITS file.
+
+    solved dir: string
+        The directory where the output file
+
+    pixscale : int
+
+    """
+
+    fpath = Path(fpath)
+    hdul = fits.open(fpath)
+    PSKeys = ["CD1_1", "CD1_2", "CD2_1", "CD2_2", "PLTSOLVD", ]
+    ASTAP = 0
+    for PSKey in PSKeys :
+        if PSKey in hdul[0].header : 
+            ASTAP += 1
+    if ASTAP == 5 : 
+        ASTAP = True
+    else :
+        ASTAP = False
+    return ASTAP
+
+#%%
+#########################################
+# checkASTAPPSolver
+#########################################
+def checkPSolve(fpath, 
+                    #solved_dir,
+                    **kwargs,
+                    #downsample,
+                    #pixscale,
+                    ):
+    """
+    Parameters
+    ----------
+    fpath : path-like
+        The path to the original FITS file.
+
+    solved dir: string
+        The directory where the output file
+
+    pixscale : int
+
+    """
+
+    fpath = Path(fpath)
+    hdul = fits.open(fpath)
+    PSKeys = ["CD1_1", "CD1_2", "CD2_1", "CD2_2", "PLTSOLVD", ]
+    chk = 0
+    LOCAL = False
+    for PSKey in PSKeys :
+        if PSKey in hdul[0].header : 
+            chk += 1
+    if chk < 4 : 
+        SOLVE = False
+        ASTAP = False
+    elif chk == 5 : 
+        SOLVE = True
+        ASTAP = True
+        for comment in hdul[0].header["COMMENT"]:
+            if "scale:" in comment :
+                LOCAL = True
+    else :
+        ASTAP = False
+    return SOLVE, ASTAP, LOCAL
+
+
+#%%
 #########################################
 # makingAstrometrySH
 #########################################
@@ -850,16 +992,6 @@ def makingAstrometrySH(fpath,
     
     print("result:", result)
     return result
-
-
-#%%        
-# =============================================================================
-# for checking time
-# =============================================================================
-cht_start_time = datetime.now()
-def print_working_time(cht_start_time):
-    working_time = (datetime.now() - cht_start_time) #total days for downloading
-    return print('working time ::: %s' % (working_time))
 
 
 #%%        
@@ -1015,12 +1147,6 @@ def connectMariaDB():
 
 
 #%%
-def print_subworking_time(sub_start_time):
-    from datetime import datetime
-    working_time = (datetime.now() - cht_start_time) #total days for downloading
-    return print('working time ::: %s' % (working_time))
-
-#%%
 def subp_solve_field(fullname, save_dir_name, sub_start_time): 
     import subprocess
     print('-'*60)
@@ -1035,9 +1161,8 @@ def subp_solve_field(fullname, save_dir_name, sub_start_time):
                            '{0}'.format(fullname)], 
                           stdout=subprocess.PIPE) as proc :
         print(proc.stdout.read())
-        print(print_subworking_time(sub_start_time))
+
         '''
         solve-field -O fullname
        '''
     return 0
-
