@@ -9,14 +9,16 @@ Created on Thu Nov 22 01:00:19 2018
 #%%
 from glob import glob
 from pathlib import Path
-import numpy as np
 import os
+import shutil
+import numpy as np
 import astropy.units as u
-from ccdproc import CCDData, ccd_process
+from astropy.stats import sigma_clip
+from ccdproc import combine, ccd_process, CCDData
 
 import ysfitsutilpy as yfu
 import ysphotutilpy as ypu
-import ysvisutilpy as yvu
+#import ysvisutilpy as yvu
 
 import _astro_utilities
 import _Python_utilities
@@ -35,22 +37,20 @@ if not os.path.exists('{0}'.format(log_dir)):
 #%%
 #######################################################
 # read all files in base directory for processing
-BASEDIR = Path(r"r:\CCD_obs")
-BASEDIR = Path("/mnt/Rdata/CCD_obs") 
-#BASEDIR = Path("/mnt/OBS_data") 
-DOINGDIR = Path(BASEDIR/ "RnE_2022/GSON300_STF-8300M")
-DOINGDIR = Path(BASEDIR/ "RnE_2022/RiLA600_STX-16803_1bin")
-#DOINGDIR = Path(BASEDIR/ "CCD_new_files1")
-
-#DOINGDIRs = sorted(_Python_utilities.getFullnameListOfsubDirs(DOINGDIR))
+#%%
+BASEDIR = Path("/mnt/Rdata/OBS_data") 
+DOINGDIR = Path(BASEDIR/ "asteroid" / "RiLA600_STX-16803_-_1bin")
+DOINGDIRs = sorted(_Python_utilities.getFullnameListOfsubDirs(DOINGDIR))
 DOINGDIRs = sorted([x for x in DOINGDIR.iterdir() if x.is_dir()])
-#print ("DOINGDIRs: ", format(DOINGDIRs))
+print ("DOINGDIRs: ", format(DOINGDIRs))
 print ("len(DOINGDIRs): ", format(len(DOINGDIRs)))
 #######################################################
 
 #%%
+mas1 = Path(DOINGDIRs[0]/_astro_utilities.master_dir)
+
 for DOINGDIR in DOINGDIRs[:] :
-    #DOINGDIR = Path(DOINGDIR)
+    DOINGDIR = Path(DOINGDIR)
     print("DOINGDIR", DOINGDIR)
     fits_in_dir = sorted(list(DOINGDIR.glob('*.fit*')))
     #print("fits_in_dir", fits_in_dir)
@@ -61,9 +61,12 @@ for DOINGDIR in DOINGDIRs[:] :
         pass
     else : 
         print(f"Starting: {str(DOINGDIR.parts[-1])}")
-
+    
         MASTERDIR = DOINGDIR / _astro_utilities.master_dir
         REDUCEDDIR = DOINGDIR / _astro_utilities.reduced_dir
+
+        if not MASTERDIR.exists():
+            shutil.copytree(mas1, MASTERDIR)
 
         if not REDUCEDDIR.exists():
             os.makedirs(str(REDUCEDDIR))
@@ -79,19 +82,16 @@ for DOINGDIR in DOINGDIRs[:] :
         df_light = df_light.reset_index(drop=True)
 
         for _, row in df_light.iterrows():
-            try:
-                fpath = Path(row["file"])
-                ccd = yfu.load_ccd(fpath)
-                filt = ccd.header["FILTER"]
-                expt = ccd.header["EXPTIME"]
-                red = yfu.ccdred(
-                    ccd,
-                    output=Path(f"{REDUCEDDIR}/{fpath.stem}.fit"),
-                    mdarkpath=str(MASTERDIR / "master_dark_{:.0f}sec.fits".format(expt)),
-                    mflatpath=str(MASTERDIR / "master_flat_{}_norm.fits".format(filt.upper())),
-                    # flat_norm_value=1,  # 1 = skip normalization, None = normalize by mean
-                    overwrite=True
-                )
-            except FileNotFoundError: 
-                _Python_utilities.write_log(err_log_file, "FileNotFoundError")
- 
+
+            fpath = Path(row["file"])
+            ccd = yfu.load_ccd(fpath)
+            filt = ccd.header["FILTER"]
+            expt = ccd.header["EXPTIME"]
+            red = yfu.ccdred(
+                ccd,
+                output=Path(f"{REDUCEDDIR/ fpath.name}"),
+                mdarkpath=str(MASTERDIR / "master_dark_{:.0f}sec.fits".format(expt)),
+                mflatpath=str(MASTERDIR / "master_flat_{}_norm.fits".format(filt.upper())),
+                # flat_norm_value=1,  # 1 = skip normalization, None = normalize by mean
+                overwrite=True
+            )

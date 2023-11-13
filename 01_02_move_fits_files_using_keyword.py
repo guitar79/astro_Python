@@ -40,6 +40,7 @@ if not os.path.exists('{0}'.format(log_dir)):
 # read all files in base directory for processing
 BASEDIR = Path(r"r:\CCD_obs") 
 BASEDIR = Path("/mnt/Rdata/OBS_data") 
+#BASEDIR = Path("/Volumes/OBS_data")
 
 DOINGDIR = ( BASEDIR/ _astro_utilities.CCD_NEW_dir)
 DOINGDIR = ( BASEDIR/ _astro_utilities.CCD_NEWUP_dir)
@@ -77,6 +78,13 @@ for DOINGDIR in DOINGDIRs[:] :
 
             new_fname = ""
             try: 
+                SOLVE, ASTAP, LOCAL = _astro_utilities.checkPSolve(fpath)
+                print("SOLVE:", SOLVE, "ASTAP:", ASTAP, "LOCAL:", LOCAL)
+                if SOLVE : 
+                    suffix = ".fits"
+                else : 
+                    suffix = ".fit"
+
                 for KEY in fnameKEYs :
                     if KEY in ["OBJECT", "IMAGETYP", "FILTER", 
                         "OPTIC", "CCDNAME"] :
@@ -94,8 +102,8 @@ for DOINGDIR in DOINGDIRs[:] :
                         except:
                             new_fname += (row[KEY])+"c_"
                     if KEY == "XBINNING" : 
-                        new_fname += str(row[KEY])+f"bin{fpath.suffix}"
-                    
+                        new_fname += str(row[KEY])+"bin"+suffix
+            
                 print(new_fname)
                 
                 new_folder = _astro_utilities.get_new_foldername_from_filename(new_fname)
@@ -115,7 +123,7 @@ for DOINGDIR in DOINGDIRs[:] :
                     #os.rename(str(new_fpath), str(duplicate_fpath))
                     shutil.move(str(new_fpath_fit), str(duplicate_fpath))
                     print (f"move duplicate file to {str(duplicate_fpath)}")
-                if new_fpath_fits.exists():
+                if new_fpath_fits.exists() and new_fpath.suffix == '.fits':
                     duplicate_fpath = BASEDIR / _astro_utilities.CCD_duplicate_dir / new_fpath.name
                     #os.rename(str(new_fpath), str(duplicate_fpath))
                     shutil.move(str(fpath), str(duplicate_fpath))
@@ -124,9 +132,11 @@ for DOINGDIR in DOINGDIRs[:] :
                     #os.rename(str(fpath), str(new_fpath))
                     shutil.move(str(fpath), str(new_fpath))
                     print(f"move {str(fpath.name)} to {str(new_fpath)}")
+                shutil.move(str(fpath), str(new_fpath))
+                print(f"move {str(fpath.name)} to {str(new_fpath)}")
             except Exception as err:
                 print("X"*30, f'\n{err}')
-                # _Python_utilities.write_log(err_log_file, err)
+                #_Python_utilities.write_log(err_log_file, err)
                 pass
 #%%   
 #############################################################################

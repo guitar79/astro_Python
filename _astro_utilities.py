@@ -315,7 +315,7 @@ def KevinFitsUpdater(
             filter_name = fname_el[2]
             if not "FILTER" in hdul[0].header :
                 hdul[0].header["FILTER"] = filter_name.upper()
-            elif hdul[0].header["FILTER"] != filter_name.upper() :
+            if hdul[0].header["FILTER"] != filter_name.upper() :
                 hdul[0].header["FILTER"] = filter_name.upper()
             print(f"FILTER is set {hdul[0].header['FILTER']}")
             if not "OPTIC" in hdul[0].header :
@@ -752,6 +752,7 @@ def LOCALPSolver(fpath,
     pixscale : int
 
     """
+    fpath = Path(fpath)
     if not 'downsample' in kwargs :
         downsample = 1
     else: 
@@ -759,12 +760,15 @@ def LOCALPSolver(fpath,
     print("downsample: ", downsample)
 
     if not 'pixscale' in kwargs :
-        pixscale = 1.0
+        hdul = fits.open(fpath)
+        if 'PIXSCALE' in hdul[0].header:
+            pixscale = hdul[0].header['PIXSCALE']
+        else : 
+            pixscale = calPixScale(hdul[0].header['FOCALLEN'], hdul[0].header['XPIXSZ'])
+        hdul.close()
     else : 
         pixscale = kwargs['pixscale']
     print(f"pixscale: {pixscale:.03f}, L: {pixscale*0.97:.03f}, U: {pixscale*1.03:.03f}")
-
-    fpath = Path(fpath)
     
     # try :
         # solve command.
@@ -820,6 +824,7 @@ def ASTAPSolver(fpath,
     pixscale : int
 
     """
+    fpath = Path(fpath)
     if not 'downsample' in kwargs :
         downsample = 1
     else: 
@@ -832,12 +837,10 @@ def ASTAPSolver(fpath,
             pixscale = hdul[0].header['PIXSCALE']
         else : 
             pixscale = calPixScale(hdul[0].header['FOCALLEN'], hdul[0].header['XPIXSZ'])
+        hdul.close()
     else : 
         pixscale = kwargs['pixscale']
     print(f"pixscale: {pixscale:.03f}, L: {pixscale*0.97:.03f}, U: {pixscale*1.03:.03f}")
-
-    if type(fpath) == str :
-        fpath = Path(fpath)
     
     #try :
     #https://www.hnsky.org/astap.htm#astap_command_line
@@ -871,91 +874,10 @@ def ASTAPSolver(fpath,
     #     print(f"{str(fpath)} is removed...")
 
 
-#%%
-#########################################
-# checkASTAPPSolver
-#########################################
-def checkASTAPPSolve(fpath, 
-                    #solved_dir,
-                    **kwargs,
-                    #downsample,
-                    #pixscale,
-                    ):
-    """
-    Parameters
-    ----------
-    fpath : path-like
-        The path to the original FITS file.
-
-    solved dir: string
-        The directory where the output file
-
-    pixscale : int
-
-    """
-
-    fpath = Path(fpath)
-    hdul = fits.open(fpath)
-    PSKeys = ["CD1_1", "CD1_2", "CD2_1", "CD2_2", "PLTSOLVD", ]
-    ASTAP = 0
-    for PSKey in PSKeys :
-        if PSKey in hdul[0].header : 
-            ASTAP += 1
-    if ASTAP == 5 : 
-        ASTAP = True
-    else :
-        ASTAP = False
-    return ASTAP
 
 #%%
 #########################################
-# checkASTAPPSolver
-#########################################
-def checkPSolve1(fpath, 
-                    #solved_dir,
-                    **kwargs,
-                    #downsample,
-                    #pixscale,
-                    ):
-    """
-    Parameters
-    ----------
-    fpath : path-like
-        The path to the original FITS file.
-
-    solved dir: string
-        The directory where the output file
-
-    pixscale : int
-
-    """
-
-    fpath = Path(fpath)
-    hdul = fits.open(fpath)
-    PSKeys = ["CD1_1", "CD1_2", "CD2_1", "CD2_2", "PLTSOLVD", ]
-    chk = 0
-    LOCAL = False
-    for PSKey in PSKeys :
-        if PSKey in hdul[0].header : 
-            chk += 1
-    if chk < 4 : 
-        SOLVE = False
-        ASTAP = False
-    elif chk == 5 : 
-        SOLVE = True
-        ASTAP = True
-        for comment in hdul[0].header["COMMENT"]:
-            if "scale:" in comment :
-                LOCAL = True
-    else :
-        ASTAP = False
-    
-    hdul.close()
-    return SOLVE, ASTAP, LOCAL
-
-#%%
-#########################################
-# checkASTAPPSolver
+# checkPSolve
 #########################################
 def checkPSolve(fpath, 
                     #solved_dir,
@@ -981,23 +903,27 @@ def checkPSolve(fpath,
     PSKeys = ["CD1_1", "CD1_2", "CD2_1", "CD2_2", ]
     
     chk = 0
+    SOLVE = False
+    ASTAP = False
     LOCAL = False
+
     for PSKey in PSKeys :
         if PSKey in hdul[0].header : 
             chk += 1
-    
     if chk == 4 : 
         SOLVE = True
         LOCAL = False
         ASTAP = False
-        for comment in hdul[0].header["COMMENT"]:
-            if "scale:" in comment :
-                LOCAL = True
+        try : 
+            for comment in hdul[0].header["COMMENT"]:
+                if "scale:" in comment :
+                    LOCAL = True
+        except :
+            LOCAL = False
                         
         if "PLTSOLVD" in hdul[0].header:
             try : 
-                if hdul[0].header["PLTSOLVD"] == "T" :
-                    ASTAP = True
+                ASTAP = hdul[0].header["PLTSOLVD"]
             except : 
                 ASTAP = False
     else : 

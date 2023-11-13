@@ -1,7 +1,3 @@
----
-marp: Flase
-paginate: true
----
 
 # astro_Python
 anaconda environment

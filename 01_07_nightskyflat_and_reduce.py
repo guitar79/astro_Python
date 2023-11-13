@@ -6,7 +6,7 @@ from pathlib import Path
 
 import ysfitsutilpy as yfu
 import ysphotutilpy as ypu
-import ysvisutilpy as yvu
+#import ysvisutilpy as yvu
 
 import _Python_utilities
 import _astro_utilities
@@ -25,21 +25,17 @@ if not os.path.exists('{0}'.format(log_dir)):
 #%%
 #######################################################
 # read all files in base directory for processing
-BASEDIR = Path(r"r:\CCD_obs")
 BASEDIR = Path("/mnt/Rdata/OBS_data") 
-#BASEDIR = Path("/mnt/OBS_data") 
-DOINGDIR = Path(BASEDIR/ "RnE_2022/GSON300_STF-8300M")
-DOINGDIR = Path(BASEDIR/ "RnE_2022/RiLA600_STX-16803_1bin")
-#DOINGDIR = Path(BASEDIR/ "CCD_new_files1")
+DOINGDIR = Path(BASEDIR/ "asteroid/RiLA600_STX-16803_-_1bin")
 
-#DOINGDIRs = sorted(_Python_utilities.getFullnameListOfsubDirs(DOINGDIR))
+DOINGDIRs = sorted(_Python_utilities.getFullnameListOfsubDirs(DOINGDIR))
 DOINGDIRs = sorted([x for x in DOINGDIR.iterdir() if x.is_dir()])
-#print ("DOINGDIRs: ", format(DOINGDIRs))
+print ("DOINGDIRs: ", format(DOINGDIRs))
 print ("len(DOINGDIRs): ", format(len(DOINGDIRs)))
 #######################################################
 
 #%%
-for DOINGDIR in DOINGDIRs[1:] :
+for DOINGDIR in DOINGDIRs[:] :
     BASEDIR = Path(BASEDIR)
     print ("Starting...\n{}".format(BASEDIR))
     fits_in_dir = sorted(list(DOINGDIR.glob('*.fit*')))
@@ -59,70 +55,59 @@ for DOINGDIR in DOINGDIRs[1:] :
         if not REDUCEDDIR2.exists():
             os.makedirs("{}".format(str(REDUCEDDIR2)))
             print("{} is created...".format(str(REDUCEDDIR2)))
-        
-        fits_in_dir = sorted(list(DOINGDIR.glob('*.fit*')))
-        #print("fits_in_dir", fits_in_dir)
-        print("len(fits_in_dir)", len(fits_in_dir))
 
-        if len(fits_in_dir) == 0 :
-            print(f"There is no fits fils in {DOINGDIR}")
-            pass
-        else : 
+        summary = yfu.make_summary(DOINGDIR/"*.fit*",
+                                    keywords = ["FILTER", 'SIMPLE', 'BITPIX', 'NAXIS', 'NAXIS1', 'NAXIS2',
+                                        'EXTEND', 'BZERO', 'IMAGETYP', 'EXPOSURE', 'EXPTIME', 'DATE-LOC',
+                                        'DATE-OBS', 'XBINNING', 'YBINNING', 'EGAIN', 'XPIXSZ', 'YPIXSZ',
+                                        'INSTRUME', 'SET-TEMP', 'CCD-TEMP', 'TELESCOP', 'FOCALLEN', 'FOCRATIO',
+                                        'OBJECT', 'OBJCTRA', 'OBJCTDEC', 'OBJCTROT', 'ROWORDER', 'EQUINOX',
+                                        'SWCREATE', 'NOTES']
+                                    )
 
-            summary = yfu.make_summary(DOINGDIR/"*.fit*",
-                                       keywords = ["FILTER", 'SIMPLE', 'BITPIX', 'NAXIS', 'NAXIS1', 'NAXIS2',
-                                            'EXTEND', 'BZERO', 'IMAGETYP', 'EXPOSURE', 'EXPTIME', 'DATE-LOC',
-                                            'DATE-OBS', 'XBINNING', 'YBINNING', 'EGAIN', 'XPIXSZ', 'YPIXSZ',
-                                            'INSTRUME', 'SET-TEMP', 'CCD-TEMP', 'TELESCOP', 'FOCALLEN', 'FOCRATIO',
-                                            'OBJECT', 'OBJCTRA', 'OBJCTDEC', 'OBJCTROT', 'ROWORDER', 'EQUINOX',
-                                            'SWCREATE', 'NOTES']
-                                        )
+        #print(summary)
+        print("len(summary):", len(summary))
+        print("summary:", summary)
+        #print(summary["file"][0])   
 
-            #print(summary)
-            print("len(summary):", len(summary))
-            print("summary:", summary)
-            #print(summary["file"][0])   
+        summary_light = summary.loc[summary["IMAGETYP"] == "LIGHT"].copy()
+        summary_light = summary_light.reset_index(drop=True) 
 
-            summary_light = summary.loc[summary["IMAGETYP"] == "LIGHT"].copy()
-            summary_light = summary_light.reset_index(drop=True) 
+        for filt in ["b", "v", "r", "L", "R", "G", "B"]:
+        #for filt in ["V"]:
+            summary_light_filt = summary_light.loc[summary_light["FILTER"] == filt].copy()
+            
+            if summary_light_filt.empty:
+                print("The dataframe(summary_light_filt) is empty")
+                pass
+            else:
+                try:
+                    print("len(summary_light_filt):", len(summary_light_filt))
+                    print("summary_light_filt:", summary_light_filt)
 
-            # %%
-            for filt in ["b", "v", "r", "L", "R", "G", "B"]:
-            #for filt in ["V"]:
-                summary_light_filt = summary_light.loc[summary_light["FILTER"] == filt].copy()
-                
-                if summary_light_filt.empty:
-                    print("The dataframe(summary_light_filt) is empty")
-                    pass
-                else:
-                    try:
-                        print("len(summary_light_filt):", len(summary_light_filt))
-                        print("summary_light_filt:", summary_light_filt)
+                    ccd = yfu.imcombine(
+                        summary_light_filt["file"].tolist(), 
+                        combine="med",
+                        scale="avg", 
+                        scale_to_0th=False, 
+                        #reject="sc", 
+                        #sigma=2.5,
+                        verbose=True,
+                        memlimit = 2.e+10,
+                        )
+                    ccd.write(MASTERDIR / f"nightskyflat-{filt}.fits", overwrite=True)
+                except Exception as err: 
+                    print ('Error messgae .......')
+                    _Python_utilities.write_log(err_log_file, err)
 
-                        ccd = yfu.imcombine(
-                            summary_light_filt["file"].tolist(), 
-                            combine="med",
-                            scale="avg", 
-                            scale_to_0th=False, 
-                            #reject="sc", 
-                            #sigma=2.5,
-                            verbose=True,
-                            memlimit = 2.e+10,
-                            )
-                        ccd.write(MASTERDIR / f"nightskyflat-{filt}.fits", overwrite=True)
-                    except Exception as err: 
-                        print ('Error messgae .......')
-                        _Python_utilities.write_log(err_log_file, err)
-
-            # %%
-            for _, row in summary_light.iterrows():
-                try: 
-                    fpath = Path(row["file"])
-                    filt = row["FILTER"]
-                    ccd = yfu.ccdred(
-                        fpath, 
-                        mflatpath=str(MASTERDIR / f"nightskyflat-{filt}.fits"),
-                        output=REDUCEDDIR2/fpath.name
-                    )
-                except FileNotFoundError: 
-                    _Python_utilities.write_log(err_log_file, "FileNotFoundError")
+        for _, row in summary_light.iterrows():
+            try: 
+                fpath = Path(row["file"])
+                filt = row["FILTER"]
+                ccd = yfu.ccdred(
+                    fpath, 
+                    mflatpath=str(MASTERDIR / f"nightskyflat-{filt}.fits"),
+                    output=REDUCEDDIR2/fpath.name
+                )
+            except FileNotFoundError: 
+                _Python_utilities.write_log(err_log_file, "FileNotFoundError")
