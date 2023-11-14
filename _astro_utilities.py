@@ -118,7 +118,8 @@ OPTICDIC = {"TMB130ss": {"APATURE" : 130,
 
 def calPixScale (
     F_length,
-    Pix_size) :
+    Pix_size,
+    binn) :
     '''
         Parameters
         ----------
@@ -127,12 +128,15 @@ def calPixScale (
         
         Pix_Size : float
             pixel size of detector (um), 
+        
+        binn : int
+            binning number, 
     
         Pixel scale : Pix_Size  /   Telescope Focal Length   )   X 206.265  
             (arcsec / pixel)        
     '''
 
-    PIXScale = Pix_size / (F_length ) *  206.265
+    PIXScale = Pix_size * binn / (F_length ) *  206.265
     return PIXScale
 
 #%%
