@@ -20,8 +20,8 @@ print(f"BASEPATH: {BASEPATH}")
 
 
 from datetime import datetime, timedelta
-start_dt = datetime.strptime("2023-10-09 10:00:00", '%Y-%m-%d %H:%M:%S')
-end_dt = datetime.strptime("2023-10-20 10:00:00", '%Y-%m-%d %H:%M:%S')
+start_dt = datetime.strptime("2023-11-02 10:00:00", '%Y-%m-%d %H:%M:%S')
+end_dt = datetime.strptime("2023-11-30 10:00:00", '%Y-%m-%d %H:%M:%S')
 dt = 1
 
 def datetime_range(start_dt, end_dt, delta):

@@ -37,7 +37,17 @@ if not os.path.exists('{0}'.format(log_dir)):
 # read all files in base directory for processing
 BASEDIR = Path("/mnt/Rdata/OBS_data") 
 DOINGDIR = Path(BASEDIR / "ccd_test_folder")
-DOINGDIR = Path('/mnt/Rdata/OBS_data/CCD_obs_raw/STX-16803_1bin' )
+DOINGDIR = Path(BASEDIR/ "asteroid/RiLA600_STX-16803_-_1bin")
+
+DOINGDIRs = sorted(_Python_utilities.getFullnameListOfsubDirs(DOINGDIR))
+DOINGDIRs = sorted([x for x in DOINGDIR.iterdir() if x.is_dir()])
+print ("DOINGDIRs: ", format(DOINGDIRs))
+print ("len(DOINGDIRs): ", format(len(DOINGDIRs)))
+#######################################################
+
+DOINGDIR = Path('/mnt/Rdata/OBS_data/CCD_obs_raw/')
+BASEDIR = Path("/mnt/Rdata/OBS_data") 
+DOINGDIR = Path(BASEDIR/ "asteroid/RiLA600_STX-16803_-_1bin")
 
 DOINGDIRs = sorted(_Python_utilities.getFullnameListOfallsubDirs(DOINGDIR))
 print ("len(DOINGDIRs): ", format(len(DOINGDIRs)))

@@ -37,9 +37,11 @@ if not os.path.exists('{0}'.format(log_dir)):
 #######################################################
 # read all files in base directory for processing
 BASEDIR = Path("/mnt/Rdata/OBS_data") 
-DOINGDIR = Path(BASEDIR / "ccd_test_folder")
+
 DOINGDIR = Path('/mnt/Rdata/OBS_data/CCD_obs_raw/STX-16803_1bin' )
-DOINGDIR = Path('/mnt/Rdata/OBS_data/CCD_obs_raw/STF-8300M_1bin/LIGHT_GSON300' )
+#DOINGDIR = Path('/mnt/Rdata/OBS_data/CCD_obs_raw/STF-8300M_1bin/LIGHT_GSON300')
+#DOINGDIR = Path('/mnt/Rdata/OBS_data/CCD_obs_raw/STL-11000M_1bin/' )
+#DOINGDIR = Path('/mnt/Rdata/OBS_data/CCD_obs_raw/' )
 
 DOINGDIRs = sorted(_Python_utilities.getFullnameListOfallsubDirs(DOINGDIR))
 print ("len(DOINGDIRs): ", format(len(DOINGDIRs)))
@@ -56,7 +58,10 @@ print ("len(DOINGDIRs): ", format(len(DOINGDIRs)))
 for DOINGDIR in DOINGDIRs[:] :
     DOINGDIR = Path(DOINGDIR)
     print("DOINGDIR", DOINGDIR)
-    fits_in_dir = sorted(list(DOINGDIR.glob('*.fit*')))
+    
+    REDUCEDDIR2 = DOINGDIR / _astro_utilities.reduced_dir2
+    
+    fits_in_dir = sorted(list(REDUCEDDIR2.glob('*.fit*')))
     #print("fits_in_dir", fits_in_dir)
     print("len(fits_in_dir)", len(fits_in_dir))
 
@@ -87,7 +92,7 @@ for DOINGDIR in DOINGDIRs[:] :
             hdul.close()
 
             SOLVE, ASTAP, LOCAL = _astro_utilities.checkPSolve(fpath)
-            print("SOLVE", SOLVE, "ASTAP", ASTAP, "LOCAL>", LOCAL)
+            print("SOLVE:", SOLVE, "ASTAP:", ASTAP, "LOCAL:", LOCAL)
 
             if ASTAP :
                 print(f"{fpath.name} is solved by ASTAP")
@@ -100,7 +105,7 @@ for DOINGDIR in DOINGDIRs[:] :
                                                                 )
 
             SOLVE, ASTAP, LOCAL = _astro_utilities.checkPSolve(fpath)
-            print("SOLVE", SOLVE, "ASTAP", ASTAP, "LOCAL>", LOCAL)
+            print("SOLVE:", SOLVE, "ASTAP:", ASTAP, "LOCAL:", LOCAL)
 
             if LOCAL :
                 print(f"{fpath.name} is solved by LOCAL")

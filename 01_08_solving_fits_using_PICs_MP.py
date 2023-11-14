@@ -36,13 +36,13 @@ if not os.path.exists('{0}'.format(log_dir)):
 #######################################################
 # read all files in base directory for processing
 BASEDIR = Path("/mnt/Rdata/OBS_data") 
-DOINGDIR = Path('/mnt/Rdata/OBS_data/CCD_obs_raw/')
-DOINGDIR = Path('/mnt/Rdata/OBS_data/CCD_obs_raw/STX-16803_1bin' )
-DOINGDIR = Path('/mnt/Rdata/OBS_data/CCD_obs_raw/STX-16803_2bin' )
-DOINGDIR = Path('/mnt/Rdata/OBS_data/CCD_obs_raw/QSI683ws_1bin/')
-#DOINGDIR = Path('/mnt/Rdata/OBS_data/CCD_obs_raw/STF-8300M_2bin')
-#DOINGDIR = Path('/mnt/Rdata/OBS_data/CCD_obs_raw/STF-8300M_1bin')
-#DOINGDIR = Path('/mnt/Rdata/OBS_data/CCD_obs_raw/TT-2600CP_1bin/LIGHT_OON300')
+DOINGDIR = Path(BASEDIR/ "asteroid/RiLA600_STX-16803_-_1bin")
+
+DOINGDIRs = sorted(_Python_utilities.getFullnameListOfsubDirs(DOINGDIR))
+DOINGDIRs = sorted([x for x in DOINGDIR.iterdir() if x.is_dir()])
+print ("DOINGDIRs: ", format(DOINGDIRs))
+print ("len(DOINGDIRs): ", format(len(DOINGDIRs)))
+#######################################################
 
 DOINGDIRs = sorted(_Python_utilities.getFullnameListOfallsubDirs(DOINGDIR))
 print ("len(DOINGDIRs): ", len(DOINGDIRs))
