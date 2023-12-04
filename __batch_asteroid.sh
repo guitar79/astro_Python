@@ -1,0 +1,7 @@
+#!/bin/sh
+#python 01_09_remove_keywords_in_HDUL_ys.py
+#python 05_09_remove_keywords_in_HDUL_ys.py
+python 05_02_reduce_light_frame_using_master_files_ys.py
+python 05_03_nightskyflat_and_reduction.py
+python 05_04_solving_fits_using_PICs3.py
+python 05_05_check_asteroid_using_skybot.py

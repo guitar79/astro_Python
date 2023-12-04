@@ -6,16 +6,10 @@ Created on Thu Nov 22 01:00:19 2018
 """
 #%%
 from glob import glob
-from pathlib import Path, PosixPath, WindowsPath
+from pathlib import Path
 import os
-from astropy.time import Time
-from datetime import datetime, timedelta
-from astropy.io import fits
-import shutil 
 
 import ysfitsutilpy as yfu
-#import ysphotutilpy as ypu
-#import ysvisutilpy as yvu
 
 import _astro_utilities
 import _Python_utilities

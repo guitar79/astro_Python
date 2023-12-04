@@ -10,14 +10,7 @@ Created on Thu Nov 22 01:00:19 2018
 import os, shutil
 from glob import glob
 from pathlib import Path
-from datetime import datetime
-import numpy as np
-
-from astropy.io import fits
-
 import ysfitsutilpy as yfu
-import ysphotutilpy as ypu
-#import ysvisutilpy as yvu
 
 import _astro_utilities
 import _Python_utilities
@@ -37,22 +30,21 @@ if not os.path.exists('{0}'.format(log_dir)):
 #######################################################
 # read all files in base directory for processing
 BASEDIR = Path("/mnt/Rdata/OBS_data") 
-#BASEDIR = Path("/mnt/OBS_data") 
-#DOINGDIR = Path(BASEDIR/ "RnE_2022/GSON300_STF-8300M")
-#DOINGDIR = Path(BASEDIR/ "CCD_new_files")
-DOINGDIR = ( BASEDIR/ _astro_utilities.CCD_NEW_dir)
-#DOINGDIR = ( BASEDIR/ _astro_utilities.CCD_obs_raw_dir)
+DOINGDIR = Path(BASEDIR/ "asteroid" / "RiLA600_STX-16803_-_1bin")
+DOINGDIR = Path(BASEDIR/ "asteroid" / "GSON300_STF-8300M_-_1bin")
 
-DOINGDIRs = sorted(_Python_utilities.getFullnameListOfallsubDirs(DOINGDIR))
-#DOINGDIRs = sorted([x for x in DOINGDIR.iterdir() if x.is_dir()])
+DOINGDIRs = sorted(_Python_utilities.getFullnameListOfsubDirs(DOINGDIR))
+
 #print ("DOINGDIRs: ", format(DOINGDIRs))
 print ("len(DOINGDIRs): ", format(len(DOINGDIRs)))
-
-count = 0
+#######################################################
 #%%
-for DOINGDIR in DOINGDIRs :
+for DOINGDIR in DOINGDIRs[:] :
     DOINGDIR = Path(DOINGDIR)
     print("DOINGDIR", DOINGDIR)
+    
+    #DOINGDIR = DOINGDIR / _astro_utilities.reduced_dir2
+    
     fits_in_dir = sorted(list(DOINGDIR.glob('*.fit*')))
     #print("fits_in_dir", fits_in_dir)
     print("len(fits_in_dir)", len(fits_in_dir))
@@ -62,25 +54,23 @@ for DOINGDIR in DOINGDIRs :
         pass
     else : 
         print(f"Starting: {str(DOINGDIR.parts[-1])}")
-        summary = None 
-        summary = yfu.make_summary(DOINGDIR/"*.fit*",
-                    #output = save_fpath,
-                    verbose = True
-                    )
-        print("summary: ", summary)
-        print("type(summary): ", type(summary))
 
-        for _, row in summary.iterrows():
-            count += 1
-            print(f'Starting #{count}th files')
-            try: 
-                # 파일명 출력
-                print (row["file"])
+        summary = yfu.make_summary(DOINGDIR/"*.fit*")
+        print("len(summary):", len(summary))
+        print("summary:", summary)
+        #print(summary["file"][0])
+        df_light = summary.loc[summary["IMAGETYP"] == "LIGHT"].copy()
+        df_light = df_light.reset_index(drop=True)
+        print("df_light:\n{}".format(df_light))
+
+        for _, row  in df_light.iterrows():
+            try:
                 fpath = Path(row["file"])
-                new_fpath = Path(f"{fpath.parents[0]}/{fpath.stem}_clean.fit")
-                # fits hedaer 에 있는 wcs 정보를 지운다
+                print(fpath.name)
+                new_fpath = fpath.parents[0]/ f"{fpath.stem}_new.{fpath.suffix}"
+                new_fpath
                 yfu.wcsremove(fpath, 
-                            additional_keys=["COMMENT"],
+                            additional_keys=["COMMENT", "HISTORY"],
                             verbose=True,
                             output=new_fpath,
                             ccddata=False,
