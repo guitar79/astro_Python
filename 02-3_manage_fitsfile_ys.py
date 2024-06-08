@@ -27,7 +27,7 @@ from ccdproc import combine, ccd_process, CCDData
 import _Python_utilities
 import ysfitsutilpy as yfu
 import ysphotutilpy as ypu
-import ysvisutilpy as yvu
+# import ysvisutilpy as yvu
 
 #######################################################
 # for log file

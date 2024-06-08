@@ -30,7 +30,7 @@ DOINGDIR = Path(BASEDIR/ "asteroid" / "RiLA600_STX-16803_-_1bin")
 
 DOINGDIRs = sorted(_Python_utilities.getFullnameListOfsubDirs(DOINGDIR))
 
-filter_str = '2023-11-24_'
+filter_str = '2023-12-'
 DOINGDIRs = [x for x in DOINGDIRs if filter_str in x]
 # remove = 'BIAS'
 # DOINGDIRs = [x for x in DOINGDIRs if remove not in x]

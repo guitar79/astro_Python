@@ -39,6 +39,8 @@ import ysvisutilpy as yvu
 import _Python_utilities
 import _astro_utilities
 
+plt.rcParams.update({'figure.max_open_warning': 0})
+
 #%%
 #######################################################
 # for log file
