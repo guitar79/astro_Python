@@ -382,7 +382,7 @@ def KevinFitsUpdater(
             'XPIXSZ', 'YPIXSZ',
             "XBINNING", "YBINNING", "FLIPSTAT", "EXPTIME", "EXPOSURE"],
     imgtype_update=False,
-    fil_update=True,
+    fil_update=False,
     ):
     '''
         Parameters

@@ -57,9 +57,9 @@ BASEDIR = Path("/mnt/Rdata/OBS_data")
 #BASEDIR = Path("/Volumes/OBS_data") 
 
 DOINGDIR = Path(BASEDIR/ "asteroid" / "RiLA600_STX-16803_-_1bin")
-#DOINGDIR = Path(BASEDIR/ "asteroid" / "GSON300_STF-8300M_-_1bin")
-DOINGDIR = Path(BASEDIR/ "asteroid" / "good")
-DOINGDIR = Path(BASEDIR/"2023OA/asteroids_teacher")
+DOINGDIR = Path(BASEDIR/ "asteroid" / "GSON300_STF-8300M_-_1bin")
+# DOINGDIR = Path(BASEDIR/ "asteroid" / "good")
+# DOINGDIR = Path(BASEDIR/"2023OA/asteroids_teacher")
 
 DOINGDIRs = sorted(_Python_utilities.getFullnameListOfsubDirs(DOINGDIR))
 
@@ -103,7 +103,7 @@ Mag_UP = 17
 #######################################################
 
 # %%
-for DOINGDIR in DOINGDIRs[3:] :
+for DOINGDIR in DOINGDIRs[:] :
     DOINGDIR = Path(DOINGDIR)
     print("DOINGDIR", DOINGDIR)
 

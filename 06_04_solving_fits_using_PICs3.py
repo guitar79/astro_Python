@@ -53,7 +53,7 @@ print ("mas1: ", format(mas1))
 
 DOINGDIRs = sorted([x for x in DOINGDIRs if "_LIGHT_" in str(x)])
 
-# filter_str = '2023-12'
+# filter_str = '2024-06'
 # DOINGDIRs = [x for x in DOINGDIRs if filter_str in str(x)]
 # remove = 'BIAS'
 # DOINGDIRs = [x for x in DOINGDIRs if remove not in x]
@@ -65,10 +65,10 @@ print ("DOINGDIRs: ", DOINGDIRs)
 print ("len(DOINGDIRs): ", len(DOINGDIRs))
 #######################################################
 #%%
-for DOINGDIR in DOINGDIRs[:] :
+for DOINGDIR in DOINGDIRs[:1] :
     DOINGDIR = Path(DOINGDIR)
     print("DOINGDIR", DOINGDIR)
-    if str(DOINGDIR.parts[-2]) == "RiLA600_STX-16803_-_1bin" :
+    if "RiLA600_STX-16803_" in str(DOINGDIR.parts[-2]) :
         DOINGDIR = DOINGDIR / _astro_utilities.REDUC_nightsky_dir
     if str(DOINGDIR.parts[-2]) == "GSON300_STF-8300M_-_1bin" :
         DOINGDIR = DOINGDIR / _astro_utilities.reduced_dir

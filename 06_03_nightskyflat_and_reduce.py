@@ -26,7 +26,7 @@ if not os.path.exists('{0}'.format(log_dir)):
 # read all files in base directory for processing
 BASEDIR = Path("/mnt/Rdata/OBS_data") 
 DOINGDIR = Path(BASEDIR/ "2024-EXO" / "RiLA600_STX-16803_-_1bin")
-DOINGDIR = Path(BASEDIR/ "2024-EXO" / "RiLA600_STX-16803_-_2bin")
+# DOINGDIR = Path(BASEDIR/ "2024-EXO" / "RiLA600_STX-16803_-_2bin")
 #DOINGDIR = Path(BASEDIR/ "2024-EXO" / "GSON300_STF-8300M_-_1bin")
 
 DOINGDIRs = sorted(_Python_utilities.getFullnameListOfsubDirs(DOINGDIR))
@@ -55,7 +55,7 @@ print ("len(DOINGDIRs): ", len(DOINGDIRs))
 #######################################################
 
 #%%
-for DOINGDIR in DOINGDIRs[:] :
+for DOINGDIR in DOINGDIRs[:1] :
     DOINGDIR = Path(DOINGDIR)
     print (DOINGDIR.parts[-1])
     
