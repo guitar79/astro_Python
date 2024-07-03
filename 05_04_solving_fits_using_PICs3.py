@@ -36,12 +36,21 @@ if not os.path.exists('{0}'.format(log_dir)):
 # read all files in base directory for processing
 BASEDIR = Path("/mnt/Rdata/OBS_data") 
 DOINGDIR = Path(BASEDIR/ "asteroid" / "RiLA600_STX-16803_-_1bin")
-DOINGDIR = Path(BASEDIR/ "asteroid" / "GSON300_STF-8300M_-_1bin")
+#DOINGDIR = Path(BASEDIR/ "asteroid" / "GSON300_STF-8300M_-_1bin")
 
 DOINGDIRs = sorted(_Python_utilities.getFullnameListOfsubDirs(DOINGDIR))
+DOINGDIRs = sorted([x for x in DOINGDIR.iterdir() if x.is_dir()])
+print ("DOINGDIRs: ", format(DOINGDIRs))
+print ("len(DOINGDIRs): ", format(len(DOINGDIRs)))
 
-filter_str = '345TERCIDINA_LIGHT_-_2023-10-11_-_GSON300_STF-8300M_-_1bin'
-DOINGDIRs = [x for x in DOINGDIRs if filter_str in x]
+mas1 = [x for x in DOINGDIRs if "CAL-BDF" in str(x)]
+mas1 = mas1[0]/ _astro_utilities.master_dir
+print ("mas1: ", format(mas1))
+
+DOINGDIRs = sorted([x for x in DOINGDIRs if "_LIGHT_" in str(x)])
+
+filter_str = '2023-12'
+DOINGDIRs = [x for x in DOINGDIRs if filter_str in str(x)]
 # remove = 'BIAS'
 # DOINGDIRs = [x for x in DOINGDIRs if remove not in x]
 # remove = 'DARK'

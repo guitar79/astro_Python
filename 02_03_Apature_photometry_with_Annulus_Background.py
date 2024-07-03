@@ -40,7 +40,7 @@ from astropy.coordinates import SkyCoord
 
 import ysfitsutilpy as yfu
 import ysphotutilpy as ypu
-import ysvisutilpy as yvu
+# import ysvisutilpy as yvu
 
 import _Python_utilities
 import _astro_utilities

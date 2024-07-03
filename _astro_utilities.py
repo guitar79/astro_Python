@@ -3,10 +3,6 @@
 Created on Thu Nov 22 01:00:19 2018
 @author: user
 
-2019.09.29  modify - missing 'IMAGETYP' on APT
-
-ModuleNotFoundError: No module named 'ccdproc'
-conda install -c condaforge ccdproc
 """
 #%%
 from pathlib import Path
@@ -47,7 +43,6 @@ CCD_NEW_dir = "CCD_new_files"
 CCD_NEWUP_dir = "CCD_newUpdated_files"
 CCD_duplicate_dir = "CCD_duplicate_files"
 
-
 master_dir = "master_files_ys"
 reduced_dir = "reduced"
 reduced_dir2 = "reduced2"
@@ -59,12 +54,14 @@ IRAFfinder_result_dir = "IRAFfinder_result"
 APh_result_dir = "APh_result"
 Asteroid_result_dir = "Asteroid_result"
 Asteroid_diff_Phot_dir = "Asteroid_diff_Phot"
+Inst_Mag_dir = "Inst_Mag_result"
+Diff_Phot_dir = "Diff_Phot_result"
+Exoplanet_diff_Phot_dir = "Exoplanet_diff_Phot"
 
 master_file_dir = 'master_file_Python/'
 processing_dir = 'processing_Python/'
 integration_dir = 'integration_Python/'
 alignment_dir = 'alignment_Python/'
-
 
 #######################################################
 # OBS instruments information 
@@ -95,7 +92,10 @@ CCDDIC = {"ST-8300M": {"PIXSIZE":5.4,
         "TT-2600CP": {"PIXSIZE":3.76, 
                 "GAIN": "-",
                 "RDNOISE":"-"},
-        "ASI-6200MMPro": {"PIXSIZE":3.76, 
+        "ASI183MMPro": {"PIXSIZE":2.4, 
+                "GAIN": "-",
+                "RDNOISE":"-"},
+        "ASI6200MMPro": {"PIXSIZE":3.76, 
                 "GAIN": "-",
                 "RDNOISE":"-"},
                         }
@@ -127,8 +127,11 @@ OPTICDIC = {"TMB130ss": {"APATURE" : 130,
             "TEC140": {"APATURE": 140,
                        "FOCALLEN": 980},
             "TEC140-x75": {"APATURE": 140,
-                       "FOCALLEN": 980*0.75}
+                       "FOCALLEN": 980*0.75},
+            "TEC140-x72": {"APATURE": 140,
+                       "FOCALLEN": 980*0.72},
                        }
+
 
 #######################################################
 
@@ -136,12 +139,91 @@ OPTICDIC = {"TMB130ss": {"APATURE" : 130,
 #########################################
 #calPixScale
 #########################################
-from astropy.visualization import ZScaleInterval, ImageNormalize
+from warnings import warn
+from astropy.visualization import (
+    ImageNormalize,
+    LinearStretch,
+    ZScaleInterval,
+    simple_norm,
+)
+
+__all__ = ["znorm", "zimshow", "norm_imshow"]
+
 def znorm(image, **kwargs):
     return ImageNormalize(image, interval=ZScaleInterval(**kwargs))
 
-def zimshow(ax, image, **kwargs):
-    return ax.imshow(image, norm=znorm(image, **kwargs), origin='lower')
+def zimshow(
+    ax,
+    image,
+    stretch=LinearStretch(),
+    cmap=None,
+    origin="lower",
+    zscale_kw={},
+    **kwargs
+):
+    im = ax.imshow(
+        image,
+        norm=znorm(image, stretch=stretch, **zscale_kw),
+        origin=origin,
+        cmap=cmap,
+        **kwargs
+    )
+    return im
+
+def norm_imshow(
+    ax,
+    data,
+    origin="lower",
+    stretch="linear",
+    power=1.0,
+    asinh_a=0.1,
+    min_cut=None,
+    max_cut=None,
+    min_percent=None,
+    max_percent=None,
+    percent=None,
+    clip=True,
+    log_a=1000,
+    invalid=-1.0,
+    zscale=False,
+    vmin=None,
+    vmax=None,
+    **kwargs
+):
+    """Do normalization and do imshow"""
+    if vmin is not None and min_cut is not None:
+        warn("vmin will override min_cut.")
+
+    if vmax is not None and max_cut is not None:
+        warn("vmax will override max_cut.")
+
+    if zscale:
+        zs = ImageNormalize(data, interval=ZScaleInterval())
+        min_cut = vmin = zs.vmin
+        max_cut = vmax = zs.vmax
+
+    if vmin is not None or vmax is not None:
+        im = ax.imshow(data, origin=origin, vmin=vmin, vmax=vmax, **kwargs)
+    else:
+        im = ax.imshow(
+            data,
+            origin=origin,
+            norm=simple_norm(
+                data=data,
+                stretch=stretch,
+                power=power,
+                asinh_a=asinh_a,
+                min_cut=min_cut,
+                max_cut=max_cut,
+                min_percent=min_percent,
+                max_percent=max_percent,
+                percent=percent,
+                clip=clip,
+                log_a=log_a,
+                invalid=invalid
+            ),
+            **kwargs)
+    return im
 
 def sky_fit(all_sky, method='mode', sky_nsigma=3, sky_iter=5, \
             mode_option='sex', med_factor=2.5, mean_factor=1.5):
@@ -299,6 +381,8 @@ def KevinFitsUpdater(
             "PIXSCALE", "FOCALLEN", "APATURE", "CCD-TEMP",
             'XPIXSZ', 'YPIXSZ',
             "XBINNING", "YBINNING", "FLIPSTAT", "EXPTIME", "EXPOSURE"],
+    imgtype_update=False,
+    fil_update=False,
     ):
     '''
         Parameters
@@ -339,8 +423,13 @@ def KevinFitsUpdater(
         
         ###########################
         #### "OBJECT"
-        hdul[0].header["OBJECT"] = object_name.upper()
-        print(f"The 'OBJECT' is set {object_name.upper()}")
+        hdul[0].header["OBJECT"] = object_name   #delete upper()
+        print(f"The 'OBJECT' is set {object_name}")
+
+        ###########################
+        #### "FILTER"
+        # hdul[0].header["FILTER"] = object_name.upper()
+        # print(f"The 'OBJECT' is set {object_name.upper()}")
 
         ###########################
         #### "CCDNAME"
@@ -357,6 +446,10 @@ def KevinFitsUpdater(
                 CCDNAME = 'STL-11000M'
             elif '16803' in hdul[0].header['INSTRUME'] : 
                 CCDNAME = 'STX-16803'
+            elif 'ASI183MM Pro' in hdul[0].header['INSTRUME'] : 
+                CCDNAME = 'ASI183MMPro'
+            elif 'ASI6200MM Pro' in hdul[0].header['INSTRUME'] : 
+                CCDNAME = 'ASI6200MMPro'
             elif "SBIG" in hdul[0].header['INSTRUME'] :
                 if hdul[0].header['XPIXSZ'] == 5.4 \
                         or hdul[0].header['XPIXSZ'] == 10.8 :
@@ -377,9 +470,7 @@ def KevinFitsUpdater(
                 "ToupTek" in hdul[0].header['INSTRUME'] :
                 CCDNAME = "TT-2600CP"
                 hdul[0].header["FILTER"] = "-"
-            elif "ASI Camera" in hdul[0].header['INSTRUME'] :
-                CCDNAME = "ASI-6200MMPro"
-                hdul[0].header["FILTER"] = "-"
+
             else :
                 #CDNAME = hdul[0].header['INSTRUME']
                 CCDNAME = ccd_name
@@ -399,6 +490,9 @@ def KevinFitsUpdater(
         
         ###########################
         #### 'IMAGETYP'
+        if imgtype_update == True :
+            hdul[0].header["IMAGETYP"] = image_type.upper()
+            print(f"The 'IMAGETYP' is set {hdul[0].header['IMAGETYP']}")
         if not "IMAGETYP" in hdul[0].header :
             hdul[0].header["IMAGETYP"] = image_type  
         elif "ze" in hdul[0].header["IMAGETYP"].lower() \
@@ -415,7 +509,7 @@ def KevinFitsUpdater(
                 or "lig" in hdul[0].header["IMAGETYP"].lower() :
             hdul[0].header["IMAGETYP"] = "LIGHT"
             print(f"The 'IMAGETYP' is set {hdul[0].header['IMAGETYP']}")
-        
+
         if "BIAS" in hdul[0].header["IMAGETYP"] \
             or "DARK" in hdul[0].header["IMAGETYP"] :
             for _KEY in ['FILTER', 'OPTIC', 'FOCALLEN', 'APATURE', 'PIXSCALE',] :
@@ -425,10 +519,12 @@ def KevinFitsUpdater(
         if "FLAT" in hdul[0].header["IMAGETYP"] \
             or "LIGHT" in hdul[0].header["IMAGETYP"] :
             filter_name = fname_el[2]
+            
             if not "FILTER" in hdul[0].header :
-                hdul[0].header["FILTER"] = filter_name.upper()
-            if hdul[0].header["FILTER"] != filter_name.upper() :
-                hdul[0].header["FILTER"] = filter_name.upper()
+                hdul[0].header["FILTER"] = filter_name   #delete uper()
+            if hdul[0].header["FILTER"] != filter_name \
+                and fil_update==True :
+                hdul[0].header["FILTER"] = filter_name
             print(f"FILTER is set {hdul[0].header['FILTER']}")
             if not "OPTIC" in hdul[0].header :
                 hdul[0].header["OPTIC"] = optic_name

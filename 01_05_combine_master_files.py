@@ -15,8 +15,8 @@ from astropy.stats import sigma_clip
 from ccdproc import combine, ccd_process, CCDData
 
 import ysfitsutilpy as yfu
-import ysphotutilpy as ypu
-import ysvisutilpy as yvu
+#import ysphotutilpy as ypu
+#import ysvisutilpy as yvu
 
 import _astro_utilities
 import _Python_utilities

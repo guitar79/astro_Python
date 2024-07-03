@@ -32,7 +32,9 @@ from matplotlib import pyplot as plt
 from matplotlib import rcParams
 from matplotlib import gridspec
 
+import _astro_utilities
 import _Python_utilities
+import _tool_visualization
 
 from astropy.table import Table, vstack
 from astroquery.vizier import Vizier
@@ -42,9 +44,10 @@ from xarray import Coordinate
 
 import ysfitsutilpy as yfu
 import ysphotutilpy as ypu
-#import ysvisutilpy as yvu
 
 import warnings
+
+plt.rcParams.update({'figure.max_open_warning': 0})
 
 #%%
 #######################################################
@@ -209,7 +212,7 @@ ap_stars_orig = CAp(positions=pos_stars_orig, r=15)
 ap_stars = CAp(positions=pos_stars, r=20)
 
 fig, axs = plt.subplots(1, 1, figsize=(20, 15), sharex=False, sharey=False, gridspec_kw=None)
-yvu.norm_imshow(axs, hdul[0].data, zscale=True)
+_tool_visualization.norm_imshow(axs, hdul[0].data, zscale=True)
 ap_stars_orig.plot(color='w', lw=2)
 ap_stars.plot(color='r', lw=2)
 
@@ -238,7 +241,7 @@ ap_found = CAp(coords_SF, r=25)
 
 # Plot all
 fig, axs = plt.subplots(1, 1, figsize=(20, 15), sharex=False, sharey=False, gridspec_kw=None)
-yvu.norm_imshow(axs, data, zscale=True)
+_tool_visualization.norm_imshow(axs, data, zscale=True)
 ap_found.plot(color='k', lw=2, alpha=0.7)
 ap_stars.plot(color='red', lw=2, alpha=0.7)
 
@@ -310,7 +313,7 @@ phot_targ = ypu.apphot_annulus(ccd=ccd,
 # %%
 fig, axs = plt.subplots(1, 1, figsize=(8, 8), 
                         sharex=False, sharey=False, gridspec_kw=None)
-yvu.norm_imshow(axs, ccd, zscale=True)
+_tool_visualization.norm_imshow(axs, ccd, zscale=True)
 star_ap.plot(axs, color='w')
 star_an.plot(axs, color='r')
 targ_ap.plot(axs, color='r')
@@ -318,7 +321,7 @@ targ_an.plot(axs, color='y')
 
 # inset axes....
 axins = axs.inset_axes([0.6, 0.4, 0.3, 0.3])
-yvu.norm_imshow(axins, ccd, zscale=True)
+_tool_visualization.norm_imshow(axins, ccd, zscale=True)
 # sub region of the original image
 x1, x2, y1, y2 = 450, 550, 450, 550
 axins.set_xlim(x1, x2)
@@ -412,7 +415,7 @@ ax_c2.axis('off')
 for j, (x_i, y_i) in enumerate(zip(color, Z)):
     ax_c.text(x=x_i, y=y_i, s=j+1)
 
-yvu.linticker(
+_tool_visualization.linticker(
     [ax_l, ax_r, ax_c],
     xmajlockws=[1  , 1  , 0.2],
     xminlockws=[0.2, 0.2, 0.1],

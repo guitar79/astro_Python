@@ -25,6 +25,7 @@ from astropy.wcs import WCS
 import _Python_utilities
 import _astro_utilities
 from astropy.stats import sigma_clip, sigma_clipped_stats
+
 plt.rcParams.update({'figure.max_open_warning': 0})
 
 

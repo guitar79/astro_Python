@@ -43,6 +43,17 @@ DOINGDIR = Path(BASEDIR/ "asteroid" / "RiLA600_STX-16803_-_1bin")
 DOINGDIR = Path(BASEDIR/ "asteroid" / "GSON300_STF-8300M_-_1bin")
 
 DOINGDIRs = sorted(_Python_utilities.getFullnameListOfsubDirs(DOINGDIR))
+DOINGDIRs = sorted([x for x in DOINGDIR.iterdir() if x.is_dir()])
+print ("DOINGDIRs: ", format(DOINGDIRs))
+print ("len(DOINGDIRs): ", format(len(DOINGDIRs)))
+
+mas1 = [x for x in DOINGDIRs if "CAL-BDF" in str(x)]
+mas1 = mas1[0]/ _astro_utilities.master_dir
+print ("mas1: ", format(mas1))
+
+DOINGDIRs = sorted([x for x in DOINGDIRs if "_LIGHT_" in str(x)])
+print ("DOINGDIRs: ", format(DOINGDIRs))
+print ("len(DOINGDIRs): ", format(len(DOINGDIRs)))
 # filter_str = '_2023-11-2'
 # DOINGDIRs = [x for x in DOINGDIRs if not filter_str in x]
 # remove = 'BIAS'
@@ -57,11 +68,7 @@ print ("len(DOINGDIRs): ",
 #######################################################
 
 #%%
-mas1 = Path(DOINGDIRs[0])
-mas1 = mas1 /_astro_utilities.master_dir
-mas1 = DOINGDIR / _astro_utilities.master_dir
-
-for DOINGDIR in DOINGDIRs[:] :
+for DOINGDIR in DOINGDIRs[1:] :
     DOINGDIR = Path(DOINGDIR)
     print("DOINGDIR", DOINGDIR)
     fits_in_dir = sorted(list(DOINGDIR.glob('*.fit*')))
@@ -77,8 +84,9 @@ for DOINGDIR in DOINGDIRs[:] :
         MASTERDIR = DOINGDIR / _astro_utilities.master_dir
         REDUCEDDIR = DOINGDIR / _astro_utilities.reduced_dir
 
-        # if not MASTERDIR.exists():
-        shutil.copytree(mas1, MASTERDIR)
+        if not MASTERDIR.exists():
+            #shutil.rmtree(MASTERDIR)
+            shutil.copytree(mas1, MASTERDIR)
 
         if not REDUCEDDIR.exists():
             os.makedirs(str(REDUCEDDIR))
@@ -99,11 +107,15 @@ for DOINGDIR in DOINGDIRs[:] :
             ccd = yfu.load_ccd(fpath)
             filt = ccd.header["FILTER"]
             expt = ccd.header["EXPTIME"]
-            red = yfu.ccdred(
+            try : 
+                red = yfu.ccdred(
                     ccd,
                     output=Path(f"{REDUCEDDIR/ fpath.name}"),
                     mdarkpath=str(MASTERDIR / "master_dark_{:.0f}sec.fits".format(expt)),
                     mflatpath=str(MASTERDIR / "master_flat_{}_norm.fits".format(filt.upper())),
                     # flat_norm_value=1,  # 1 = skip normalization, None = normalize by mean
-                    overwrite=True,
-                    )
+                    overwrite=True
+                )
+            except Exception as err :
+                print("X"*60)
+                #_Python_utilities.write_log(err_log_file, err)
