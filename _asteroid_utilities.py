@@ -238,9 +238,7 @@ def solvingLightFrame(DOINGDIR,
         SOLVE, ASTAP, LOCAL = _astro_utilities.checkPSolve(fpath)
         print("SOLVE:", SOLVE, "ASTAP:", ASTAP, "LOCAL:", LOCAL)
 
-        if ASTAP :
-            print(f"{fpath.name} is solved by ASTAP")
-        else : 
+        if not SOLVE :
             print(f"{fpath.name} is solving now by ASTAP")
             solved = _astro_utilities.ASTAPSolver(fpath, 
                                                     #str(SOLVEDDIR), 
@@ -248,26 +246,24 @@ def solvingLightFrame(DOINGDIR,
                                                     pixscale = PIXc,
                                                             )
 
-        SOLVE, ASTAP, LOCAL = _astro_utilities.checkPSolve(fpath)
-        print("SOLVE:", SOLVE, "ASTAP:", ASTAP, "LOCAL:", LOCAL)
+            SOLVE, ASTAP, LOCAL = _astro_utilities.checkPSolve(fpath)
+            print("SOLVE:", SOLVE, "ASTAP:", ASTAP, "LOCAL:", LOCAL)
 
-        if LOCAL :
-            print(f"{fpath.name} is solved by LOCAL")
-        else : 
-            print(f"{fpath.name} is solving now by LOCAL")
-            if 'PIXSCALE' in hdul[0].header:
-                PIXc = hdul[0].header['PIXSCALE']
-            else : 
-                PIXc = _astro_utilities.calPixScale(hdul[0].header['FOCALLEN'], 
-                                                hdul[0].header['XPIXSZ'],
-                                                hdul[0].header['XBINNING'])
-            print("PIXc : ", PIXc)
+            if not SOLVE : 
+                print(f"{fpath.name} is solving now by LOCAL")
+                if 'PIXSCALE' in hdul[0].header:
+                    PIXc = hdul[0].header['PIXSCALE']
+                else : 
+                    PIXc = _astro_utilities.calPixScale(hdul[0].header['FOCALLEN'], 
+                                                    hdul[0].header['XPIXSZ'],
+                                                    hdul[0].header['XBINNING'])
+                print("PIXc : ", PIXc)
 
-            solved = _astro_utilities.LOCALPSolver(fpath, 
-                                                    #str(SOLVEDDIR), 
-                                                    downsample = 2,
-                                                    pixscale = PIXc,
-                                                            )
+                solved = _astro_utilities.LOCALPSolver(fpath, 
+                                                        #str(SOLVEDDIR), 
+                                                        downsample = 2,
+                                                        pixscale = PIXc,
+                                                                )
     return 0
     
 #%%

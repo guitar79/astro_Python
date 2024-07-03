@@ -47,20 +47,10 @@ print ("len(DOINGDIRs): ", format(len(DOINGDIRs)))
 for DOINGDIR in DOINGDIRs[:] :
     DOINGDIR = Path(DOINGDIR)
     print("DOINGDIR", DOINGDIR)
-    fits_in_dir = sorted(list(DOINGDIR.glob('*.fit*')))
-    #print("fits_in_dir", fits_in_dir)
-    print("len(fits_in_dir)", len(fits_in_dir))
 
-    if len(fits_in_dir) == 0 :
-        print(f"There is no fits fils in {DOINGDIR}")
-        pass
-    else : 
-        print(f"Starting: {str(DOINGDIR.parts[-1])}")
-        summary = None 
-        summary = yfu.make_summary(DOINGDIR/"*.fit*",
-                    #output = save_fpath,
-                    verbose = False
-                    )
+    print(f"Starting: {str(DOINGDIR.parts[-1])}")
+    summary = yfu.make_summary(DOINGDIR/"*.fit*",)
+    if summary is not None : 
         print("summary: ", summary)
         print("len(summary)", len(summary))
 

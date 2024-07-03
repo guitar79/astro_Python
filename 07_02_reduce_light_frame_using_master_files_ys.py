@@ -48,9 +48,9 @@ DOINGDIRs = sorted([x for x in DOINGDIR.iterdir() if x.is_dir()])
 print ("DOINGDIRs: ", format(DOINGDIRs))
 print ("len(DOINGDIRs): ", format(len(DOINGDIRs)))
 
-mas1 = [x for x in DOINGDIRs if "CAL-BDF" in str(x)]
-mas1 = mas1[0]/ _astro_utilities.master_dir
-print ("mas1: ", format(mas1))
+MASTERDIR = [x for x in DOINGDIRs if "CAL-BDF" in str(x)]
+MASTERDIR = MASTERDIR[0]/ _astro_utilities.master_dir
+print ("MASTERDIR: ", format(MASTERDIR))
 
 DOINGDIRs = sorted([x for x in DOINGDIRs if "_LIGHT_" in str(x)])
 print ("DOINGDIRs: ", format(DOINGDIRs))
@@ -86,7 +86,7 @@ for DOINGDIR in DOINGDIRs[27:] :
         if not MASTERDIR.exists():
             #shutil.rmtree(MASTERDIR)
             try: 
-                shutil.copytree(mas1, MASTERDIR, dirs_exist_ok=True)
+                shutil.copytree(MASTERDIR, MASTERDIR, dirs_exist_ok=True)
             except Exception as err:
                 print(err)
 

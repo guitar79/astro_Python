@@ -49,7 +49,7 @@ print ("len(DOINGDIRs): ", format(len(DOINGDIRs)))
 #######################################################
 
 #%%
-mas1 = Path(DOINGDIRs[0]/_astro_utilities.master_dir)
+MASTERDIR = Path(DOINGDIRs[0]/_astro_utilities.master_dir)
 
 for DOINGDIR in DOINGDIRs[:] :
     DOINGDIR = Path(DOINGDIR)
@@ -68,7 +68,7 @@ for DOINGDIR in DOINGDIRs[:] :
         REDUCEDDIR = DOINGDIR / _astro_utilities.reduced_dir
 
         if not MASTERDIR.exists():
-            shutil.copytree(mas1, MASTERDIR)
+            shutil.copytree(MASTERDIR, MASTERDIR)
 
         if not REDUCEDDIR.exists():
             os.makedirs(str(REDUCEDDIR))

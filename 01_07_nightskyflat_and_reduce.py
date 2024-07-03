@@ -90,8 +90,8 @@ for DOINGDIR in DOINGDIRs[:] :
                         combine="med",
                         scale="avg", 
                         scale_to_0th=False, 
-                        #reject="sc", 
-                        #sigma=2.5,
+                        reject="sc", 
+                        sigma=2.5,
                         verbose=True,
                         memlimit = 2.e+10,
                         )

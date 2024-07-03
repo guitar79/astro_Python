@@ -56,35 +56,17 @@ fnameKEYs = ["OBJECT", "IMAGETYP", "FILTER", "DATE-OBS",
 for DOINGDIR in DOINGDIRs[:] : 
     DOINGDIR = Path(DOINGDIR)
     print(f"Starting: {str(DOINGDIR.parts[-1])}")
-    fits_in_dir = sorted(list(DOINGDIR.glob('*.fit*')))
-    #print("fits_in_dir", fits_in_dir)
-    print("len(fits_in_dir)", len(fits_in_dir))
-
-    if len(fits_in_dir) == 0 :
-        print(f"There is no fits fils in {DOINGDIR}")
-        pass
-    else : 
-        summary = None
-        summary = yfu.make_summary(DOINGDIR/"*.fit*",
-                    #output = save_fpath,
-                    verbose = False
-                    )
+    summary = yfu.make_summary(DOINGDIR/"*.fit*",)
+    if summary is not None : 
         print("summary: ", summary)
         print("len(summary)", len(summary))
     
         for _, row in summary.iterrows():
             fpath = Path(row["file"])
             print (f"starting {fpath.name}...")
-
             new_fname = ""
-            try: 
-                SOLVE, ASTAP, LOCAL = _astro_utilities.checkPSolve(fpath)
-                print("SOLVE:", SOLVE, "ASTAP:", ASTAP, "LOCAL:", LOCAL)
-                if SOLVE : 
-                    suffix = ".fits"
-                else : 
-                    suffix = ".fit"
-
+            suffix = ".fit"
+            try:
                 for KEY in fnameKEYs :
                     if KEY in ["OBJECT", "IMAGETYP", "FILTER", 
                         "OPTIC", "CCDNAME"] :
@@ -105,7 +87,7 @@ for DOINGDIR in DOINGDIRs[:] :
                         new_fname += str(row[KEY])+"bin"+suffix
             
                 print(new_fname)
-                
+                    
                 new_folder = _astro_utilities.get_new_foldername_from_filename(new_fname)
                 #print("new_folder: ", new_folder)
                 new_fpath =  BASEDIR /_astro_utilities.CCD_obs_raw_dir / new_folder / new_fname

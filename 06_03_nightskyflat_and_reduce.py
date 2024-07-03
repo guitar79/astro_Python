@@ -23,20 +23,38 @@ if not os.path.exists('{0}'.format(log_dir)):
 #######################################################
 #%%
 #######################################################
-# read all files in base directory for processing
 BASEDIR = Path("/mnt/Rdata/OBS_data") 
-DOINGDIR = Path(BASEDIR/ "2024-EXO" / "RiLA600_STX-16803_-_1bin")
-# DOINGDIR = Path(BASEDIR/ "2024-EXO" / "RiLA600_STX-16803_-_2bin")
-#DOINGDIR = Path(BASEDIR/ "2024-EXO" / "GSON300_STF-8300M_-_1bin")
+PROJECDIR = Path("/mnt/Rdata/OBS_data/2024-EXO")
+TODODIR = PROJECDIR / "_-_-_2024-05_-_GSON300_STF-8300M_-_1bin"
+TODODIR = PROJECDIR / "_-_-_2024-06_-_GSON300_STF-8300M_-_1bin"
 
-DOINGDIRs = sorted(_Python_utilities.getFullnameListOfsubDirs(DOINGDIR))
-DOINGDIRs = sorted([x for x in DOINGDIR.iterdir() if x.is_dir()])
+PROJECDIR = Path("/mnt/Rdata/OBS_data/2022-Asteroid")
+TODODIR = PROJECDIR / "GSON300_STF-8300M_-_1bin"
+TODODIR = PROJECDIR / "RiLA600_STX-16803_-_1bin"
+TODODIR = PROJECDIR / "RiLA600_STX-16803_-_2bin"
+
+# PROJECDIR = Path("/mnt/Rdata/OBS_data/2023-Asteroid")
+# TODODIR = PROJECDIR / "GSON300_STF-8300M_-_1bin"
+# TODODIR = PROJECDIR / "RiLA600_STX-16803_-_1bin"
+# TODODIR = PROJECDIR / "RiLA600_STX-16803_-_2bin"
+
+PROJECDIR = Path("/mnt/Rdata/OBS_data/2016-Variable")
+TODODIR = PROJECDIR / "-_-_-_2016-_-_RiLA600_STX-16803_-_2bin"
+
+# PROJECDIR = Path("/mnt/Rdata/OBS_data/2017-Variable")
+# TODODIR = PROJECDIR / "-_-_-_2017-_-_RiLA600_STX-16803_-_2bin"
+
+DOINGDIRs = sorted(_Python_utilities.getFullnameListOfsubDirs(TODODIR))
 print ("DOINGDIRs: ", format(DOINGDIRs))
 print ("len(DOINGDIRs): ", format(len(DOINGDIRs)))
 
-mas1 = [x for x in DOINGDIRs if "CAL-BDF" in str(x)]
-mas1 = mas1[0]/ _astro_utilities.master_dir
-print ("mas1: ", format(mas1))
+CALDIR = [x for x in DOINGDIRs if "CAL-BDF" in str(x)]
+MASTERDIR = Path(CALDIR[0]) / _astro_utilities.master_dir
+if not MASTERDIR.exists():
+    os.makedirs("{}".format(str(MASTERDIR)))
+    print("{} is created...".format(str(MASTERDIR)))
+
+print ("MASTERDIR: ", format(MASTERDIR))
 
 DOINGDIRs = sorted([x for x in DOINGDIRs if "_LIGHT_" in str(x)])
 print ("DOINGDIRs: ", format(DOINGDIRs))
@@ -55,38 +73,27 @@ print ("len(DOINGDIRs): ", len(DOINGDIRs))
 #######################################################
 
 #%%
-for DOINGDIR in DOINGDIRs[:1] :
+for DOINGDIR in DOINGDIRs[:] :
+    
     DOINGDIR = Path(DOINGDIR)
     print (DOINGDIR.parts[-1])
+    sMASTERDIR = DOINGDIR / _astro_utilities.master_dir
+    REDUCEDDIR = DOINGDIR / _astro_utilities.reduced_dir
+    REDUC_nightsky = DOINGDIR / _astro_utilities.REDUC_nightsky_dir
+
+    # if not MASTERDIR.exists():
+    # shutil.copytree(MASTERDIR, MASTERDIR, dirs_exist_ok=True)
+
+    if not sMASTERDIR.exists():
+        os.makedirs(str(sMASTERDIR))
+        print("{} is created...".format(str(sMASTERDIR)))
+
+    if not REDUC_nightsky.exists():
+        os.makedirs("{}".format(str(REDUC_nightsky)))
+        print("{} is created...".format(str(REDUC_nightsky)))
     
-    fits_in_dir = sorted(list(DOINGDIR.glob('*.fit*')))
-    #print("fits_in_dir", fits_in_dir)
-    print("len(fits_in_dir)", len(fits_in_dir))
-
-    if len(fits_in_dir) == 0 :
-        print(f"There is no fits fils in {DOINGDIR.parts[-1]}")
-        pass
-    else :     
-        MASTERDIR = DOINGDIR / _astro_utilities.master_dir
-        REDUCEDDIR = DOINGDIR / _astro_utilities.reduced_dir
-        REDUC_nightsky = DOINGDIR / _astro_utilities.REDUC_nightsky_dir
-
-        # if not MASTERDIR.exists():
-        shutil.copytree(mas1, MASTERDIR, dirs_exist_ok=True)
-
-        if not REDUC_nightsky.exists():
-            os.makedirs("{}".format(str(REDUC_nightsky)))
-            print("{} is created...".format(str(REDUC_nightsky)))
-
-        summary = yfu.make_summary(DOINGDIR/"*.fit*",
-                                    # keywords = ["FILTER", 'SIMPLE', 'BITPIX', 'NAXIS', 'NAXIS1', 'NAXIS2',
-                                    #     'EXTEND', 'BZERO', 'IMAGETYP', 'EXPOSURE', 'EXPTIME', 'DATE-LOC',
-                                    #     'DATE-OBS', 'XBINNING', 'YBINNING', 'EGAIN', 'XPIXSZ', 'YPIXSZ',
-                                    #     'INSTRUME', 'SET-TEMP', 'CCD-TEMP', 'TELESCOP', 'FOCALLEN', 'FOCRATIO',
-                                    #     'OBJECT', 'OBJCTRA', 'OBJCTDEC', 'OBJCTROT', 'ROWORDER', 'EQUINOX',
-                                    #     'SWCREATE', 'NOTES']
-                                    )
-
+    summary = yfu.make_summary(DOINGDIR/"*.fit*")
+    if summary is not None :
         print("len(summary):", len(summary))
         print("summary:", summary)
         #print(summary["file"][0])   
@@ -105,6 +112,12 @@ for DOINGDIR in DOINGDIRs[:1] :
                 try:
                     print("len(summary_light_filt):", len(summary_light_filt))
                     print("summary_light_filt:", summary_light_filt)
+                    
+                    File_Num = 80
+                    if len(summary_light_filt["file"]) > File_Num :
+                        combine_lst = summary_light_filt["file"].tolist()[:File_Num]
+                    else : 
+                        combine_lst = summary_light_filt["file"].tolist()
 
                     ccd = yfu.imcombine(
                         summary_light_filt["file"].tolist(), 
@@ -116,7 +129,7 @@ for DOINGDIR in DOINGDIRs[:1] :
                         verbose=True,
                         memlimit = 2.e+11,
                         )
-                    ccd.write(MASTERDIR / f"nightskyflat-{filt}.fits", overwrite=True)
+                    ccd.write(sMASTERDIR / f"nightskyflat-{filt}.fits", overwrite=True)
                 except Exception as err: 
                     print ('Error messgae .......')
                     #_Python_utilities.write_log(err_log_file, err)
@@ -127,7 +140,7 @@ for DOINGDIR in DOINGDIRs[:1] :
                 filt = row["FILTER"]
                 ccd = yfu.ccdred(
                     fpath, 
-                    mflatpath=str(MASTERDIR / f"nightskyflat-{filt}.fits"),
+                    mflatpath=str(sMASTERDIR / f"nightskyflat-{filt}.fits"),
                     output=REDUC_nightsky/fpath.name
                 )
             except FileNotFoundError: 
