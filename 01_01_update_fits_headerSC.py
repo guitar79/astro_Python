@@ -59,7 +59,15 @@ for DOINGDIR in DOINGDIRs[:] :
             print (row["file"])
             fpath = Path(row["file"])
             try:
-                hdul = _astro_utilities.KevinFitsUpdater(fpath)
+                hdul = _astro_utilities.KevinFitsUpdater(fpath,
+                                                # checkKEYs = ["OBJECT", "TELESCOP", "OPTIC", "CCDNAME", 'FILTER',
+                                                #             #"GAIN", "EGAIN", "RDNOISE", 
+                                                #             "PIXSCALE", "FOCALLEN", "APATURE", "CCD-TEMP",
+                                                #             'XPIXSZ', 'YPIXSZ',
+                                                #             "XBINNING", "YBINNING", "FLIPSTAT", "EXPTIME", "EXPOSURE"],
+                                                imgtype_update=False,
+                                                fil_update=True,
+                                                )
                 print("hdul: ", hdul)
 
             except Exception as err :

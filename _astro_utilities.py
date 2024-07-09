@@ -51,7 +51,7 @@ CCD_duplicate_dir = "CCD_duplicate_files"
 master_dir = "master_files_ys"
 reduced_dir = "reduced"
 reduced_dir2 = "reduced2"
-REDUC_nightsky_dir = "REDUC_nightsky"
+reduced_nightsky_dir = "reduced_nightsky"
 solved_dir = "solved"
 solved_dir2 = "solved2"
 DAOfinder_result_dir = "DAOfinder_result"
@@ -152,8 +152,8 @@ from astropy.visualization import (
     simple_norm,
 )
 
-def znorm(image, **kwargs):
-    return ImageNormalize(image, interval=ZScaleInterval(**kwargs))
+def znorm(image, stretch=LinearStretch(), **kwargs):
+    return ImageNormalize(image, interval=ZScaleInterval(**kwargs), stretch=stretch)
 
 def zimshow(
         ax,
@@ -308,7 +308,6 @@ def sky_fit(all_sky, method='mode', sky_nsigma=3, sky_iter=5, \
 #########################################
 #calPixScale
 #########################################
-
 def calPixScale (
     F_length,
     Pix_size,
@@ -386,6 +385,7 @@ def KevinFitsUpdater(
             "XBINNING", "YBINNING", "FLIPSTAT", "EXPTIME", "EXPOSURE"],
     imgtype_update=False,
     fil_update=False,
+    **kwargs
     ):
     '''
         Parameters
@@ -405,8 +405,8 @@ def KevinFitsUpdater(
     object_name = foldername_el[0].replace(" ","")
     print("object_name", object_name)
     image_type = foldername_el[1]
-    #filter_name = fname_el[2]
-    #print("filter_name", filter_name)
+    filter_name = fname_el[2].upper()
+    print("filter_name", filter_name)
     optic_name = foldername_el[5]
     print("optic_name", optic_name)
     ccd_name = foldername_el[6]
@@ -521,10 +521,8 @@ def KevinFitsUpdater(
 
         if "FLAT" in hdul[0].header["IMAGETYP"] \
             or "LIGHT" in hdul[0].header["IMAGETYP"] :
-            filter_name = fname_el[2]
-            
             if not "FILTER" in hdul[0].header :
-                hdul[0].header["FILTER"] = filter_name   #delete uper()
+                hdul[0].header["FILTER"] = filter_name
             if hdul[0].header["FILTER"] != filter_name \
                 and fil_update==True :
                 hdul[0].header["FILTER"] = filter_name
@@ -546,7 +544,6 @@ def KevinFitsUpdater(
         if (not 'TELESCOP' in hdul[0].header):
             hdul[0].header['TELESCOP'] = "-"
             print(f"The 'TELESCOP' is set {hdul[0].header['TELESCOP']}...")
-        
         ###########################
         #### 
         if (not 'XBINNING' in hdul[0].header)\
@@ -792,7 +789,8 @@ def fits_newpath(
         header=None,
         delimiter='_',
         fillnan="",
-        fileext='.fits'
+        fileext='.fit',
+        **kwargs
 ):
     ''' Gives the new path of the FITS file from header.
     Parameters
@@ -858,10 +856,15 @@ def fits_newpath(
 #KevinPSolver
 #########################################
 def KevinSolver(fpath, 
-                    #solved_dir,
+                    solved_dir = None,
+                    downsample = 4,
+                    pixscale = None,
+                    SOLVE = False, 
+                    tryASTAP = True, 
+                    tryLOCAL = True,
+                    tryASTROMETRYNET = False, 
+                    cpulimit = 30,
                     **kwargs
-                    #downsample,
-                    #pixscale,
                     ):
     """
     Parameters
@@ -875,72 +878,69 @@ def KevinSolver(fpath,
     pixscale : int
 
     """
-    if not 'downsample' in kwargs :
-        downsample = 1
-    else: 
-        downsample = kwargs['downsample']
-    print("downsample: ", downsample)
-
-    if not 'pixscale' in kwargs :
-        pixscale = 1.0
-    else : 
-        pixscale = kwargs['pixscale']
-    print(f"pixscale: {pixscale:.03f}, L: {pixscale*0.97:.03f}, U: {pixscale*1.03:.03f}")
-
     fpath = Path(fpath)
     
-    try :
-        if not (fpath.parent/f'{fpath.stem}.fits').exists() :
-            # solve command.
-            # solve-field fullname.fit -O --cpulimit 120 --nsigma 15 -u app -L 1.2 -U 1.3 -N new_filename.fits -p --no-plots -D output_directory {0}
-            with subprocess.Popen(['solve-field', 
-                                '-O', #--overwrite: overwrite output files if they already exist
-                                #'-g', #--guess-scale: try to guess the image scale from the FITS headers
-                                '--cpulimit', '10',  #will make it give up after 30 seconds.
-                                #'--nsigma', '15',
-                                '--downsample', f'{str(downsample)}',
-                                '-u', 'app', #'--scale-units', 'arcsecperpix', #pixel scale
-                                '-L', f'{pixscale*0.99:.03f}', 
-                                '-U', f'{pixscale*1.01:.03f}',   
-                                '-N', f'{fpath.parent/ fpath.stem}.fits', #--new-fits <filename>: output filename of the new FITS file containingthe WCS header; "none" to not create this file
-                                #-p', 
-                                '--no-plots',#: don't create any plots of the results
-                                #'-D', str(SOLVEDDIR),
-                                str(fpath)
-                                ], 
-                                stdout=subprocess.PIPE) as proc :
-                print(proc.stdout.read())
+    if pixscale is None :
+        hdul = fits.open(fpath)
+        if 'PIXSCALE' in hdul[0].header:
+            pixscale = hdul[0].header['PIXSCALE']
+        else : 
+            pixscale = calPixScale(hdul[0].header['FOCALLEN'], 
+                                        hdul[0].header['XPIXSZ'],
+                                        hdul[0].header['XBINNING'])
+        hdul.close()
+    print(f"pixscale: {pixscale:.03f}, L: {pixscale*0.97:.03f}, U: {pixscale*1.03:.03f}")
     
-    except Exception as err :
-        print('{1} ::: {2} with {0} ...'\
-            .format(fpath, datetime.now(), err))  
+    # try :
+    SOLVE, ASTAP, LOCAL = checkPSolve(fpath)
+    print("SOLVE:", SOLVE, "ASTAP:", ASTAP, "LOCAL:", LOCAL)
+    if not SOLVE and tryASTAP == True : 
+        print(f"Trying to solve using ASTAP:\n {fpath.name} ")
+        #https://www.hnsky.org/astap.htm#astap_command_line
+        with subprocess.Popen(['astap', 
+                    '-f', str(fpath), 
+                    #'-o', 
+                    #'-fov',
+                    '-z', f'{str(downsample)}',
+                    '-wcs',
+                    '-analyse2',
+                    '-update',],
+                    stdout=subprocess.PIPE) as proc :
+            print(proc.stdout.read())
 
-    try :
-        if not (fpath.parent/f'{fpath.stem}.fits').exists():
-            #https://www.hnsky.org/astap.htm#astap_command_line
-            with subprocess.Popen(['astap', 
-                                '-f', str(fpath), 
-                                # '-o', 
-                                #'-fov',
-                                '-z', f'{str(downsample)}',
-                                '-wcs',
-                                '-analyse2',
-                                '-update',],
-                                stdout=subprocess.PIPE) as proc :
-                print(proc.stdout.read())
-            
-            if (fpath.parent/f'{fpath.stem}.wcs').exists() \
-                and (fpath.parent/f'{fpath.stem}.ini').exists():
-                shutil.copy(str(fpath), f"{fpath.parent / fpath.stem}.fits")
-                print(f"{fpath.name} is solved using ASTAP...")
+    SOLVE, ASTAP, LOCAL = checkPSolve(fpath)
+    print("SOLVE:", SOLVE, "ASTAP:", ASTAP, "LOCAL:", LOCAL)
+    if not SOLVE and tryLOCAL == True : 
+        print(f"Trying to solve using LOCAL:\n {fpath.name} ")
+        # solve-field -O -g --cpulimit 15 --nsigma 15 --downsample 4 -u app -L 0.6 -U 0.63 --no-plots
+        with subprocess.Popen(['solve-field', 
+                            '-O', #--overwrite: overwrite output files if they already exist
+                            '-g', #--guess-scale: try to guess the image scale from the FITS headers
+                            '--cpulimit', f'{cpulimit}',  #will make it give up after 30 seconds.
+                            '--nsigma', '15',
+                            '--downsample', f'{str(downsample)}',
+                            '-u', 'app', #'--scale-units', 'arcsecperpix', #pixel scale
+                            '-L', f'{pixscale*0.95:.03f}', 
+                            '-U', f'{pixscale*1.05:.03f}',   
+                            # '-N', f'{fpath.parent / fpath.stem}.new', #--new-fits <filename>: output filename of the new FITS file containingthe WCS header; "none" to not create this file
+                            # '-N', f'{fpath}', #--new-fits <filename>: output filename of the new FITS file containingthe WCS header; "none" to not create this file
+                            #-p', 
+                            '--no-plots',#: don't create any plots of the results
+                            #'-D', str(SOLVEDDIR),
+                            str(fpath)
+                            ], 
+                            stdout=subprocess.PIPE) as proc :
+            print(proc.stdout.read())
         
-    except Exception as err :
-        print('{1} ::: {2} with {0} ...'\
-            .format(fpath, datetime.now(), err))
+        if (fpath.parent/f'{fpath.stem}.new').exists():
+            #shutil.move(str(fpath.parent/f'{fpath.stem}.new'), str(fpath.parent/f'{fpath.stem}.fits'))
+            shutil.move(str(fpath.parent/f'{fpath.stem}.new'), str(fpath))
+            # print(str(fpath.parent/f'{fpath.stem}.new'), str(fpath))
+            print(f"{str(fpath)} is removed...")
 
-    if fpath.exists() and (fpath.parent/f'{fpath.stem}.fits').exists():
-        os.remove(str(fpath))
-        print(f"{str(fpath)} is removed...")
+    # except
+    return 0
+        
 
 
 #%%
@@ -948,10 +948,10 @@ def KevinSolver(fpath,
 # LOCALPSolver
 #########################################
 def LOCALPSolver(fpath, 
-                    #solved_dir,
+                    solved_dir = None,
+                    downsample = 2,
+                    pixscale = None,
                     **kwargs
-                    #downsample,
-                    #pixscale,
                     ):
     """
     Parameters
@@ -966,21 +966,14 @@ def LOCALPSolver(fpath,
 
     """
     fpath = Path(fpath)
-    if not 'downsample' in kwargs :
-        downsample = 1
-    else: 
-        downsample = kwargs['downsample']
-    print("downsample: ", downsample)
 
-    if not 'pixscale' in kwargs :
+    if pixscale is None :
         hdul = fits.open(fpath)
         if 'PIXSCALE' in hdul[0].header:
             pixscale = hdul[0].header['PIXSCALE']
         else : 
             pixscale = calPixScale(hdul[0].header['FOCALLEN'], hdul[0].header['XPIXSZ'])
         hdul.close()
-    else : 
-        pixscale = kwargs['pixscale']
     print(f"pixscale: {pixscale:.03f}, L: {pixscale*0.97:.03f}, U: {pixscale*1.03:.03f}")
     
     # try :
@@ -991,11 +984,12 @@ def LOCALPSolver(fpath,
                                 #'-g', #--guess-scale: try to guess the image scale from the FITS headers
                                 '--cpulimit', '10',  #will make it give up after 30 seconds.
                                 #'--nsigma', '15',
+                                '--depth', '20,30,40',
                                 '--downsample', f'{str(downsample)}',
                                 '-u', 'app', #'--scale-units', 'arcsecperpix', #pixel scale
                                 '-L', f'{pixscale*0.99:.03f}', 
                                 '-U', f'{pixscale*1.01:.03f}',   
-                                '-N', f'{fpath.parent/ fpath.stem}.new', #--new-fits <filename>: output filename of the new FITS file containingthe WCS header; "none" to not create this file
+                                # '-N', f'{fpath.parent/ fpath.stem}.new', #--new-fits <filename>: output filename of the new FITS file containingthe WCS header; "none" to not create this file
                                 #-p', 
                                 '--no-plots',#: don't create any plots of the results
                                 #'-D', str(SOLVEDDIR),
@@ -1021,10 +1015,10 @@ def LOCALPSolver(fpath,
 #ASTAPPSolver
 #########################################
 def ASTAPSolver(fpath, 
-                    #solved_dir,
+                    solved_dir = None,
+                    downsample = 2,
+                    pixscale = None,
                     **kwargs
-                    #downsample,
-                    #pixscale,
                     ):
     """
     Parameters
@@ -1039,22 +1033,27 @@ def ASTAPSolver(fpath,
 
     """
     fpath = Path(fpath)
-    if not 'downsample' in kwargs :
-        downsample = 1
-    else: 
-        downsample = kwargs['downsample']
-    print("downsample: ", downsample)
     
-    if not 'pixscale' in kwargs :
+    # if not 'pixscale' in kwargs :
+    #     hdul = fits.open(fpath)
+    #     if 'PIXSCALE' in hdul[0].header:
+    #         pixscale = hdul[0].header['PIXSCALE']
+    #     else : 
+    #         pixscale = calPixScale(hdul[0].header['FOCALLEN'], hdul[0].header['XPIXSZ'])
+    #     hdul.close()
+    # else : 
+    #     pixscale = kwargs['pixscale']
+    # print(f"pixscale: {pixscale:.03f}, L: {pixscale*0.97:.03f}, U: {pixscale*1.03:.03f}")
+    
+    if pixscale is None :
         hdul = fits.open(fpath)
         if 'PIXSCALE' in hdul[0].header:
             pixscale = hdul[0].header['PIXSCALE']
         else : 
             pixscale = calPixScale(hdul[0].header['FOCALLEN'], hdul[0].header['XPIXSZ'])
         hdul.close()
-    else : 
-        pixscale = kwargs['pixscale']
     print(f"pixscale: {pixscale:.03f}, L: {pixscale*0.97:.03f}, U: {pixscale*1.03:.03f}")
+
     
     #try :
     #https://www.hnsky.org/astap.htm#astap_command_line
@@ -1063,22 +1062,20 @@ def ASTAPSolver(fpath,
                         #'-o', 
                         #'-fov',
                         '-z', f'{str(downsample)}',
-                        '-wcs',
+                        # '-wcs',
                         '-analyse2',
                         '-update',],
                         stdout=subprocess.PIPE) as proc :
         print(proc.stdout.read())
     
-    if (fpath.parent/f'{fpath.stem}.wcs').exists() \
-        and (fpath.parent/f'{fpath.stem}.ini').exists() \
-        and (fpath.parent/f'{fpath.stem}.tmp').exists() :
-        #shutil.move(str(fpath), f"{fpath.parent / fpath.stem}.fits")
-        print(f"{fpath.parent / fpath.stem}.tmp")
-        print(f"{fpath.parent / fpath.stem}.fits")
-        #shutil.copy(f"{fpath.parent / fpath.stem}.tmp", f"{fpath.parent / fpath.stem}.fits")
-        #shutil.move(f"{fpath.parent / fpath.stem}.tmp", f"{fpath.parent / fpath.stem}.fits")
-        shutil.move(f"{fpath.parent / fpath.stem}.tmp", f"{fpath}")
-        print(f"{fpath.name} is solved using ASTAP...")
+    # if (fpath.parent/f'{fpath.stem}.tmp').exists() :
+    #     #shutil.move(str(fpath), f"{fpath.parent / fpath.stem}.fits")
+    #     print(f"{fpath.parent / fpath.stem}.tmp")
+    #     print(f"{fpath.parent / fpath.stem}.fits")
+    #     #shutil.copy(f"{fpath.parent / fpath.stem}.tmp", f"{fpath.parent / fpath.stem}.fits")
+    #     #shutil.move(f"{fpath.parent / fpath.stem}.tmp", f"{fpath.parent / fpath.stem}.fits")
+    #     shutil.move(f"{fpath.parent / fpath.stem}.tmp", f"{fpath}")
+    #     print(f"{fpath.name} is solved using ASTAP...")
     
     #except Exception as err :
         # print('{1} ::: {2} with {0} ...'\
@@ -1088,7 +1085,92 @@ def ASTAPSolver(fpath,
     #     os.remove(str(fpath))
     #     print(f"{str(fpath)} is removed...")
 
+#%%
+#########################################
+#AstrometrynetSolver
+#########################################
+def AstrometrynetSolver(fpath, 
+                    solved_dir = None,
+                    downsample = 2,
+                    pixscale = None,
+                    solve_timeout = 600,
+                    submission_id = None,
+                    ast = AstrometryNet(),
+                    ast_api_key = 'bldvwzzuvktnwfph',
+                    **kwargs
+                    ):
+    ''' Gives the new path of the FITS file from header.
+    Parameters
+    ----------
+    DOINGDIR: pathlike
+        The path to the original .
+    summary : dataframe
+        
+    Returns
+    -------
+    
+    '''
+    ast = ast
 
+    # ger from nova.astrometry.net
+    ast.api_key = ast_api_key #must changed...
+
+    fpath = Path(fpath)
+    print(fpath)
+    hdul = fits.open(fpath)
+
+    if 'PIXSCALE' in hdul[0].header:
+        PIXc = hdul[0].header['PIXSCALE']
+    else : 
+        PIXc = calPixScale(hdul[0].header['FOCALLEN'], 
+                                            hdul[0].header['XPIXSZ'],
+                                            hdul[0].header['XBINNING'])
+    print("PIXc : ", PIXc)
+    hdul.close()
+
+    SOLVE, ASTAP, LOCAL = checkPSolve(fpath)
+    print("SOLVE:", SOLVE, "ASTAP:", ASTAP, "LOCAL:", LOCAL)
+
+    if SOLVE :
+        print(f"{fpath.name} is already solved...")
+    else :             
+        try_again = True                
+            
+        while try_again:
+            try:
+                if not submission_id:
+                    wcs_header = ast.solve_from_image(str(fpath),
+                                        force_image_upload=True,
+                                        solve_timeout = solve_timeout,
+                                        submission_id=submission_id)
+                else:
+                    wcs_header = ast.monitor_submission(submission_id,
+                                                        solve_timeout = solve_timeout)
+            except TimeoutError as e:
+                submission_id = e.args[1]
+            else:
+                # got a result, so terminate
+                try_again = False
+
+        if not wcs_header:
+            # Code to execute when solve fails
+            print("fits file solving failure...")
+
+        else:
+            # Code to execute when solve succeeds
+            print("fits file solved successfully...")
+
+            with fits.open(str(fpath), mode='update') as hdul:
+                for card in wcs_header :
+                    try: 
+                        print(card, wcs_header[card], wcs_header.comments[card])
+                        hdul[0].header.set(card, wcs_header[card], wcs_header.comments[card])
+                    except : 
+                        print(card)
+                hdul.flush
+
+            print(str(fpath)+" is created...")
+    return 0
 
 #%%
 #########################################
@@ -1115,7 +1197,8 @@ def checkPSolve(fpath,
 
     fpath = Path(fpath)
     hdul = fits.open(fpath)
-    PSKeys = ["CD1_1", "CD1_2", "CD2_1", "CD2_2", ]
+    PSKeys = ["CD1_1", "CD1_2", "CD2_1", "CD2_2", 
+              "A_0_0", "A_0_1", "A_1_0","A_1_1",]
     
     chk = 0
     SOLVE = False
@@ -1125,7 +1208,7 @@ def checkPSolve(fpath,
     for PSKey in PSKeys :
         if PSKey in hdul[0].header : 
             chk += 1
-    if chk == 4 : 
+    if chk > 3 : 
         SOLVE = True
         LOCAL = False
         ASTAP = False
@@ -1145,8 +1228,13 @@ def checkPSolve(fpath,
         SOLVE = False
         ASTAP = False
         LOCAL = False
-
     hdul.close()
+    remove_ext  = [".ini", ".axy", ".corr", ".match", ".rdls", ".solved", "-indx.xyls", ".solved"]
+    for ext in remove_ext : 
+        if (fpath.parent / f"{fpath.stem}{ext}").exists() :
+            os.remove(fpath.parent / f"{fpath.stem}{ext}")
+            print(f"{fpath.parent}/{fpath.stem}{ext} is removed...")
+
     return SOLVE, ASTAP, LOCAL
 
 #%%
@@ -1154,10 +1242,16 @@ def checkPSolve(fpath,
 # makingAstrometrySH
 #########################################
 def makingAstrometrySH(fpath, 
-                    solved_dir,
-                    downsample,
-                    pixscale,
-                    ): 
+                        solved_dir = None,
+                        downsample = 4,
+                        pixscale = None,
+                        SOLVE = False, 
+                        tryASTAP = True, 
+                        tryLOCAL = True,
+                        tryASTROMETRYNET = False, 
+                        cpulimit = 30,
+                        **kwargs
+                        ): 
     """
     Parameters
     ----------
@@ -1170,33 +1264,33 @@ def makingAstrometrySH(fpath,
     pixscale : int
 
     """
-    if downsample is None :
-        pixscale = 1
-    print("downsample: ", downsample)
-
-    if pixscale is None :
-        pixscale = 1.0
-    print("pixscale: ", pixscale)
-    
-
     fpath = Path(fpath)
-    SOLVEDDIR = Path(solved_dir)
     
-    result = f'solve-field -O --cpulimit 10 --nsigma 15 -p {str(fpath)} '
-    if downsample is not None:
-        result += f'--downsample {str(downsample)} '
-    if pixscale is not None:
-        result += f'-u app -L {pixscale*0.9:.02f} -U {pixscale*1.1:.02f} '
-    if solved_dir is not None:
-        result += f'-D {str(SOLVEDDIR)} '
-    result += '\n'
+    if pixscale is None :
+        hdul = fits.open(fpath)
+        if 'PIXSCALE' in hdul[0].header:
+            pixscale = hdul[0].header['PIXSCALE']
+        else : 
+            pixscale = calPixScale(hdul[0].header['FOCALLEN'], 
+                                        hdul[0].header['XPIXSZ'],
+                                        hdul[0].header['XBINNING'])
+        hdul.close()
+    print(f"pixscale: {pixscale:.03f}, L: {pixscale*0.97:.03f}, U: {pixscale*1.03:.03f}")
     
-    print("result:", result)
+    # try :
+    SOLVE, ASTAP, LOCAL = checkPSolve(fpath)
+    print("SOLVE:", SOLVE, "ASTAP:", ASTAP, "LOCAL:", LOCAL)
+    if not SOLVE : 
+        #solve-field -O -g --cpulimit 15 --nsigma 15 --downsample 4 -u app -L 0.6 -U 0.63 --no-plots
+        result += f"solve-field -O -g --cpulimit {cpulimit} --nsigma 15 --downsample {downsample} -u app  -L f'{pixscale*0.95:.03f}'  -U f'{pixscale*1.01:.03f}' --no-plots {str(fpath)}\n"
+        print("result:", result)
     return result
 
 #%%        
 # =============================================================================
-def get_RADEC_offset(hdul):
+def get_RADEC_offset(hdul
+                     
+                     ):
     """
     Parameters
     ----------
@@ -1363,7 +1457,7 @@ def reduceLightFrame(
         MASTERDIR,
         OWrite=False,
         **kwargs
-):
+        ):
     ''' Gives the new path of the FITS file from header.
     Parameters
     ----------
@@ -1413,6 +1507,7 @@ def reduceLightFrame(
                     # flat_norm_value=1,  # 1 = skip normalization, None = normalize by mean
                     # overwrite=OWrite,
                     )
+                print (f"Reduce Reduce {fpath.name} +++...")
 
     return 0
 
@@ -1441,7 +1536,7 @@ def makeNightskyflatReduceLightFrame(
     print (DOINGDIR.parts[-1])
     sMASTERDIR = DOINGDIR / master_dir
     REDUCEDDIR = DOINGDIR / reduced_dir
-    REDUC_nightsky = DOINGDIR / REDUC_nightsky_dir
+    REDUCNSKYDIR = DOINGDIR / reduced_nightsky_dir
 
     # if not MASTERDIR.exists():
     # shutil.copytree(MASTERDIR, MASTERDIR, dirs_exist_ok=True)
@@ -1450,9 +1545,9 @@ def makeNightskyflatReduceLightFrame(
         os.makedirs(str(sMASTERDIR))
         print("{} is created...".format(str(sMASTERDIR)))
 
-    if not REDUC_nightsky.exists():
-        os.makedirs("{}".format(str(REDUC_nightsky)))
-        print("{} is created...".format(str(REDUC_nightsky)))
+    if not REDUCNSKYDIR.exists():
+        os.makedirs("{}".format(str(REDUCNSKYDIR)))
+        print("{} is created...".format(str(REDUCNSKYDIR)))
     
     summary = yfu.make_summary(DOINGDIR/"*.fit*")
     if summary is not None :
@@ -1480,27 +1575,43 @@ def makeNightskyflatReduceLightFrame(
                         combine_lst = summary_light_filt["file"].tolist()[:File_Num]
                     else : 
                         combine_lst = summary_light_filt["file"].tolist()
-                    ccd = yfu.imcombine(
-                        combine_lst, 
-                        combine="med",
-                        scale="avg", 
-                        scale_to_0th=False, 
-                        reject="sc", 
-                        sigma=2.5,
-                        verbose=True,
-                        memlimit = 2.e+11,
-                        )
-                    ccd.write(sMASTERDIR / f"nightskyflat-{filt}.fits", overwrite=True)
+                    try : 
+                        ccd = yfu.imcombine(
+                                            combine_lst, 
+                                            combine="med",
+                                            scale="avg", 
+                                            scale_to_0th=False, 
+                                            reject="sc", 
+                                            sigma=2.5,
+                                            verbose=True,
+                                            memlimit = 2.e+11,
+                                            )
+                        ccd.write(sMASTERDIR / f"nightskyflat-{filt}.fits", overwrite=True)
+                        print (f"Create Create nightskyflat-{filt}.fits +++...")
+                    except :
+                        ccd = yfu.imcombine(
+                                            combine_lst, 
+                                            combine="med",
+                                            scale="avg", 
+                                            scale_to_0th=False, 
+                                            reject="sc", 
+                                            # sigma=2.5,
+                                            verbose=True,
+                                            memlimit = 2.e+11,
+                                            )
+                        ccd.write(sMASTERDIR / f"nightskyflat-{filt}.fits", overwrite=True)
+                        print (f"Create Create nightskyflat-{filt}.fits +++...")
 
         for _, row in summary_light.iterrows():
             fpath = Path(row["file"])
             filt = row["FILTER"]
-            if (not (REDUC_nightsky/fpath.name).exists()) or OWrite==True :
+            if (not (REDUCNSKYDIR/fpath.name).exists()) or OWrite==True :
                 ccd = yfu.ccdred(
-                    fpath, 
-                    mflatpath=str(sMASTERDIR / f"nightskyflat-{filt}.fits"),
-                    output=REDUC_nightsky/fpath.name,
-                    )
+                                fpath, 
+                                mflatpath=str(sMASTERDIR / f"nightskyflat-{filt}.fits"),
+                                output=REDUCNSKYDIR/fpath.name,
+                                )
+                print (f"Reduce using nightskyflat {fpath.name} +++...")
     return 0
     
 #%%
@@ -1525,13 +1636,11 @@ def solvingLightFrame(
     '''
     
     DOINGDIR = Path(DOINGDIR)
-    print("DOINGDIR", DOINGDIR)
-    if "RiLA600_STX-16803_" in str(DOINGDIR.parts[-2]) :
-        DOINGDIR = DOINGDIR / REDUC_nightsky_dir
-    if "GSON300_STF-8300M_" in str(DOINGDIR.parts[-2]) :
-        DOINGDIR = DOINGDIR / reduced_dir
+    SOLVINGDIR = DOINGDIR / reduced_dir
+    SOLVINGDIR = DOINGDIR / reduced_nightsky_dir
+    # SOLVINGDIR = DOINGDIR
     
-    summary = yfu.make_summary(DOINGDIR/"*.fit*")
+    summary = yfu.make_summary(SOLVINGDIR/"*.fit*")
     if summary is not None :
         print("len(summary):", len(summary))
         print("summary:", summary)
@@ -1553,139 +1662,120 @@ def solvingLightFrame(
                                                     hdul[0].header['XBINNING'])
             print("PIXc : ", PIXc)
             hdul.close()
+            
 
-            SOLVE, ASTAP, LOCAL = checkPSolve(fpath)
-            print("SOLVE:", SOLVE, "ASTAP:", ASTAP, "LOCAL:", LOCAL)
-
-            if not SOLVE : 
-                print(f"{fpath.name} is solving now by ASTAP")
-                solved = ASTAPSolver(fpath, 
+            solved = KevinSolver(fpath, 
                                     #str(SOLVEDDIR), 
-                                    downsample = 2,
-                                    pixscale = PIXc,
-                                            )
+                                    # downsample = 2,
+                                    # pixscale = PIXc,
+                                    tryASTAP = True, 
+                                    tryLOCAL = True,
+                                    tryASTROMETRYNET = False, 
+                                    )
 
-                SOLVE, ASTAP, LOCAL = checkPSolve(fpath)
-                print("SOLVE:", SOLVE, "ASTAP:", ASTAP, "LOCAL:", LOCAL)
-
-                if not SOLVE :
-                    print(f"{fpath.name} is solving now by LOCAL")
-                    if 'PIXSCALE' in hdul[0].header:
-                        PIXc = hdul[0].header['PIXSCALE']
-                    else : 
-                        PIXc = calPixScale(hdul[0].header['FOCALLEN'], 
-                                                        hdul[0].header['XPIXSZ'],
-                                                        hdul[0].header['XBINNING'])
-                    print("PIXc : ", PIXc)
-
-                    solved = LOCALPSolver(fpath, 
-                                        #str(SOLVEDDIR), 
-                                        downsample = 2,
-                                        pixscale = PIXc,
-                                        )
     return 0
 
 
-#%%
-#########################################
-#solvingAstrometrynet
-#########################################
-def solvingAstrometrynet(        
-        DOINGDIR,
-        OWrite=False,
-        **kwargs
-        ):
-    ''' Gives the new path of the FITS file from header.
-    Parameters
-    ----------
-    DOINGDIR: pathlike
-        The path to the original .
-    summary : dataframe
+# #%%
+# #########################################
+# #solvingAstrometrynet
+# #########################################
+# def solvingAstrometrynet(        
+#         DOINGDIR,
+#         OWrite=False,
+#         **kwargs
+#         ):
+#     ''' Gives the new path of the FITS file from header.
+#     Parameters
+#     ----------
+#     DOINGDIR: pathlike
+#         The path to the original .
+#     summary : dataframe
         
-    Returns
-    -------
+#     Returns
+#     -------
     
-    '''
-    ast = AstrometryNet()
+#     '''
+#     ast = AstrometryNet()
 
-    # ger from nova.astrometry.net
-    ast.api_key = 'bldvwzzuvktnwfph' #must changed...
-    DOINGDIR = Path(DOINGDIR)
-    print("DOINGDIR", DOINGDIR)
-    if "RiLA600_STX-16803_" in str(DOINGDIR.parts[-2]) :
-        DOINGDIR = DOINGDIR / REDUC_nightsky_dir
-    if "GSON300_STF-8300M_" in str(DOINGDIR.parts[-2]) :
-        DOINGDIR = DOINGDIR / reduced_dir
+#     # ger from nova.astrometry.net
+#     ast.api_key = 'bldvwzzuvktnwfph' #must changed...
+#     DOINGDIR = Path(DOINGDIR)
+#     print("DOINGDIR", DOINGDIR)
+#     if "RiLA600_STX-16803_" in str(DOINGDIR.parts[-2]) :
+#         DOINGDIR = DOINGDIR / reduced_nightsky_dir
+#     if "GSON300_STF-8300M_" in str(DOINGDIR.parts[-2]) :
+#         DOINGDIR = DOINGDIR / reduced_dir
     
-    summary = yfu.make_summary(DOINGDIR/"*.fit*")
-    if summary is not None :
-        print("len(summary):", len(summary))
-        print("summary:", summary)
-        #print(summary["file"][0])  
-        df_light = summary.loc[summary["IMAGETYP"] == "LIGHT"].copy()
-        df_light = df_light.reset_index(drop=True)
-        print("df_light:\n{}".format(df_light))
+#     summary = yfu.make_summary(DOINGDIR/"*.fit*")
+#     if summary is not None :
+#         print("len(summary):", len(summary))
+#         print("summary:", summary)
+#         #print(summary["file"][0])  
+#         df_light = summary.loc[summary["IMAGETYP"] == "LIGHT"].copy()
+#         df_light = df_light.reset_index(drop=True)
+#         print("df_light:\n{}".format(df_light))
 
-        for _, row  in df_light.iterrows():
-            fpath = Path(row["file"])
-            print(fpath)
-            hdul = fits.open(fpath)
+#         for _, row  in df_light.iterrows():
+#             fpath = Path(row["file"])
+#             print(fpath)
+#             hdul = fits.open(fpath)
 
-            submission_id = None
-            solve_timeout = 600
+#             submission_id = None
+#             solve_timeout = 600
 
-            if 'PIXSCALE' in hdul[0].header:
-                PIXc = hdul[0].header['PIXSCALE']
-            else : 
-                PIXc = calPixScale(hdul[0].header['FOCALLEN'], 
-                                                    hdul[0].header['XPIXSZ'],
-                                                    hdul[0].header['XBINNING'])
-            print("PIXc : ", PIXc)
-            hdul.close()
+#             if 'PIXSCALE' in hdul[0].header:
+#                 PIXc = hdul[0].header['PIXSCALE']
+#             else : 
+#                 PIXc = calPixScale(hdul[0].header['FOCALLEN'], 
+#                                                     hdul[0].header['XPIXSZ'],
+#                                                     hdul[0].header['XBINNING'])
+#             print("PIXc : ", PIXc)
+#             hdul.close()
 
-            SOLVE, ASTAP, LOCAL = checkPSolve(fpath)
-            print("SOLVE:", SOLVE, "ASTAP:", ASTAP, "LOCAL:", LOCAL)
+#             SOLVE, ASTAP, LOCAL = checkPSolve(fpath)
+#             print("SOLVE:", SOLVE, "ASTAP:", ASTAP, "LOCAL:", LOCAL)
 
-            if SOLVE :
-                print(f"{fpath.name} is already solved...")
-            else :             
-                try_again = True                
+#             if SOLVE :
+#                 print(f"{fpath.name} is already solved...")
+#             else :             
+#                 try_again = True                
                     
-                while try_again:
-                    try:
-                        if not submission_id:
-                            wcs_header = ast.solve_from_image(str(fpath),
-                                                force_image_upload=True,
-                                                solve_timeout = solve_timeout,
-                                                submission_id=submission_id)
-                        else:
-                            wcs_header = ast.monitor_submission(submission_id,
-                                                                solve_timeout = solve_timeout)
-                    except TimeoutError as e:
-                        submission_id = e.args[1]
-                    else:
-                        # got a result, so terminate
-                        try_again = False
+#                 while try_again:
+#                     try:
+#                         if not submission_id:
+#                             wcs_header = ast.solve_from_image(str(fpath),
+#                                                 force_image_upload=True,
+#                                                 solve_timeout = solve_timeout,
+#                                                 submission_id=submission_id)
+#                         else:
+#                             wcs_header = ast.monitor_submission(submission_id,
+#                                                                 solve_timeout = solve_timeout)
+#                     except TimeoutError as e:
+#                         submission_id = e.args[1]
+#                     else:
+#                         # got a result, so terminate
+#                         try_again = False
 
-                if not wcs_header:
-                    # Code to execute when solve fails
-                    print("fits file solving failure...")
+#                 if not wcs_header:
+#                     # Code to execute when solve fails
+#                     print("fits file solving failure...")
 
-                else:
-                    # Code to execute when solve succeeds
-                    print("fits file solved successfully...")
+#                 else:
+#                     # Code to execute when solve succeeds
+#                     print("fits file solved successfully...")
 
-                    with fits.open(str(fpath), mode='update') as hdul:
-                        for card in wcs_header :
-                            try: 
-                                print(card, wcs_header[card], wcs_header.comments[card])
-                                hdul[0].header.set(card, wcs_header[card], wcs_header.comments[card])
-                            except : 
-                                print(card)
-                        hdul.flush
+#                     with fits.open(str(fpath), mode='update') as hdul:
+#                         for card in wcs_header :
+#                             try: 
+#                                 print(card, wcs_header[card], wcs_header.comments[card])
+#                                 hdul[0].header.set(card, wcs_header[card], wcs_header.comments[card])
+#                             except : 
+#                                 print(card)
+#                         hdul.flush
 
-                    print(str(fpath)+" is created...")
-    return 0
+#                     print(str(fpath)+" is created...")
+#     return 0
 
 #%%
 #########################################
@@ -1736,7 +1826,7 @@ def checkAsteroids(DOINGDIR,
         os.makedirs("{}".format(str(ASTRESULTDIR)))
         print("{} is created...".format(str(ASTRESULTDIR)))
 
-    DOINGDIR = DOINGDIR / REDUC_nightsky_dir
+    DOINGDIR = DOINGDIR / reduced_nightsky_dir
 
     summary_light = summary.loc[summary["IMAGETYP"] == "LIGHT"].copy()
     summary_light = summary_light.reset_index(drop=True) 

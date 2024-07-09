@@ -38,9 +38,6 @@ from photutils.aperture import CircularAperture as CAp
 from photutils.aperture import CircularAnnulus as CAn
 from photutils.aperture import aperture_photometry as apphot
 
-from astroquery.simbad import Simbad
-from urllib.parse import urlencode
-
 plt.rcParams.update({'figure.max_open_warning': 0})
 
 #%%
@@ -58,10 +55,8 @@ if not os.path.exists('{0}'.format(log_dir)):
 #######################################################
 # read all files in base directory for processing
 BASEDIR = Path("/mnt/Rdata/OBS_data") 
-DOINGDIR = Path(BASEDIR/ "asteroid" / "RiLA600_STX-16803_-_1bin")
-DOINGDIR = Path(BASEDIR/ "asteroid" / "GSON300_STF-8300M_-_1bin")
-# DOINGDIR = Path(BASEDIR/ "asteroid" / "good")
-# DOINGDIR = Path(BASEDIR/"2023OA/asteroids_teacher")
+DOINGDIR = Path(BASEDIR/ "2024-EXO" / "RiLA600-STX-16803_-_1bin")
+DOINGDIR = Path(BASEDIR/ "2024-EXO" / "GSON300_STF-8300M_-_1bin")
 
 DOINGDIRs = sorted(_Python_utilities.getFullnameListOfsubDirs(DOINGDIR))
 DOINGDIRs = sorted([x for x in DOINGDIR.iterdir() if x.is_dir()])
@@ -95,9 +90,12 @@ def mag_inst(flux, ferr):
     merr   = 2.5/ np.log(10) * ferr / flux
     return m_inst, merr
 
-import matplotlib
-matplotlib.use('Agg')
 #####################################################################
+# Our object (will be queried to JPL HORIZONS)
+#OBJNAME = '2159' # 
+# OBJNAME =hdul[0].header["object"]
+# print("OBJNAME :", OBJNAME)
+
 # Observed location
 LOCATION = dict(lon=127.005, lat=37.308889, elevation=101)
 Suwon = location = EarthLocation(lon=127.005 * u.deg, 
@@ -121,20 +119,22 @@ Mag_UP = 16
 #######################################################
 
 #%%
-for DOINGDIR in DOINGDIRs[:] :
+for DOINGDIR in DOINGDIRs[:1] :
     DOINGDIR = Path(DOINGDIR)
     print("DOINGDIR", DOINGDIR)
 
-    DIFFPRESULTDIR = DOINGDIR / _astro_utilities.Diff_Phot_dir
+    INSTRESULTDIR = DOINGDIR / _astro_utilities.Inst_Mag_dir
 
-    if "RiLA600_STX-16803_" in str(DOINGDIR.parts[-2]) :
+    print(str(DOINGDIR.parts[-2]) == "RiLA600_STX-16803_-_1bin")
+    if str(DOINGDIR.parts[-2]) == "RiLA600_STX-16803_-_1bin" :
         DOINGDIR = DOINGDIR / _astro_utilities.reduced_nightsky_dir
+    print(str(DOINGDIR.parts[-2]) == "GSON300_STF-8300M_-_1bin")
     if str(DOINGDIR.parts[-2]) == "GSON300_STF-8300M_-_1bin" :
         DOINGDIR = DOINGDIR / _astro_utilities.reduced_dir
 
-    if not DIFFPRESULTDIR.exists():
-        os.makedirs("{}".format(str(DIFFPRESULTDIR)))
-        print("{} is created...".format(str(DIFFPRESULTDIR)))
+    if not INSTRESULTDIR.exists():
+        os.makedirs("{}".format(str(INSTRESULTDIR)))
+        print("{} is created...".format(str(INSTRESULTDIR)))
     
     fits_in_dir = sorted(list(DOINGDIR.glob('*.fit*')))
     #print("fits_in_dir", fits_in_dir)
@@ -150,23 +150,20 @@ for DOINGDIR in DOINGDIRs[:] :
         print("len(summary):", len(summary))
         #print("summary:", summary)
         #print(summary["file"][0])
-        # df_light = summary.loc[summary["FILTER"] == flt].copy()
         df_light = summary.loc[summary["IMAGETYP"] == "LIGHT"].copy()
         df_light = df_light.reset_index(drop=True)
         #print("df_light:\n{}".format(df_light))
 
-        try:
-
-            for _, row  in df_light.iterrows():
+        for _, row  in df_light.iterrows():
+            try :
 
                 fpath = Path(row["file"])
+                print(f"starting... {fpath}")
                 hdul = fits.open(fpath)
-                ccd = yfu.load_ccd(fpath)
-                flt = hdul[0].header["filter"]
 
                 SOLVE, ASTAP, LOCAL = _astro_utilities.checkPSolve(fpath)
                 print(SOLVE, ASTAP, LOCAL)
-                
+
                 if SOLVE :
                     wcs = WCS(hdul[0].header)
                     # It is used as a rough estimate, so no need to be accurate:
@@ -204,163 +201,33 @@ for DOINGDIR in DOINGDIRs[:] :
                     #print(f"t_start: {t_start}, t_expos: {t_expos}, t_middle: {t_middle}")
                     
                     cent_coord = yfu.center_radec(ccd_or_header=hdul[0].header, 
-                                                center_of_image=True)
+                                                    center_of_image=True)
 
-                    offset_RA = (cent_coord.ra.to(u.deg) - hdul[0].header['RA']*u.deg).to(u.arcmin)
-                    offset_DEC = (cent_coord.dec.to(u.deg) - hdul[0].header['DEC']*u.deg).to(u.arcmin) 
+                    offset_RA = ((cent_coord.ra.to(u.deg) - hdul[0].header['RA']*u.deg)).to(u.arcmin)
+                    offset_DEC = ((cent_coord.dec.to(u.deg) - hdul[0].header['DEC']*u.deg)).to(u.arcmin) 
                     altaz = AltAz(obstime=t_middle, location=Suwon)   
                     cent_aa = cent_coord.transform_to(altaz)
-                    offset_AZ = (cent_aa.az.to(u.deg) - hdul[0].header['CENTAZ']*u.deg).to(u.arcmin)
-                    offset_ALT = (cent_aa.alt.to(u.deg) - hdul[0].header['CENTALT']*u.deg).to(u.arcmin)
+                    offset_AZ = ((cent_aa.az.to(u.deg) - hdul[0].header['CENTAZ']*u.deg)).to(u.arcmin)
+                    offset_ALT = ((cent_aa.alt.to(u.deg) - hdul[0].header['CENTALT']*u.deg)).to(u.arcmin)
 
                     # Get the radius of the smallest circle which encloses all the pixels
                     rad = yfu.fov_radius(header=hdul[0].header, unit=u.deg)
                     print("rad: {}".format(rad))
-                    
 
-                    cent_coord = yfu.center_radec(ccd_or_header=hdul[0].header, 
-                                        center_of_image=True)
-                    pos_sky = SkyCoord(cent_coord, unit='deg')
-                    pos_pix = pos_sky.to_pixel(wcs=wcs)
-
-                    print("pos_sky: {}".format(pos_sky))
-                    print("pos_pix: {}".format(pos_pix))
-
-
-                    #%%
-                    # Position of the telescope FOV center 
-                    # (RA/DEC of the pixel at the center)
-                    cent_coord = yfu.center_radec(ccd_or_header=hdul[0].header, 
-                                                center_of_image=True)
-                    print("cent_coord: {}".format(cent_coord))
-
-                    # Get the radius of the smallest circle which encloses all the pixels
-                    rad = yfu.fov_radius(header=hdul[0].header, 
-                                        unit=u.deg)
-                    print("rad: {}".format(rad))
-
-
-
-                    r_fov = yfu.fov_radius(ccd.header+ccd.wcs.to_header())
-                    print(r_fov)
-                    ps1 = ypu.PanSTARRS1(ccd.wcs.wcs.crval[0]*u.deg, ccd.wcs.wcs.crval[1]*u.deg, radius=r_fov,
-                                        column_filters={"rmag":"10.0..14.5", "e_rmag":"<0.10", "nr":">5"})
-
-                    df_stars_all = ps1.query()
-                    df_stars_all = df_stars_all.to_pandas()
-
-                    isnear = ypu.organize_ps1_and_isnear(
-                                        ps1, 
-                                        # header=ccd.header+ccd.wcs.to_header(), 
-                                        ccd.header+ccd.wcs.to_header(), 
-                                        # bezel=5*FWHM_INIT*PIX2ARCSEC.value,
-                                        # nearby_obj_minsep=5*FWHM_INIT*PIX2ARCSEC.value,
-                                        bezel=5*FWHM_INIT*PIX2ARCSEC,
-                                        nearby_obj_minsep=5*FWHM_INIT*PIX2ARCSEC,
-                                        group_crit_separation=6*FWHM_INIT
-                                    )
-                    df_stars = ps1.queried.to_pandas()
-                    df_stars = df_stars.dropna(subset=["gmag", "rmag"])
-                    print(df_stars.columns)
-
-                    pos_stars = np.array([df_stars["RAJ2000"].array, df_stars["DEJ2000"].array]).T
-                    pos_stars = SkyCoord(pos_stars, **SKYC_KW).to_pixel(wcs)
-                    pos_stars = np.transpose(pos_stars)
-                    pos_stars
-
-                    pos_stars_all = np.array([df_stars_all["RAJ2000"].array, df_stars_all["DEJ2000"].array]).T
-                    pos_stars_all = SkyCoord(pos_stars_all, **SKYC_KW).to_pixel(wcs)
-                    pos_stars_all = np.transpose(pos_stars_all)
-                    pos_stars_all
-
-
-
-                    # ap_stars = CAp(positions=pos_stars, r=20)
-                    # ap_stars_all = CAp(positions=pos_stars_all, r=20)
-
-                    # fig_set = plt.figure(figsize=val_figsize)
-                    # ax1 = plt.subplot2grid((1,2), (0,0),
-                    #                     fig=fig_set)
-                    # im1 = _tool_visualization.norm_imshow(ax1, hdul[0].data, 
-                    #                                     zscale=True)
-                    # ax1.set_title('Pixel coordinate system', fontsize=9)
-                    # ax1.tick_params(labelsize=8)
-                    # ap_stars_all.plot(ax1, color='w', lw=2)
-                    # ap_stars.plot(ax1, color='r', lw=2)
-                    # plt.colorbar(im1, ax = ax1, fraction=val_fraction, pad=0.04)
-
-                    # ax2 = plt.subplot2grid((1,2), (0,1),
-                    #                     projection=wcs,
-                    #                     fig=fig_set)
-                    # im2 = _tool_visualization.norm_imshow(ax2, hdul[0].data, 
-                    #                                     zscale=True)
-                    # ax2.set_title('World coordinate system', fontsize=9)
-                    # ap_stars_all.plot(ax2, color='w', lw=2)
-                    # ap_stars.plot(ax2, color='r', lw=2)
-
-                    # ax2.coords.grid(True, color='white', ls=':')
-                    # ax2.coords['ra'].set_axislabel('Right Ascension (J2000)', minpad=0.5, fontsize=8)
-                    # ax2.coords['ra'].set_ticklabel_position('bl')
-                    # ax2.coords['dec'].set_axislabel('Declination (J2000)', minpad=0.4, fontsize=8)
-                    # ax2.coords['dec'].set_ticklabel_position('bl')
-                    # ax2.coords['ra'].set_major_formatter('hh:mm')
-                    # ax2.coords['dec'].set_major_formatter('dd:mm')
-                    # ax2.coords['ra'].display_minor_ticks(True)
-                    # ax2.coords['dec'].display_minor_ticks(True)
-                    # ax2.coords['ra'].set_minor_frequency(1)
-                    # ax2.coords['dec'].set_minor_frequency(1)
-                    # ax2.tick_params(labelsize=8)
-
-                    # ax2.annotate(f"image center (RA, DEC): ({cent_coord.ra:.03f}, {cent_coord.dec:.03f})\ntelescope center (RA, DEC): ({hdul[0].header['RA']*u.deg:.03f}, {hdul[0].header['DEC']*u.deg:.03f})\noffset (RA, DEC): ({offset_RA:.03f}, {offset_DEC:.03f})\noffset (AZ, ALT): ({offset_AZ:.03f}, {offset_ALT:.03f})",
-                    #             xy=(0, 0), xytext=(0.6, -0.1),
-                    #             xycoords='axes fraction',
-                    #             va='top', ha='left',
-                    #             fontsize = 6)
-
-                    # plt.colorbar(im2, ax = ax2, fraction=val_fraction, pad=0.04)
-                    # plt.suptitle(f"fname: {fpath.name}\nPS1 Query: Dropping Nearby Stars")
-
-                    # plt.tight_layout()
-                    # plt.savefig(f"{DIFFPRESULTDIR/fpath.stem}_PS1_nearby.png")
-                    # # plt.show()
-                    # plt.close()
-
-                    
 
                     fig_set = plt.figure(figsize=val_figsize)
-
                     ax1 = plt.subplot2grid((1,2), (0,0),
                                         fig=fig_set)
                     im1 = _tool_visualization.zimshow(ax1, hdul[0].data, )
                     ax1.set_title('Pixel coordinate system', fontsize=9)
                     ax1.tick_params(labelsize=8)
+                    plt.colorbar(im1, ax = ax1, fraction=val_fraction, pad=0.04)
 
                     ax2 = plt.subplot2grid((1,2), (0,1),
                                         projection=wcs,
                                         fig=fig_set)
-                    im2 = _tool_visualization.zimshow(ax2, hdul[0].data, )
-
-                    _phot_stars = []
-
-                    for i, row in df_stars.iterrows():
-                        pos_star = SkyCoord(row["RAJ2000"], row["DEJ2000"], **SKYC_KW).to_pixel(wcs)
-                        ap = CAp([pos_star[0], pos_star[1]], r=R_AP)
-                        an = CAn([pos_star[0], pos_star[1]], r_in=R_IN, r_out=R_OUT)
-                        _phot_star = ypu.apphot_annulus(hdul[0].data, ap, an, error=yfu.errormap(hdul[0].data))
-                        _phot_star[f"{flt}mag"] = row[f"{flt}mag"]
-                        _phot_star[f"e_{flt}mag"] = row[f"e_{flt}mag"]
-                        _phot_star["grcolor"] = row["grcolor"]
-                        _phot_star["e_grcolor"] = row["e_grcolor"]
-                        _phot_star["id"] = i
-                        _phot_star["objID"] = int(row["objID"])
-                        _phot_stars.append(_phot_star)
-                        ax1.text(pos_star[0]+10, pos_star[1]+10, f"star {i}", fontsize=8)
-                        ap.plot(ax1, color="orange")
-                        an.plot(ax1, color="w")
-                        ax2.text(pos_star[0]+10, pos_star[1]+10, f"star {i}", fontsize=8)
-                        ap.plot(ax2, color="orange")
-                        an.plot(ax2, color="w")
-
+                    im2 = _tool_visualization.zimshow(ax2, 
+                                                hdul[0].data, )
                     ax2.set_title('World coordinate system', fontsize=9)
                     ax2.coords.grid(True, color='white', ls=':')
                     ax2.coords['ra'].set_axislabel('Right Ascension (J2000)', minpad=0.5, fontsize=8)
@@ -371,73 +238,23 @@ for DOINGDIR in DOINGDIRs[:] :
                     ax2.coords['dec'].set_major_formatter('dd:mm')
                     ax2.coords['ra'].display_minor_ticks(True)
                     ax2.coords['dec'].display_minor_ticks(True)
-                    ax2.coords['ra'].set_minor_frequency(2)
-                    ax2.coords['dec'].set_minor_frequency(2)
+                    ax2.coords['ra'].set_minor_frequency(1)
+                    ax2.coords['dec'].set_minor_frequency(1)
                     ax2.tick_params(labelsize=8)
 
-                    cbar1 = plt.colorbar(im1, ax = ax1, fraction=val_fraction, pad=0.04)
-                    cbar2 = plt.colorbar(im2, ax = ax2, fraction=val_fraction, pad=0.04, )
-                    cbar1.ax.tick_params(labelsize=8)
-                    cbar2.ax.tick_params(labelsize=8)
+                    plt.colorbar(im2, ax = ax2, fraction=val_fraction, pad=0.04)
+                    plt.suptitle(f"fname: {fpath.name}")
 
-                    plt.suptitle(f"fname: {fpath.name}\n Result of PS1 query for differential photometry", fontsize=10,)
-
+                    ax2.annotate(f"image center (RA, DEC): ({cent_coord.ra:.03f}, {cent_coord.dec:.03f})\ntelescope center (RA, DEC): ({hdul[0].header['RA']*u.deg:.03f}, {hdul[0].header['DEC']*u.deg:.03f})\noffset (RA, DEC): ({offset_RA:.03f}, {offset_DEC:.03f})\noffset (AZ, ALT): ({offset_AZ:.03f}, {offset_ALT:.03f})",
+                                xy=(0, 0), xytext=(0.6, -0.1),
+                                xycoords='axes fraction',
+                                va='top', ha='left',
+                                fontsize = 6)
                     plt.tight_layout()
-                    plt.savefig(f"{DIFFPRESULTDIR}/{fpath.stem}_PS1_query.png")
-
+                    plt.savefig(f"{INSTRESULTDIR/fpath.stem}_Mount_error.png")
                     # plt.show()
                     plt.close()
-
-
-
-                    phot_stars = pd.concat(_phot_stars)
-                    # phot_stars = phot_stars.loc[phot_stars["objID"] != 110823405221754720].copy()  # star 15
-                    # SEE THE LAST CELL IN THIS FILE FOR DESCRIPTION
-                    print(len(phot_stars))
-                    print(phot_stars)
-
-                    phot_stars_na = phot_stars.dropna()
-                    print(len(phot_stars_na))
-                    print(phot_stars_na)
-
-                    fig, axs = plt.subplots(1, 3, figsize=(15, 5), sharex=False, sharey=False, gridspec_kw=None)
-
-                    axs[0].plot(phot_stars_na[f"{flt}mag"], phot_stars_na["mag"] - phot_stars_na[f"{flt}mag"], '+')
-                    axs[1].plot(phot_stars_na["grcolor"], phot_stars_na["mag"] - phot_stars_na[f"{flt}mag"], '+')
-                    _xx = np.linspace(10, 15)
-                    axs[2].plot(phot_stars_na[f"{flt}mag"], phot_stars_na["mag"], '+')
-                    y0 = np.median(phot_stars_na["mag"] - phot_stars_na[f"{flt}mag"])
-                    axs[2].plot(_xx, _xx + y0,
-                            label=f"{flt}_inst = {flt} magnitude + ({y0:.01f})"
-                            )
-
-                    for _, row in phot_stars_na.iterrows():
-                        axs[0].text(row[f"{flt}mag"], row["mag"] - row[f"{flt}mag"], int(row["id"]), fontsize=8)
-                        axs[1].text(row["grcolor"], row["mag"] - row[f"{flt}mag"], int(row["id"]), fontsize=8)
-                        axs[2].text(row[f"{flt}mag"], row["mag"], int(row["id"]), fontsize=8)
-                        
-                    axs[0].set(
-                        xlabel=f"{flt} magnitude (PS1 to {flt} filter by Tonry+2012)",
-                        ylabel=f"{flt}_inst - {flt}"
-                    )
-                    axs[1].set(
-                        xlabel="g - r (PS1)",
-                        ylabel=f"{flt}_inst - {flt}"
-                    )
-                    axs[2].set(
-                        xlabel =f"{flt} magnitude (PS1 to {flt} filter by Tonry+2012)",
-                        ylabel =f"{flt}_inst"
-                    )
-                    axs[2].legend()
-
-                    plt.suptitle(f"fname: {fpath.name}\n PS1 check for differential photometry", fontsize=10,)
-
-                    plt.tight_layout()
-                    plt.savefig(f"{DIFFPRESULTDIR}/{fpath.stem}_standardization.png")
-
-                    # plt.show()
-                    plt.close()
-
+                
 
 
                     FWHM = FWHM_INIT
@@ -446,31 +263,38 @@ for DOINGDIR in DOINGDIRs[:] :
 
                     DAOfind = DAOStarFinder(
                                             fwhm = FWHM,
-                                            threshold=thresh,   # In reality, FWHM must be measured a priori using, e.g., ``ginga``
-                                            sharplo=0.2, sharphi=1.0,   # default values 0.2 and 1.0
-                                            roundlo=-1.0, roundhi=1.0,  # default values -1 and +1
-                                            sigma_radius=1.5,           # default values 1.5
-                                            ratio=1.0,                  # 1.0: circular gaussian
-                                            exclude_border=True         # To exclude sources near edges
+                                            threshold = thresh,
+                                            # sharplo = 0.2, sharphi = 1.0,  # default values: sharplo=0.2, sharphi=1.0,
+                                            # roundlo = 0, roundhi = 1.0,  # default values -1 and +1
+                                            # sigma_radius = 3,           # default values 1.5
+                                            # ratio = 1.0,                  # 1.0: circular gaussian
+                                            # exclude_border = True         # To exclude sources near edges
                                             )
 
                     DAOfound = DAOfind(hdul[0].data)
                     print("len(DAOfound) :",len(DAOfound))
                     print(DAOfound.colnames)
-
-                    # DAOfound.write(f"{DIFFPRESULTDIR/fpath.stem}_DAOStarfinder_fwhm_{FWHM}.csv",
-                    #                             overwrite = True,
-                    #                             format='ascii.fast_csv')
+                    DAOfound
+                    DAOfound.write(f"{INSTRESULTDIR/fpath.stem}_DAOStarfinder_fwhm_{FWHM}.csv",
+                                                overwrite = True,
+                                                format='ascii.fast_csv')
                     df_DAO = DAOfound.to_pandas()
                     print(type(df_DAO))
                     df_DAO
 
-
-
-
                     pos = np.transpose((DAOfound['xcentroid'], DAOfound['ycentroid']))
+
                     apert = CAp(pos, r=R_AP)
+                    #apert
                     annul = CAn(positions=pos, r_in= R_IN, r_out=R_OUT)
+                    #annul
+
+                    wcs = WCS(hdul[0].header)
+                    print("wcs :", wcs)
+                    print("type(wcs) :", type(wcs))
+                    print("dir(wcs) :", dir(wcs))
+
+                    wcs.pixel_n_dim
 
                     fig_set = plt.figure(figsize=val_figsize)
 
@@ -521,7 +345,7 @@ for DOINGDIR in DOINGDIRs[:] :
                         xycoords='axes fraction', textcoords='offset points')
 
                     plt.tight_layout()
-                    plt.savefig(f"{DIFFPRESULTDIR/fpath.stem}_DAOStarfinder_fwhm_{FWHM}.png")
+                    plt.savefig(f"{INSTRESULTDIR/fpath.stem}_DAOStarfinder_fwhm_{FWHM}.png")
 
                     # plt.show()
                     plt.close()
@@ -529,12 +353,14 @@ for DOINGDIR in DOINGDIRs[:] :
 
                     apphot_result = apphot(hdul[0].data, apert, method='center')
                     print(type(apphot_result))
-                    # df_apphot = pd.DataFrame()
-                    # apphot_result
+
+                    df_apphot = pd.DataFrame()
+                    apphot_result
                     df_apphot = apphot_result.to_pandas()
-                    print(type(df_apphot))
                     df_apphot
 
+                    ap_area  = apert.area
+                    ap_area
 
 
                     cutsizes = 49
@@ -617,16 +443,12 @@ for DOINGDIR in DOINGDIRs[:] :
                                         fontsize=9)
                             
                             plt.tight_layout()
-                            # plt.savefig(f"{DIFFPRESULTDIR/fpath.stem}_Star_{idx:03d}.png")
+                            plt.savefig(f"{INSTRESULTDIR/fpath.stem}_Star_{idx:03d}.png")
                             # plt.show()
-                            plt.close()
+                            # plt.close()
                         except : 
                             continue
 
-                    
-
-                    ap_area  = apert.area
-                    ap_area
 
                     # since our `annul` has many elements,
                     mask_apert = (apert.to_mask(method='center'))
@@ -634,8 +456,6 @@ for DOINGDIR in DOINGDIRs[:] :
 
                     mag_ann  = np.zeros(len(apphot_result))
                     merr_ann = np.zeros(len(apphot_result))
-
-
 
                     for i in range(len(apphot_result)):
                         annul_weighted = mask_annul[i].multiply(hdul[0].data)
@@ -666,6 +486,35 @@ for DOINGDIR in DOINGDIRs[:] :
                     # df_apphot.to_csv(f"{INSTRESULTDIR}/{fpath.stem}_m_inst.csv")
                     df_apphot
 
+                    df_apphot_sub = df_apphot.dropna()
+                    df_apphot_sub
+
+                    fig, ax = plt.subplots()
+
+                    for idx, row in df_apphot_sub.iterrows():
+
+                        ax.errorbar(df_apphot_sub["id"], 
+                                    df_apphot_sub["mag_ann"], yerr=df_apphot_sub["merr_ann"],
+                                    marker='x',
+                                    ls='none',
+                                    #ms=10,
+                                    capsize=3)
+
+                    ax.invert_yaxis()
+                    # ax.set_ylim(ymin=-20, ymax=0)
+
+                    ax.annotate(f'filename: {fpath.stem}', fontsize=7,
+                        xy=(0, 0), xytext=(0, -40), va='top', ha='left',
+                        xycoords='axes fraction', textcoords='offset points')
+
+                    plt.xlabel('Star ID')
+                    plt.ylabel('Instrumental mag')
+                    plt.grid(ls=':')
+
+                    plt.savefig(f"{INSTRESULTDIR}/{fpath.stem}_m_inst_chart.png")
+                    # plt.show()
+                    plt.close()
+
 
                     sky_coord = wcs.pixel_to_world(df_apphot['xcenter'], df_apphot['ycenter'])
                     sky_coord
@@ -676,7 +525,7 @@ for DOINGDIR in DOINGDIRs[:] :
                     len(sky_coord.ra)
                     # df_apphot["RA2000"] = sky_coord.ra
                     # df_apphot["RA2000"]
-                    df_RADEC = pd.DataFrame({"RAJ2000": sky_coord.ra.degree, "DEJ2000": sky_coord.dec.degree})
+                    df_RADEC = pd.DataFrame({"RA2000": sky_coord.ra.degree, "DEC2000": sky_coord.dec.degree})
                     df_RADEC
                     #type(df_RADEC["RA2000"][0])
 
@@ -685,55 +534,72 @@ for DOINGDIR in DOINGDIRs[:] :
                     df_apphot['t_start'] = t_start
                     df_apphot['t_expos'] = t_expos
                     df_apphot['t_middle'] = t_middle
-                    df_apphot["filter"] = f"{flt}"
 
-                    df_apphot["y0"] = y0
+                    df_apphot.to_csv(f"{INSTRESULTDIR}/{fpath.stem}_m_inst.csv")
                     df_apphot
 
-                    
-                    df_apphot[f"{flt}_magnitude"] = df_apphot["mag_ann"] - df_apphot["y0"]
+                    fig_set = plt.figure(figsize=val_figsize)
 
-                    df_apphot.to_csv(f"{DIFFPRESULTDIR}/{fpath.stem}_result_photometry.csv")
-                    df_apphot[f"{flt}_magnitude"]
+                    ax1 = plt.subplot2grid((1,2), (0,0),
+                                        fig=fig_set)
+                    im1 = _tool_visualization.zimshow(ax1, hdul[0].data, )
+                    ax1.set_title('Pixel coordinate system', fontsize=9)
+                    ax1.tick_params(labelsize=8)
 
-                    df_apphot_sub = df_apphot.dropna()
-                    df_apphot_sub
+                    ax2 = plt.subplot2grid((1,2), (0,1),
+                                        projection=wcs,
+                                        fig=fig_set)
+                    im2 = _tool_visualization.zimshow(ax2, hdul[0].data, )
 
+                    for i, row in df_apphot.iterrows():
+                        ap = CAp((row['xcenter'], row['ycenter']), r=R_AP)
+                        an = CAn((row['xcenter'], row['ycenter']), r_in=R_IN, r_out=R_OUT)
+                        ax1.text(row['xcenter']+10, row['ycenter']+10, f"star {i} {row['mag_ann']:.02f}", fontsize=7)
+                        ap.plot(ax1, color="orange")
+                        an.plot(ax1, color="w")
+                        ax2.text(row['xcenter']+10, row['ycenter']+10, f"star {i}", fontsize=8)
+                        ap.plot(ax2, color="orange")
+                        an.plot(ax2, color="w")
 
-                    fig, axs = plt.subplots(1, 2, figsize=(10, 5), sharex=False, sharey=False, gridspec_kw=None)
+                    ax2.set_title('World coordinate system', fontsize=9)
+                    ax2.coords.grid(True, color='white', ls=':')
+                    ax2.coords['ra'].set_axislabel('Right Ascension (J2000)', minpad=0.5, fontsize=8)
+                    ax2.coords['ra'].set_ticklabel_position('bl')
+                    ax2.coords['dec'].set_axislabel('Declination (J2000)', minpad=0.4, fontsize=8)
+                    ax2.coords['dec'].set_ticklabel_position('bl')
+                    ax2.coords['ra'].set_major_formatter('hh:mm')
+                    ax2.coords['dec'].set_major_formatter('dd:mm')
+                    ax2.coords['ra'].display_minor_ticks(True)
+                    ax2.coords['dec'].display_minor_ticks(True)
+                    ax2.coords['ra'].set_minor_frequency(2)
+                    ax2.coords['dec'].set_minor_frequency(2)
+                    ax2.tick_params(labelsize=8)
 
-                    for idx, row in df_apphot_sub.iterrows():
+                    cbar1 = plt.colorbar(im1, ax = ax1, fraction=val_fraction, pad=0.04)
+                    cbar2 = plt.colorbar(im2, ax = ax2, fraction=val_fraction, pad=0.04, )
+                    cbar1.ax.tick_params(labelsize=8)
+                    cbar2.ax.tick_params(labelsize=8)
 
-                        axs[0].errorbar(df_apphot_sub["id"], 
-                                    df_apphot_sub[f"{flt}_magnitude"], yerr=df_apphot_sub["merr_ann"],
-                                    marker='x',
-                                    ls='none',
-                                    #ms=10,
-                                    capsize=3)
+                    plt.suptitle(f"fname: {fpath.name}\n Instrumental magnitude", fontsize=10,)
 
-                    axs[0].invert_yaxis()
+                    ax1.annotate(f'FWHM: {FWHM}', fontsize=8,
+                        xy=(0, 0), xytext=(-10, -30), va='top', ha='left',
+                        xycoords='axes fraction', textcoords='offset points')
 
-                    style = {'edgecolor': 'white', 'linewidth': 3}
-                    axs[1].hist(df_apphot_sub[f"{flt}_magnitude"], 
-                                **style)
-                        
-                    axs[0].set(
-                        xlabel='Star ID',
-                        ylabel=f"{flt}mag"
-                    )
-                    axs[1].set(
-                        xlabel=f"{flt}mag",
-                        ylabel="number of stars"
-                    )
+                    ax1.annotate(f'Sky threshold: {thresh:.02f}', fontsize=8,
+                        xy=(0, 0), xytext=(-10, -40), va='top', ha='left',
+                        xycoords='axes fraction', textcoords='offset points')
 
-                    plt.suptitle(f"fname: {fpath.name}\n Result of differential photometry", fontsize=10,)
+                    ax1.annotate(f'Number of star(s): {len(DAOfound)}', fontsize=8,
+                        xy=(0, 0), xytext=(-10, -50), va='top', ha='left',
+                        xycoords='axes fraction', textcoords='offset points')
 
                     plt.tight_layout()
-                    plt.savefig(f"{DIFFPRESULTDIR}/{fpath.stem}_result_photometry_chart.png")
+                    plt.savefig(f"{INSTRESULTDIR}/{fpath.stem}_M_inst.png")
 
                     # plt.show()
                     plt.close()
-               
-        except Exception as err: 
-            print("Err :", err)
-            continue
+            
+            except Exception as err: 
+                print("Err :", err)
+                continue

@@ -111,7 +111,7 @@ for DOINGDIR in DOINGDIRs[:] :
     ASTRESULTDIR = DOINGDIR / _astro_utilities.Asteroid_result_dir
 
     if str(DOINGDIR.parts[-2]) == "RiLA600_STX-16803_-_1bin" :
-        DOINGDIR = DOINGDIR / _astro_utilities.REDUC_nightsky_dir
+        DOINGDIR = DOINGDIR / _astro_utilities.reduced_nightsky_dir
     if str(DOINGDIR.parts[-2]) == "GSON300_STF-8300M_-_1bin" :
         DOINGDIR = DOINGDIR / _astro_utilities.reduced_dir
 
