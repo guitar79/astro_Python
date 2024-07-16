@@ -862,6 +862,7 @@ def KevinSolver(fpath,
                     SOLVE = False, 
                     tryASTAP = True, 
                     tryLOCAL = True,
+                    makeLOCALsh = True,
                     tryASTROMETRYNET = False, 
                     cpulimit = 30,
                     **kwargs
@@ -895,50 +896,50 @@ def KevinSolver(fpath,
     SOLVE, ASTAP, LOCAL = checkPSolve(fpath)
     print("SOLVE:", SOLVE, "ASTAP:", ASTAP, "LOCAL:", LOCAL)
     if not SOLVE and tryASTAP == True : 
-        print(f"Trying to solve using ASTAP:\n {fpath.name} ")
+        print(f"Trying to solve using ASTAP:\n   {fpath.name} ")
         #https://www.hnsky.org/astap.htm#astap_command_line
-        with subprocess.Popen(['astap', 
-                    '-f', str(fpath), 
-                    #'-o', 
-                    #'-fov',
-                    '-z', f'{str(downsample)}',
-                    '-wcs',
-                    '-analyse2',
-                    '-update',],
-                    stdout=subprocess.PIPE) as proc :
-            print(proc.stdout.read())
+        ASTAPSolver(fpath, 
+                    # solved_dir = None,
+                    # downsample = 2,
+                    # pixscale = None,
+                    )
+        
+        # with subprocess.Popen(['astap', 
+        #             '-f', str(fpath), 
+        #             #'-o', 
+        #             #'-fov',
+        #             '-z', f'{str(downsample)}',
+        #             '-wcs',
+        #             '-analyse2',
+        #             '-update',],
+        #             stdout=subprocess.PIPE) as proc :
+        #     print(proc.stdout.read())
 
     SOLVE, ASTAP, LOCAL = checkPSolve(fpath)
     print("SOLVE:", SOLVE, "ASTAP:", ASTAP, "LOCAL:", LOCAL)
     if not SOLVE and tryLOCAL == True : 
-        print(f"Trying to solve using LOCAL:\n {fpath.name} ")
+        print(f"Trying to solve using LOCAL:\n   {fpath.name} ")
         # solve-field -O -g --cpulimit 15 --nsigma 15 --downsample 4 -u app -L 0.6 -U 0.63 --no-plots
-        with subprocess.Popen(['solve-field', 
-                            '-O', #--overwrite: overwrite output files if they already exist
-                            '-g', #--guess-scale: try to guess the image scale from the FITS headers
-                            '--cpulimit', f'{cpulimit}',  #will make it give up after 30 seconds.
-                            '--nsigma', '15',
-                            '--downsample', f'{str(downsample)}',
-                            '-u', 'app', #'--scale-units', 'arcsecperpix', #pixel scale
-                            '-L', f'{pixscale*0.95:.03f}', 
-                            '-U', f'{pixscale*1.05:.03f}',   
-                            # '-N', f'{fpath.parent / fpath.stem}.new', #--new-fits <filename>: output filename of the new FITS file containingthe WCS header; "none" to not create this file
-                            # '-N', f'{fpath}', #--new-fits <filename>: output filename of the new FITS file containingthe WCS header; "none" to not create this file
-                            #-p', 
-                            '--no-plots',#: don't create any plots of the results
-                            #'-D', str(SOLVEDDIR),
-                            str(fpath)
-                            ], 
-                            stdout=subprocess.PIPE) as proc :
-            print(proc.stdout.read())
-        
-        if (fpath.parent/f'{fpath.stem}.new').exists():
-            #shutil.move(str(fpath.parent/f'{fpath.stem}.new'), str(fpath.parent/f'{fpath.stem}.fits'))
-            shutil.move(str(fpath.parent/f'{fpath.stem}.new'), str(fpath))
-            # print(str(fpath.parent/f'{fpath.stem}.new'), str(fpath))
-            print(f"{str(fpath)} is removed...")
+        LOCALPSolver(fpath, 
+                    # solved_dir = None,
+                    # downsample = 2,
+                    # pixscale = None,
+                    # cpulimit = 30,
+                    )
+    
+    SOLVE, ASTAP, LOCAL = checkPSolve(fpath)
+    print("SOLVE:", SOLVE, "ASTAP:", ASTAP, "LOCAL:", LOCAL)
+    
+    if not SOLVE and makeLOCALsh == True : 
+        print(f"Adding to sh:\n   {fpath.name} ")
+        makingAstrometrySH(fpath, 
+                        # solved_dir = None,
+                        # downsample = 4,
+                        # pixscale = None,
+                        # SOLVE = False, 
+                        cpulimit = 30,
+                        )
 
-    # except
     return 0
         
 
@@ -951,6 +952,7 @@ def LOCALPSolver(fpath,
                     solved_dir = None,
                     downsample = 2,
                     pixscale = None,
+                    cpulimit = 30,
                     **kwargs
                     ):
     """
@@ -976,20 +978,19 @@ def LOCALPSolver(fpath,
         hdul.close()
     print(f"pixscale: {pixscale:.03f}, L: {pixscale*0.97:.03f}, U: {pixscale*1.03:.03f}")
     
-    # try :
-        # solve command.
-        # solve-field fullname.fit -O --cpulimit 120 --nsigma 15 -u app -L 1.2 -U 1.3 -N new_filename.fits -p --no-plots -D output_directory {0}
+    # solve command.
+    # solve-field fullname.fit -O --cpulimit 120 --nsigma 15 -u app -L 1.2 -U 1.3 -N new_filename.fits -p --no-plots -D output_directory {0}
     with subprocess.Popen(['solve-field', 
                                 '-O', #--overwrite: overwrite output files if they already exist
-                                #'-g', #--guess-scale: try to guess the image scale from the FITS headers
-                                '--cpulimit', '10',  #will make it give up after 30 seconds.
-                                #'--nsigma', '15',
-                                '--depth', '20,30,40',
+                                '-g', #--guess-scale: try to guess the image scale from the FITS headers
+                                '--cpulimit', f'{cpulimit}',  #will make it give up after 30 seconds.
+                                '--nsigma', '15',
                                 '--downsample', f'{str(downsample)}',
                                 '-u', 'app', #'--scale-units', 'arcsecperpix', #pixel scale
-                                '-L', f'{pixscale*0.99:.03f}', 
-                                '-U', f'{pixscale*1.01:.03f}',   
-                                # '-N', f'{fpath.parent/ fpath.stem}.new', #--new-fits <filename>: output filename of the new FITS file containingthe WCS header; "none" to not create this file
+                                '-L', f'{pixscale*0.95:.03f}', 
+                                '-U', f'{pixscale*1.05:.03f}',   
+                                # '-N', f'{fpath.parent / fpath.stem}.new', #--new-fits <filename>: output filename of the new FITS file containingthe WCS header; "none" to not create this file
+                                # '-N', f'{fpath}', #--new-fits <filename>: output filename of the new FITS file containingthe WCS header; "none" to not create this file
                                 #-p', 
                                 '--no-plots',#: don't create any plots of the results
                                 #'-D', str(SOLVEDDIR),
@@ -997,15 +998,9 @@ def LOCALPSolver(fpath,
                                 ], 
                                 stdout=subprocess.PIPE) as proc :
         print(proc.stdout.read())
-    
-    # except Exception as err :
-    #     print('{1} ::: {2} with {0} ...'\
-    #         .format(fpath, datetime.now(), err))  
 
     if fpath.exists() and (fpath.parent/f'{fpath.stem}.new').exists():
-        #os.remove(str(fpath))
         #print(str(fpath))
-        #shutil.move(str(fpath.parent/f'{fpath.stem}.new'), str(fpath.parent/f'{fpath.stem}.fits'))
         shutil.move(str(fpath.parent/f'{fpath.stem}.new'), str(fpath))
         print(str(fpath.parent/f'{fpath.stem}.new'), str(fpath))
         #print(f"{str(fpath)} is removed...")
@@ -1033,18 +1028,7 @@ def ASTAPSolver(fpath,
 
     """
     fpath = Path(fpath)
-    
-    # if not 'pixscale' in kwargs :
-    #     hdul = fits.open(fpath)
-    #     if 'PIXSCALE' in hdul[0].header:
-    #         pixscale = hdul[0].header['PIXSCALE']
-    #     else : 
-    #         pixscale = calPixScale(hdul[0].header['FOCALLEN'], hdul[0].header['XPIXSZ'])
-    #     hdul.close()
-    # else : 
-    #     pixscale = kwargs['pixscale']
-    # print(f"pixscale: {pixscale:.03f}, L: {pixscale*0.97:.03f}, U: {pixscale*1.03:.03f}")
-    
+
     if pixscale is None :
         hdul = fits.open(fpath)
         if 'PIXSCALE' in hdul[0].header:
@@ -1062,28 +1046,13 @@ def ASTAPSolver(fpath,
                         #'-o', 
                         #'-fov',
                         '-z', f'{str(downsample)}',
-                        # '-wcs',
+                        '-wcs',
                         '-analyse2',
                         '-update',],
                         stdout=subprocess.PIPE) as proc :
         print(proc.stdout.read())
     
-    # if (fpath.parent/f'{fpath.stem}.tmp').exists() :
-    #     #shutil.move(str(fpath), f"{fpath.parent / fpath.stem}.fits")
-    #     print(f"{fpath.parent / fpath.stem}.tmp")
-    #     print(f"{fpath.parent / fpath.stem}.fits")
-    #     #shutil.copy(f"{fpath.parent / fpath.stem}.tmp", f"{fpath.parent / fpath.stem}.fits")
-    #     #shutil.move(f"{fpath.parent / fpath.stem}.tmp", f"{fpath.parent / fpath.stem}.fits")
-    #     shutil.move(f"{fpath.parent / fpath.stem}.tmp", f"{fpath}")
-    #     print(f"{fpath.name} is solved using ASTAP...")
-    
-    #except Exception as err :
-        # print('{1} ::: {2} with {0} ...'\
-        #     .format(fpath, datetime.now(), err))
 
-    # if fpath.exists() and (fpath.parent/f'{fpath.stem}.fits').exists():
-    #     os.remove(str(fpath))
-    #     print(f"{str(fpath)} is removed...")
 
 #%%
 #########################################
@@ -1198,7 +1167,8 @@ def checkPSolve(fpath,
     fpath = Path(fpath)
     hdul = fits.open(fpath)
     PSKeys = ["CD1_1", "CD1_2", "CD2_1", "CD2_2", 
-              "A_0_0", "A_0_1", "A_1_0","A_1_1",]
+              "A_0_0", "A_0_1", "A_1_0","A_1_1",
+              "PC1_1", "PC1_2", "PC2_1", "PC2_2", ]
     
     chk = 0
     SOLVE = False
@@ -1229,7 +1199,8 @@ def checkPSolve(fpath,
         ASTAP = False
         LOCAL = False
     hdul.close()
-    remove_ext  = [".ini", ".axy", ".corr", ".match", ".rdls", ".solved", "-indx.xyls", ".solved"]
+    remove_ext  = [".ini", ".axy", ".corr", ".match", ".rdls", 
+                   ".solved", "-indx.xyls", ".solved"]
     for ext in remove_ext : 
         if (fpath.parent / f"{fpath.stem}{ext}").exists() :
             os.remove(fpath.parent / f"{fpath.stem}{ext}")
@@ -1246,9 +1217,6 @@ def makingAstrometrySH(fpath,
                         downsample = 4,
                         pixscale = None,
                         SOLVE = False, 
-                        tryASTAP = True, 
-                        tryLOCAL = True,
-                        tryASTROMETRYNET = False, 
                         cpulimit = 30,
                         **kwargs
                         ): 
@@ -1265,6 +1233,7 @@ def makingAstrometrySH(fpath,
 
     """
     fpath = Path(fpath)
+    solve_sh = ""
     
     if pixscale is None :
         hdul = fits.open(fpath)
@@ -1282,9 +1251,21 @@ def makingAstrometrySH(fpath,
     print("SOLVE:", SOLVE, "ASTAP:", ASTAP, "LOCAL:", LOCAL)
     if not SOLVE : 
         #solve-field -O -g --cpulimit 15 --nsigma 15 --downsample 4 -u app -L 0.6 -U 0.63 --no-plots
-        result += f"solve-field -O -g --cpulimit {cpulimit} --nsigma 15 --downsample {downsample} -u app  -L f'{pixscale*0.95:.03f}'  -U f'{pixscale*1.01:.03f}' --no-plots {str(fpath)}\n"
-        print("result:", result)
-    return result
+        #solve-field -O -g --cpulimit 15 --nsigma 15 --downsample 4 -u app -L 0.6 -U 0.63 --no-plots
+        solve_sh += f"solve-field -O -g --cpulimit 15 --nsigma 15 --downsample 4 -u app  -L 0.6 --no-plots {str(fpath)}\n"
+        solve_sh += f"mv {fpath.parent/fpath.stem}.new {str(fpath)}\n"
+        solve_sh += f"rm {fpath.parent/fpath.stem}-indx.xyls\n"
+        solve_sh += f"rm {fpath.parent/fpath.stem}-indx.axy\n"
+        solve_sh += f"rm {fpath.parent/fpath.stem}.rdls\n"
+        solve_sh += f"rm {fpath.parent/fpath.stem}.corr\n"
+        solve_sh += f"rm {fpath.parent/fpath.stem}.solved\n"
+        solve_sh += f"rm {fpath.parent/fpath.stem}.match\n"
+        solve_sh += f"rm {fpath.parent/fpath.stem}.axy\n"
+        print("result:", solve_sh)
+
+        with open(f"__{datetime.now().strftime('%Y%m%d')}_todo_astrometry_solve.sh", 'a') as f:
+            f.write(solve_sh) 
+    return solve_sh
 
 #%%        
 # =============================================================================
@@ -1663,7 +1644,6 @@ def solvingLightFrame(
             print("PIXc : ", PIXc)
             hdul.close()
             
-
             solved = KevinSolver(fpath, 
                                     #str(SOLVEDDIR), 
                                     # downsample = 2,

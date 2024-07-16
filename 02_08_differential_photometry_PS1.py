@@ -63,8 +63,8 @@ BASEDIR = Path("/mnt/Rdata/OBS_data")
 PROJECDIR = Path("/mnt/Rdata/OBS_data/2024-EXO")
 TODODIR = PROJECDIR / "_-_-_2024-05_-_GSON300_STF-8300M_-_1bin"
 TODODIR = PROJECDIR / "_-_-_2024-06_-_GSON300_STF-8300M_-_1bin"
-# TODODIR = PROJECDIR / "RiLA600_STX-16803_-_1bin"
-# TODODIR = PROJECDIR / "RiLA600_STX-16803_-_2bin"
+TODODIR = PROJECDIR / "RiLA600_STX-16803_-_1bin"
+TODODIR = PROJECDIR / "RiLA600_STX-16803_-_2bin"
 
 # PROJECDIR = Path("/mnt/Rdata/OBS_data/2022-Asteroid")
 # TODODIR = PROJECDIR / "GSON300_STF-8300M_-_1bin"
@@ -152,8 +152,8 @@ for DOINGDIR in DOINGDIRs[:] :
     DOINGDIR = Path(DOINGDIR)
     print("DOINGDIR", DOINGDIR)
 
-    READINGDIR = DOINGDIR / _astro_utilities.reduced_dir
-    # READINGDIR = DOINGDIR / _astro_utilities.reduced_nightsky_dir
+    # if "RiLA600_STX-16803" in str(DOINGDIR.parts[-2]) :
+    READINGDIR = DOINGDIR / _astro_utilities.reduced_nightsky_dir
     # if "GSON300_STF-8300M_-_1bin" in str(DOINGDIR.parts[-2]) :
     # DOINGDIR = DOINGDIR / _astro_utilities.reduced_dir
 
