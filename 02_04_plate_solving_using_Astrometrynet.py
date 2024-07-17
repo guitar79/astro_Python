@@ -7,7 +7,6 @@ Created on Thu Nov 22 01:00:19 2018
 #%%
 from glob import glob
 from pathlib import Path
-from datetime import datetime
 import os
 import numpy as np
 import matplotlib.pyplot as plt
@@ -15,14 +14,15 @@ from astropy.io import fits
 import astropy.units as u
 from astropy.stats import sigma_clip
 from ccdproc import combine, ccd_process, CCDData
+from astroquery.astrometry_net import AstrometryNet
 
 import ysfitsutilpy as yfu
 
 import _astro_utilities
 import _Python_utilities
+import _tool_visualization
 
 plt.rcParams.update({'figure.max_open_warning': 0})
-
 
 #%%
 #######################################################
@@ -40,14 +40,14 @@ if not os.path.exists('{0}'.format(log_dir)):
 BASEDIR = Path("/mnt/Rdata/OBS_data") 
 PROJECDIR = Path("/mnt/Rdata/OBS_data/2024-EXO")
 TODODIR = PROJECDIR / "_-_-_2024-05_-_GSON300_STF-8300M_-_1bin"
-# TODODIR = PROJECDIR / "_-_-_2024-06_-_GSON300_STF-8300M_-_1bin"
-# TODODIR = PROJECDIR / "RiLA600_STX-16803_-_1bin"
-# TODODIR = PROJECDIR / "RiLA600_STX-16803_-_2bin"
-
-PROJECDIR = Path("/mnt/Rdata/OBS_data/2022-Asteroid")
-TODODIR = PROJECDIR / "GSON300_STF-8300M_-_1bin"
+TODODIR = PROJECDIR / "_-_-_2024-06_-_GSON300_STF-8300M_-_1bin"
 TODODIR = PROJECDIR / "RiLA600_STX-16803_-_1bin"
 TODODIR = PROJECDIR / "RiLA600_STX-16803_-_2bin"
+
+# PROJECDIR = Path("/mnt/Rdata/OBS_data/2022-Asteroid")
+# TODODIR = PROJECDIR / "GSON300_STF-8300M_-_1bin"
+# TODODIR = PROJECDIR / "RiLA600_STX-16803_-_1bin"
+# TODODIR = PROJECDIR / "RiLA600_STX-16803_-_2bin"
 
 # PROJECDIR = Path("/mnt/Rdata/OBS_data/2023-Asteroid")
 # TODODIR = PROJECDIR / "GSON300_STF-8300M_-_1bin"
@@ -73,8 +73,8 @@ if not MASTERDIR.exists():
 print ("MASTERDIR: ", format(MASTERDIR))
 
 DOINGDIRs = sorted([x for x in DOINGDIRs if "_LIGHT_" in str(x)])
-# print ("DOINGDIRs: ", format(DOINGDIRs))
-# print ("len(DOINGDIRs): ", format(len(DOINGDIRs)))
+print ("DOINGDIRs: ", format(DOINGDIRs))
+print ("len(DOINGDIRs): ", format(len(DOINGDIRs)))
 
 # filter_str = '2023-12-'
 # DOINGDIRs = [x for x in DOINGDIRs if filter_str in x]
@@ -88,19 +88,22 @@ print ("DOINGDIRs: ", DOINGDIRs)
 print ("len(DOINGDIRs): ", len(DOINGDIRs))
 #######################################################
 #%%
-solve_sh = ""
-# rename_sh = ""
+ast = AstrometryNet()
+
+# ger from nova.astrometry.net
+ast.api_key = 'bldvwzzuvktnwfph' #must changed...
+
+#%%
 for DOINGDIR in DOINGDIRs[:] :
     DOINGDIR = Path(DOINGDIR)
-    SOLVINGDIR = DOINGDIR / _astro_utilities.reduced_dir
-    SOLVINGDIR = DOINGDIR / _astro_utilities.reduced_nightsky_dir
-    # SOLVINGDIR = DOINGDI
-    # R
+    print("DOINGDIR", DOINGDIR)
+
+    # if "RiLA600_STX-16803" in str(DOINGDIR.parts[-2]) :
+    READINGDIR = DOINGDIR / _astro_utilities.reduced_nightsky_dir
+    # if "GSON300_STF-8300M_-_1bin" in str(DOINGDIR.parts[-2]) :
+    # DOINGDIR = DOINGDIR / _astro_utilities.reduced_dir
     
-    summary = yfu.make_summary(SOLVINGDIR/"*.fit*",
-                               verify_fix=True,
-                               ignore_missing_simple=True,
-                               )
+    summary = yfu.make_summary(READINGDIR/"*.fit*")
     if summary is not None :
         print("len(summary):", len(summary))
         print("summary:", summary)
@@ -109,44 +112,68 @@ for DOINGDIR in DOINGDIRs[:] :
         df_light = df_light.reset_index(drop=True)
         print("df_light:\n{}".format(df_light))
 
-        # solve_sh = ""
-        # rename_sh = ""
         for _, row  in df_light.iterrows():
-
             fpath = Path(row["file"])
+            print(fpath)
             hdul = fits.open(fpath)
-            
+
+            submission_id = None
+            solve_timeout = 600
+
             if 'PIXSCALE' in hdul[0].header:
-                pixscale = hdul[0].header['PIXSCALE']
+                PIXc = hdul[0].header['PIXSCALE']
             else : 
-                pixscale = _astro_utilities.calPixScale(hdul[0].header['FOCALLEN'], 
-                                            hdul[0].header['XPIXSZ'],
-                                            hdul[0].header['XBINNING'])
+                PIXc = _astro_utilities.calPixScale(hdul[0].header['FOCALLEN'], 
+                                                    hdul[0].header['XPIXSZ'],
+                                                    hdul[0].header['XBINNING'])
+            print("PIXc : ", PIXc)
             hdul.close()
-            print(f"pixscale: {pixscale:.03f}, L: {pixscale*0.97:.03f}, U: {pixscale*1.03:.03f}")
-            # fpath = Path(df_light["file"][1])
-            print("fpath :" ,fpath)
+
             SOLVE, ASTAP, LOCAL = _astro_utilities.checkPSolve(fpath)
             print("SOLVE:", SOLVE, "ASTAP:", ASTAP, "LOCAL:", LOCAL)
-            if not SOLVE : 
-                #solve-field -O -g --cpulimit 15 --nsigma 15 --downsample 4 -u app -L 0.6 -U 0.63 --no-plots
-                solve_sh += f"solve-field -O -g --cpulimit 15 --nsigma 15 --downsample 4 -u app  -L 0.6 --no-plots {str(fpath)}\n"
-                solve_sh += f"mv {fpath.parent/fpath.stem}.new {str(fpath)}\n"
-                solve_sh += f"rm {fpath.parent/fpath.stem}-indx.xyls\n"
-                solve_sh += f"rm {fpath.parent/fpath.stem}.rdls\n"
-                solve_sh += f"rm {fpath.parent/fpath.stem}.corr\n"
-                solve_sh += f"rm {fpath.parent/fpath.stem}.solved\n"
-                solve_sh += f"rm {fpath.parent/fpath.stem}.match\n"
-                solve_sh += f"rm {fpath.parent/fpath.stem}.axy\n"
-               
-print("solve_sh:", solve_sh)
-    
-with open(f"_{datetime.now().strftime('%Y%m%d-%H%m%S')}_{TODODIR.stem}_astrometry_solve.sh", 'w') as f:
-    f.write(solve_sh)        
+
+            if SOLVE :
+                print(f"{fpath.name} is already solved...")
+            else :             
+                try_again = True                
+
+                try : 
+                    
+                    while try_again:
+                        try:
+                            if not submission_id:
+                                wcs_header = ast.solve_from_image(str(fpath),
+                                                    force_image_upload=True,
+                                                    solve_timeout = solve_timeout,
+                                                    submission_id=submission_id)
+                            else:
+                                wcs_header = ast.monitor_submission(submission_id,
+                                                                    solve_timeout = solve_timeout)
+                        except TimeoutError as e:
+                            submission_id = e.args[1]
+                        else:
+                            # got a result, so terminate
+                            try_again = False
+
+                    if not wcs_header:
+                        # Code to execute when solve fails
+                        print("fits file solving failure...")
+
+                    else:
+                        # Code to execute when solve succeeds
+                        print("fits file solved successfully...")
+
+                        with fits.open(str(fpath), mode='update') as hdul:
+                            for card in wcs_header :
+                                try: 
+                                    print(card, wcs_header[card], wcs_header.comments[card])
+                                    hdul[0].header.set(card, wcs_header[card], wcs_header.comments[card])
+                                except : 
+                                    print(card)
+                            hdul.flush
+
+                        print(str(fpath)+" is created...")
                 
-        # print("solve_sh:", solve_sh)
-            
-        # with open(f"_{datetime.now().strftime('%Y%m%d-%H%m%S')}_{DOINGDIR.stem}_astrometry_solve.sh", 'w') as f:
-        #     f.write(solve_sh)
-        # with open(f"{DOINGDIR.stem}_astrometry_rename.sh", 'w') as f:
-        #     f.write(rename_sh)
+                except Exception as err: 
+                    print("Err :", err)
+                    continue
