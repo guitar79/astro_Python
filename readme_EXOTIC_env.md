@@ -15,7 +15,7 @@ conda activate EXOTIC_env
 deactivate
 
 ## install module
-conda install astropy pymysql
+pip install exotic --upgrade
 pip install opencv-python photutils astroquery
 pip install ysfitsutilpy ysphotutilpy 
 
