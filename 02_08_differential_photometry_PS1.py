@@ -62,9 +62,7 @@ if not os.path.exists('{0}'.format(log_dir)):
 BASEDIR = Path("/mnt/Rdata/OBS_data") 
 PROJECDIR = Path("/mnt/Rdata/OBS_data/2024-EXO")
 TODODIR = PROJECDIR / "_-_-_2024-05_-_GSON300_STF-8300M_-_1bin"
-TODODIR = PROJECDIR / "_-_-_2024-06_-_GSON300_STF-8300M_-_1bin"
-TODODIR = PROJECDIR / "RiLA600_STX-16803_-_1bin"
-TODODIR = PROJECDIR / "RiLA600_STX-16803_-_2bin"
+# TODODIR = PROJECDIR / "_-_-_2024-06_-_GSON300_STF-8300M_-_1bin"
 
 # PROJECDIR = Path("/mnt/Rdata/OBS_data/2022-Asteroid")
 # TODODIR = PROJECDIR / "GSON300_STF-8300M_-_1bin"
@@ -86,19 +84,15 @@ DOINGDIRs = sorted(_Python_utilities.getFullnameListOfsubDirs(TODODIR))
 print ("DOINGDIRs: ", format(DOINGDIRs))
 print ("len(DOINGDIRs): ", format(len(DOINGDIRs)))
 
-CALDIR = [x for x in DOINGDIRs if "CAL-BDF" in str(x)]
-MASTERDIR = Path(CALDIR[0]) / _astro_utilities.master_dir
-if not MASTERDIR.exists():
-    os.makedirs("{}".format(str(MASTERDIR)))
-    print("{} is created...".format(str(MASTERDIR)))
-
+MASTERDIR = [x for x in DOINGDIRs if "CAL-BDF" in str(x)]
+MASTERDIR = Path(MASTERDIR[0]) / _astro_utilities.master_dir
 print ("MASTERDIR: ", format(MASTERDIR))
 
 DOINGDIRs = sorted([x for x in DOINGDIRs if "_LIGHT_" in str(x)])
 print ("DOINGDIRs: ", format(DOINGDIRs))
 print ("len(DOINGDIRs): ", format(len(DOINGDIRs)))
 
-# filter_str = '2023-12-'
+# filter_str = '2024-08-30'
 # DOINGDIRs = [x for x in DOINGDIRs if filter_str in x]
 # remove = 'BIAS'
 # DOINGDIRs = [x for x in DOINGDIRs if remove not in x]
@@ -148,14 +142,14 @@ ERR_Min = 0.5
 #######################################################
 
 #%%
-for DOINGDIR in DOINGDIRs[:] :
+for DOINGDIR in DOINGDIRs[4:] :
     DOINGDIR = Path(DOINGDIR)
     print("DOINGDIR", DOINGDIR)
 
     # if "RiLA600_STX-16803" in str(DOINGDIR.parts[-2]) :
     READINGDIR = DOINGDIR / _astro_utilities.reduced_nightsky_dir
     # if "GSON300_STF-8300M_-_1bin" in str(DOINGDIR.parts[-2]) :
-    # DOINGDIR = DOINGDIR / _astro_utilities.reduced_dir
+    READINGDIR = DOINGDIR / _astro_utilities.reduced_dir
 
     DIFFPRESULTDIR = DOINGDIR / f"{READINGDIR.parts[-1]}_DPhot_Mag{Mag_target}"
     if not DIFFPRESULTDIR.exists():

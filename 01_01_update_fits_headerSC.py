@@ -49,32 +49,37 @@ for DOINGDIR in DOINGDIRs[:] :
     print("DOINGDIR", DOINGDIR)
 
     print(f"Starting: {str(DOINGDIR.parts[-1])}")
-    summary = yfu.make_summary(DOINGDIR/"*.fit*",)
-    if summary is not None : 
-        print("summary: ", summary)
-        print("len(summary)", len(summary))
+    try: 
+        summary = yfu.make_summary(DOINGDIR/"*.fit*",)
+        if summary is not None : 
+            print("summary: ", summary)
+            print("len(summary)", len(summary))
 
-        for _, row in summary.iterrows():
-            # 파일명 출력
-            print (row["file"])
-            fpath = Path(row["file"])
-            try:
-                hdul = _astro_utilities.KevinFitsUpdater(fpath,
-                                                # checkKEYs = ["OBJECT", "TELESCOP", "OPTIC", "CCDNAME", 'FILTER',
-                                                #             #"GAIN", "EGAIN", "RDNOISE", 
-                                                #             "PIXSCALE", "FOCALLEN", "APATURE", "CCD-TEMP",
-                                                #             'XPIXSZ', 'YPIXSZ',
-                                                #             "XBINNING", "YBINNING", "FLIPSTAT", "EXPTIME", "EXPOSURE"],
-                                                imgtype_update=False,
-                                                fil_update=True,
-                                                )
-                print("hdul: ", hdul)
+            for _, row in summary.iterrows():
+                # 파일명 출력
+                print (row["file"])
+                fpath = Path(row["file"])
+                try:
+                    hdul = _astro_utilities.KevinFitsUpdater(fpath,
+                                                    # checkKEYs = ["OBJECT", "TELESCOP", "OPTIC", "CCDNAME", 'FILTER',
+                                                    #             #"GAIN", "EGAIN", "RDNOISE", 
+                                                    #             "PIXSCALE", "FOCALLEN", "APATURE", "CCD-TEMP",
+                                                    #             'XPIXSZ', 'YPIXSZ',
+                                                    #             "XBINNING", "YBINNING", "FLIPSTAT", "EXPTIME", "EXPOSURE"],
+                                                    imgtype_update=False,
+                                                    fil_update=True,
+                                                    )
+                    print("hdul: ", hdul)
 
-            except Exception as err :
-                print("X"*60)
-                _Python_utilities.write_log(err_log_file, err)
-    #print(str(DOINGDIR))
-    #print(str(BASEDIR/_astro_utilities.CCD_NEWUP_dir / DOINGDIR.stem))
+                except Exception as err :
+                    print("X"*60)
+                    _Python_utilities.write_log(err_log_file, err)
+        #print(str(DOINGDIR))
+        #print(str(BASEDIR/_astro_utilities.CCD_NEWUP_dir / DOINGDIR.stem))
     
-    shutil.move(str(DOINGDIR), str(BASEDIR/_astro_utilities.CCD_NEWUP_dir / DOINGDIR.stem))
-    print(str(DOINGDIR), str(BASEDIR/_astro_utilities.CCD_NEWUP_dir / DOINGDIR.stem))
+        shutil.move(str(DOINGDIR), str(BASEDIR/_astro_utilities.CCD_NEWUP_dir / DOINGDIR.stem))
+        print(str(DOINGDIR), str(BASEDIR/_astro_utilities.CCD_NEWUP_dir / DOINGDIR.stem))
+    except Exception as err :
+        print("X"*60)
+        pass
+        # _Python_utilities.write_log(err_log_file, err)

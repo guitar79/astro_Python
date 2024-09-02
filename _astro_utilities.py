@@ -1043,10 +1043,10 @@ def ASTAPSolver(fpath,
     #https://www.hnsky.org/astap.htm#astap_command_line
     with subprocess.Popen(['astap', 
                         '-f', str(fpath), 
-                        #'-o', 
-                        #'-fov',
+                        # '-o', 
+                        # '-fov',
                         '-z', f'{str(downsample)}',
-                        '-wcs',
+                        # '-wcs',
                         '-analyse2',
                         '-update',],
                         stdout=subprocess.PIPE) as proc :

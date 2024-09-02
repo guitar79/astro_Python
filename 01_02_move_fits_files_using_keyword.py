@@ -56,86 +56,91 @@ fnameKEYs = ["OBJECT", "IMAGETYP", "FILTER", "DATE-OBS",
 for DOINGDIR in DOINGDIRs[:] : 
     DOINGDIR = Path(DOINGDIR)
     print(f"Starting: {str(DOINGDIR.parts[-1])}")
-    summary = yfu.make_summary(DOINGDIR/"*.fit*",)
-    if summary is not None : 
-        print("summary: ", summary)
-        print("len(summary)", len(summary))
-    
-        for _, row in summary.iterrows():
-            fpath = Path(row["file"])
-            print (f"starting {fpath.name}...")
-            new_fname = ""
-            suffix = ".fit"
-            try:
-                for KEY in fnameKEYs :
-                    if KEY in ["OBJECT", "IMAGETYP", "FILTER", 
-                        "OPTIC", "CCDNAME"] :
-                        new_fname += str(row[KEY])+"_"
-                    
-                    if KEY == "DATE-OBS" : 
-                        new_fname += row[KEY][:19].replace("T","-").replace(":","-")+"_"
+    try: 
+        summary = yfu.make_summary(DOINGDIR/"*.fit*",)
+        if summary is not None : 
+            print("summary: ", summary)
+            print("len(summary)", len(summary))
+        
+            for _, row in summary.iterrows():
+                fpath = Path(row["file"])
+                print (f"starting {fpath.name}...")
+                new_fname = ""
+                suffix = ".fit"
+                try:
+                    for KEY in fnameKEYs :
+                        if KEY in ["OBJECT", "IMAGETYP", "FILTER", 
+                            "OPTIC", "CCDNAME"] :
+                            new_fname += str(row[KEY])+"_"
+                        
+                        if KEY == "DATE-OBS" : 
+                            new_fname += row[KEY][:19].replace("T","-").replace(":","-")+"_"
 
-                    if KEY == "EXPOSURE" : 
-                        new_fname += str(int(row[KEY]))+"sec_"
+                        if KEY == "EXPOSURE" : 
+                            new_fname += str(int(row[KEY]))+"sec_"
 
-                    if KEY == "CCD-TEMP" : 
-                        try:
-                            new_fname += str(int(row[KEY]))+"c_"
-                        except:
-                            new_fname += (row[KEY])+"c_"
-                    if KEY == "XBINNING" : 
-                        new_fname += str(row[KEY])+"bin"+suffix
-            
-                print(new_fname)
-                    
-                new_folder = _astro_utilities.get_new_foldername_from_filename(new_fname)
-                #print("new_folder: ", new_folder)
-                new_fpath =  BASEDIR /_astro_utilities.CCD_obs_raw_dir / new_folder / new_fname
-                print("new_fpath: ", new_fpath)
-
-                if not new_fpath.parents[0].exists():
-                    os.makedirs('{0}'.format(str(new_fpath.parents[0])))
-                    print('{0} is created'.format(str(new_fpath.parts[-2])))  
-            
-                if new_fpath.exists() :
-                    duplicate_fpath = BASEDIR / _astro_utilities.CCD_duplicate_dir / new_fpath.name
-                    #os.rename(str(new_fpath), str(duplicate_fpath))
-                    shutil.move(str(new_fpath), str(duplicate_fpath))
-                    print (f"move duplicate file to {str(duplicate_fpath)}")
-                shutil.move(str(fpath), str(new_fpath))
-                print(f"move {str(fpath.name)} to {str(new_fpath)}")
-
-
-                # new_fpath =  BASEDIR /_astro_utilities.CCD_obs_raw_dir / new_folder / new_fname
-                # new_fpath_fit =  BASEDIR /_astro_utilities.CCD_obs_raw_dir / new_folder / f'{new_fpath.stem}.fit'
-                # new_fpath_fits =  BASEDIR /_astro_utilities.CCD_obs_raw_dir / new_folder / f'{new_fpath.stem}.fits'
-                # print("new_fpath: ", new_fpath)
-
-                # if not new_fpath_fit.parents[0].exists():
-                #     os.makedirs('{0}'.format(str(new_fpath_fit.parents[0])))
-                #     print('{0} is created'.format(str(new_fpath_fit.parts[-2])))  
-            
-                # if new_fpath_fit.exists() and new_fpath.suffix == '.fits':
-                #     duplicate_fpath = BASEDIR / _astro_utilities.CCD_duplicate_dir / new_fpath_fit.name
-                #     #os.rename(str(new_fpath), str(duplicate_fpath))
-                #     shutil.move(str(new_fpath_fit), str(duplicate_fpath))
-                #     print (f"move duplicate file to {str(duplicate_fpath)}")
-                # if new_fpath_fits.exists() and new_fpath.suffix == '.fits':
-                #     duplicate_fpath = BASEDIR / _astro_utilities.CCD_duplicate_dir / new_fpath.name
-                #     #os.rename(str(new_fpath), str(duplicate_fpath))
-                #     shutil.move(str(fpath), str(duplicate_fpath))
-                #     print (f"move duplicate file to {str(duplicate_fpath)}")
-                # else : 
-                #     #os.rename(str(fpath), str(new_fpath))
-                #     shutil.move(str(fpath), str(new_fpath))
-                #     print(f"move {str(fpath.name)} to {str(new_fpath)}")
-                # shutil.move(str(fpath), str(new_fpath))
-                # print(f"move {str(fpath.name)} to {str(new_fpath)}")
+                        if KEY == "CCD-TEMP" : 
+                            try:
+                                new_fname += str(int(row[KEY]))+"c_"
+                            except:
+                                new_fname += (row[KEY])+"c_"
+                        if KEY == "XBINNING" : 
+                            new_fname += str(row[KEY])+"bin"+suffix
                 
-            except Exception as err:
-                print("X"*30, f'\n{err}')
-                #_Python_utilities.write_log(err_log_file, err)
-                pass
+                    print(new_fname)
+                        
+                    new_folder = _astro_utilities.get_new_foldername_from_filename(new_fname)
+                    #print("new_folder: ", new_folder)
+                    new_fpath =  BASEDIR /_astro_utilities.CCD_obs_raw_dir / new_folder / new_fname
+                    print("new_fpath: ", new_fpath)
+
+                    if not new_fpath.parents[0].exists():
+                        os.makedirs('{0}'.format(str(new_fpath.parents[0])))
+                        print('{0} is created'.format(str(new_fpath.parts[-2])))  
+                
+                    if new_fpath.exists() :
+                        duplicate_fpath = BASEDIR / _astro_utilities.CCD_duplicate_dir / new_fpath.name
+                        #os.rename(str(new_fpath), str(duplicate_fpath))
+                        shutil.move(str(new_fpath), str(duplicate_fpath))
+                        print (f"move duplicate file to {str(duplicate_fpath)}")
+                    shutil.move(str(fpath), str(new_fpath))
+                    print(f"move {str(fpath.name)} to {str(new_fpath)}")
+
+
+                    # new_fpath =  BASEDIR /_astro_utilities.CCD_obs_raw_dir / new_folder / new_fname
+                    # new_fpath_fit =  BASEDIR /_astro_utilities.CCD_obs_raw_dir / new_folder / f'{new_fpath.stem}.fit'
+                    # new_fpath_fits =  BASEDIR /_astro_utilities.CCD_obs_raw_dir / new_folder / f'{new_fpath.stem}.fits'
+                    # print("new_fpath: ", new_fpath)
+
+                    # if not new_fpath_fit.parents[0].exists():
+                    #     os.makedirs('{0}'.format(str(new_fpath_fit.parents[0])))
+                    #     print('{0} is created'.format(str(new_fpath_fit.parts[-2])))  
+                
+                    # if new_fpath_fit.exists() and new_fpath.suffix == '.fits':
+                    #     duplicate_fpath = BASEDIR / _astro_utilities.CCD_duplicate_dir / new_fpath_fit.name
+                    #     #os.rename(str(new_fpath), str(duplicate_fpath))
+                    #     shutil.move(str(new_fpath_fit), str(duplicate_fpath))
+                    #     print (f"move duplicate file to {str(duplicate_fpath)}")
+                    # if new_fpath_fits.exists() and new_fpath.suffix == '.fits':
+                    #     duplicate_fpath = BASEDIR / _astro_utilities.CCD_duplicate_dir / new_fpath.name
+                    #     #os.rename(str(new_fpath), str(duplicate_fpath))
+                    #     shutil.move(str(fpath), str(duplicate_fpath))
+                    #     print (f"move duplicate file to {str(duplicate_fpath)}")
+                    # else : 
+                    #     #os.rename(str(fpath), str(new_fpath))
+                    #     shutil.move(str(fpath), str(new_fpath))
+                    #     print(f"move {str(fpath.name)} to {str(new_fpath)}")
+                    # shutil.move(str(fpath), str(new_fpath))
+                    # print(f"move {str(fpath.name)} to {str(new_fpath)}")
+                    
+                except Exception as err:
+                    print("X"*30, f'\n{err}')
+                    #_Python_utilities.write_log(err_log_file, err)
+                    pass
+    except Exception as err:
+        print("X"*30, f'\n{err}')
+        #_Python_utilities.write_log(err_log_file, err)
+        pass
 #%%   
 #############################################################################
 #Check and delete empty folder....

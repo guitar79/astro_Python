@@ -40,8 +40,8 @@ if not os.path.exists('{0}'.format(log_dir)):
 BASEDIR = Path("/mnt/Rdata/OBS_data") 
 PROJECDIR = Path("/mnt/Rdata/OBS_data/2024-EXO")
 TODODIR = PROJECDIR / "_-_-_2024-05_-_GSON300_STF-8300M_-_1bin"
-# TODODIR = PROJECDIR / "_-_-_2024-06_-_GSON300_STF-8300M_-_1bin"
-# TODODIR = PROJECDIR / "RiLA600_STX-16803_-_1bin"
+TODODIR = PROJECDIR / "_-_-_2024-06_-_GSON300_STF-8300M_-_1bin"
+# # TODODIR = PROJECDIR / "RiLA600_STX-16803_-_1bin"
 # TODODIR = PROJECDIR / "RiLA600_STX-16803_-_2bin"
 
 # PROJECDIR = Path("/mnt/Rdata/OBS_data/2022-Asteroid")
@@ -54,11 +54,11 @@ TODODIR = PROJECDIR / "_-_-_2024-05_-_GSON300_STF-8300M_-_1bin"
 # TODODIR = PROJECDIR / "RiLA600_STX-16803_-_1bin"
 # TODODIR = PROJECDIR / "RiLA600_STX-16803_-_2bin"
 
-PROJECDIR = Path("/mnt/Rdata/OBS_data/2016-Variable")
-TODODIR = PROJECDIR / "-_-_-_2016-_-_RiLA600_STX-16803_-_2bin"
+# PROJECDIR = Path("/mnt/Rdata/OBS_data/2016-Variable")
+# TODODIR = PROJECDIR / "-_-_-_2016-_-_RiLA600_STX-16803_-_2bin"
 
-PROJECDIR = Path("/mnt/Rdata/OBS_data/2017-Variable")
-TODODIR = PROJECDIR / "-_-_-_2017-_-_RiLA600_STX-16803_-_2bin"
+# PROJECDIR = Path("/mnt/Rdata/OBS_data/2017-Variable")
+# TODODIR = PROJECDIR / "-_-_-_2017-_-_RiLA600_STX-16803_-_2bin"
 
 DOINGDIRs = sorted(_Python_utilities.getFullnameListOfsubDirs(TODODIR))
 print ("DOINGDIRs: ", format(DOINGDIRs))
@@ -76,8 +76,8 @@ DOINGDIRs = sorted([x for x in DOINGDIRs if "_LIGHT_" in str(x)])
 # print ("DOINGDIRs: ", format(DOINGDIRs))
 # print ("len(DOINGDIRs): ", format(len(DOINGDIRs)))
 
-# filter_str = '2023-12-'
-# DOINGDIRs = [x for x in DOINGDIRs if filter_str in x]
+filter_str = '2024-08-29'
+DOINGDIRs = [x for x in DOINGDIRs if filter_str in x]
 # remove = 'BIAS'
 # DOINGDIRs = [x for x in DOINGDIRs if remove not in x]
 # remove = 'DARK'
@@ -92,7 +92,7 @@ for DOINGDIR in DOINGDIRs :
     DOINGDIR = Path(DOINGDIR)
     print("DOINGDIR", DOINGDIR)
     SOLVINGDIR = DOINGDIR / _astro_utilities.reduced_dir
-    # SOLVINGDIR = DOINGDIR / _astro_utilities.reduced_nightsky_dir
+    SOLVINGDIR = DOINGDIR / _astro_utilities.reduced_nightsky_dir
     # SOLVINGDIR = DOINGDIR
 
     summary = yfu.make_summary(SOLVINGDIR/"*.fit*",
@@ -124,7 +124,8 @@ for DOINGDIR in DOINGDIRs :
         print("PIXc : ", PIXc)
         hdul.close()
 
-        solved = _astro_utilities.KevinSolver(fpath, 
+        try : 
+            solved = _astro_utilities.KevinSolver(fpath, 
                                                 #str(SOLVEDDIR), 
                                                 # downsample = 2,
                                                 # pixscale = PIXc,
@@ -133,4 +134,8 @@ for DOINGDIR in DOINGDIRs :
                                                 makeLOCALsh = True,
                                                 tryASTROMETRYNET = False, 
                                                 )
+        except Exception as err :
+            print("X"*60)
+            _Python_utilities.write_log(err_log_file, err)
+        
 # os.popen(f"sh __{datetime.now().strftime('%Y%m%d')}_todo_astrometry_solve.sh")

@@ -34,8 +34,8 @@ BASEDIR = Path("/mnt/Rdata/OBS_data")
 PROJECDIR = Path("/mnt/Rdata/OBS_data/2024-EXO")
 TODODIR = PROJECDIR / "_-_-_2024-05_-_GSON300_STF-8300M_-_1bin"
 TODODIR = PROJECDIR / "_-_-_2024-06_-_GSON300_STF-8300M_-_1bin"
-TODODIR = PROJECDIR / "RiLA600_STX-16803_-_1bin"
-TODODIR = PROJECDIR / "RiLA600_STX-16803_-_2bin"
+# TODODIR = PROJECDIR / "RiLA600_STX-16803_-_1bin"
+# TODODIR = PROJECDIR / "RiLA600_STX-16803_-_2bin"
 
 # PROJECDIR = Path("/mnt/Rdata/OBS_data/2022-Asteroid")
 # TODODIR = PROJECDIR / "GSON300_STF-8300M_-_1bin"
@@ -47,8 +47,8 @@ TODODIR = PROJECDIR / "RiLA600_STX-16803_-_2bin"
 # TODODIR = PROJECDIR / "RiLA600_STX-16803_-_1bin"
 # TODODIR = PROJECDIR / "RiLA600_STX-16803_-_2bin"
 
-PROJECDIR = Path("/mnt/Rdata/OBS_data/2016-Variable")
-TODODIR = PROJECDIR / "-_-_-_2016-_-_RiLA600_STX-16803_-_2bin"
+# PROJECDIR = Path("/mnt/Rdata/OBS_data/2016-Variable")
+# TODODIR = PROJECDIR / "-_-_-_2016-_-_RiLA600_STX-16803_-_2bin"
 
 # PROJECDIR = Path("/mnt/Rdata/OBS_data/2017-Variable")
 # TODODIR = PROJECDIR / "-_-_-_2017-_-_RiLA600_STX-16803_-_2bin"
@@ -69,8 +69,8 @@ DOINGDIRs = sorted([x for x in DOINGDIRs if "_LIGHT_" in str(x)])
 print ("DOINGDIRs: ", format(DOINGDIRs))
 print ("len(DOINGDIRs): ", format(len(DOINGDIRs)))
 
-# filter_str = 'CY-AQR_LIGHT_-_2016-11-01_-_RiLA600_STX-16803_-_2bin'
-# DOINGDIRs = [x for x in DOINGDIRs if filter_str in str(x)]
+filter_str = '_2024-06-10_'
+DOINGDIRs = [x for x in DOINGDIRs if filter_str in str(x)]
 # remove = 'BIAS'
 # DOINGDIRs = [x for x in DOINGDIRs if remove not in x]
 # remove = 'DARK'
@@ -87,15 +87,15 @@ for DOINGDIR in DOINGDIRs[:] :
     
     try :
         _astro_utilities.reduceLightFrame(DOINGDIR, MASTERDIR,
-                                        # OWrite=True, 
+                                        OWrite=True, 
                                         )
         
         _astro_utilities.makeNightskyflatReduceLightFrame(DOINGDIR, MASTERDIR,
-                                        # OWrite=True,
+                                        OWrite=True,
                                         )
         
-        _astro_utilities.solvingLightFrame(DOINGDIR,
-                                        )
+        # _astro_utilities.solvingLightFrame(DOINGDIR,
+        #                                 )
         
         # _astro_utilities.solvingAstrometrynet(DOINGDIR,
         #                                 OWrite=False,
