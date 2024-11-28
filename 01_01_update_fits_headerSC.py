@@ -32,8 +32,9 @@ if not os.path.exists('{0}'.format(log_dir)):
 #%%
 #######################################################
 # read all files in base directory for processing
-BASEDIR = Path(r"r:\CCD_obs")
-BASEDIR = Path("/mnt/Rdata/OBS_data") 
+BASEDIR = Path(r"r:\OBS_data")
+# BASEDIR = Path(r"O:")
+# BASEDIR = Path("/mnt/Rdata/OBS_data") 
 #BASEDIR = Path("/Volumes/OBS_data")
  
 DOINGDIR = Path(BASEDIR/ _astro_utilities.CCD_NEW_dir)
@@ -50,7 +51,9 @@ for DOINGDIR in DOINGDIRs[:] :
 
     print(f"Starting: {str(DOINGDIR.parts[-1])}")
     try: 
-        summary = yfu.make_summary(DOINGDIR/"*.fit*",)
+        summary = yfu.make_summary(DOINGDIR/"*.fit*",
+                                #    ignore_missing_simple=True,
+                                   )
         if summary is not None : 
             print("summary: ", summary)
             print("len(summary)", len(summary))
@@ -66,8 +69,8 @@ for DOINGDIR in DOINGDIRs[:] :
                                                     #             "PIXSCALE", "FOCALLEN", "APATURE", "CCD-TEMP",
                                                     #             'XPIXSZ', 'YPIXSZ',
                                                     #             "XBINNING", "YBINNING", "FLIPSTAT", "EXPTIME", "EXPOSURE"],
-                                                    imgtype_update=True,
-                                                    fil_update=False,
+                                                    # imgtype_update=True,
+                                                    # fil_update=True,
                                                     )
                     print("hdul: ", hdul)
 

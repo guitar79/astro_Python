@@ -44,10 +44,10 @@ import _Python_utilities
 
 c_method = "median"
 
-CCD_obs_raw_dir = "CCD_obs_raw"
-CCD_NEW_dir = "CCD_new_files"
-CCD_NEWUP_dir = "CCD_newUpdated_files"
-CCD_duplicate_dir = "CCD_duplicate_files"
+A3_CCD_obs_raw_dir = "A3_CCD_obs_raw"
+CCD_NEW_dir = "A1_CCD_new_files"
+CCD_NEWUP_dir = "A2_CCD_newUpdated_files"
+CCD_duplicate_dir = "A4_CCD_duplicate_files"
 
 master_dir = "master_files_ys"
 reduced_dir = "reduced"
@@ -386,7 +386,7 @@ def KevinFitsUpdater(
             'XPIXSZ', 'YPIXSZ',
             "XBINNING", "YBINNING", "FLIPSTAT", "EXPTIME", "EXPOSURE"],
     imgtype_update=False,
-    fil_update=True,
+    fil_update=False,
     **kwargs
     ):
     '''
@@ -406,12 +406,10 @@ def KevinFitsUpdater(
     print("fname_el", fname_el)
     object_name = foldername_el[0].replace(" ","")
     print("object_name", object_name)
-    if imgtype_update == True :
-        image_type = foldername_el[1]
-        print("image_type", image_type)
-    if fil_update == True :
-        filter_name = fname_el[2].upper()
-        print("filter_name", filter_name)
+    image_type = foldername_el[1]
+    print("image_type", image_type)
+    filter_name = fname_el[2].upper()
+    print("filter_name", filter_name)
     optic_name = foldername_el[5]
     print("optic_name", optic_name)
     ccd_name = foldername_el[6]
@@ -532,23 +530,35 @@ def KevinFitsUpdater(
 
         if "FLAT" in hdul[0].header["IMAGETYP"] \
             or "LIGHT" in hdul[0].header["IMAGETYP"] :
-            if not "FILTER" in hdul[0].header :
-                hdul[0].header["FILTER"] = filter_name
-            if hdul[0].header["FILTER"] != filter_name \
-                and fil_update==True :
-                hdul[0].header["FILTER"] = filter_name
-            print(f"FILTER is set {hdul[0].header['FILTER']}")
             if not "OPTIC" in hdul[0].header :
                 hdul[0].header["OPTIC"] = optic_name
                 print(f"The 'OPTIC' is set {hdul[0].header['OPTIC']}")
             elif  hdul[0].header["OPTIC"] != optic_name :
                 hdul[0].header["OPTIC"] = optic_name
                 print(f"The 'OPTIC' is set {hdul[0].header['OPTIC']}")
+            if not "FOCALLEN" in hdul[0].header :
+                hdul[0].header["FOCALLEN"] = OPTICDIC[hdul[0].header['OPTIC']]['FOCALLEN']
+            if not "APATURE" in hdul[0].header :
+                hdul[0].header["APATURE"] = OPTICDIC[hdul[0].header['OPTIC']]["APATURE"]
+
+            if not "FILTER" in hdul[0].header and fil_update == True:
+                hdul[0].header["FILTER"] = filter_name
+            if hdul[0].header["FILTER"] != filter_name and fil_update==True :
+                hdul[0].header["FILTER"] = filter_name
+            print(f"FILTER is set {hdul[0].header['FILTER']}")
 
             hdul[0].header['FOCALLEN'] = OPTICDIC[hdul[0].header['OPTIC']]['FOCALLEN']
             print(f"The 'FOCALLEN' is set {hdul[0].header['FOCALLEN']}...")
             hdul[0].header['FOCRATIO'] = OPTICDIC[hdul[0].header['OPTIC']]["FOCALLEN"]/OPTICDIC[hdul[0].header['OPTIC']]["APATURE"]
             print(f"The 'FOCRATIO' is set {hdul[0].header['FOCRATIO']}...")
+
+            if not "PIXSCALE" in hdul[0].header :
+                hdul[0].header["PIXSCALE"] = calPixScale(hdul[0].header['FOCALLEN'], 
+                                                            hdul[0].header['XPIXSZ'],
+                                                            hdul[0].header['XBINNING'],)
+            hdul[0].header["PIXSCALE"] = calPixScale(hdul[0].header['FOCALLEN'], 
+                                                            hdul[0].header['XPIXSZ'],
+                                                            hdul[0].header['XBINNING'],)
         
         ###########################
         #### 
@@ -621,23 +631,9 @@ def KevinFitsUpdater(
 
         ###########################
         #### 
-        if not "OPTIC" in hdul[0].header :
-            hdul[0].header["OPTIC"] = optic_name
-        if not "FOCALLEN" in hdul[0].header :
-            hdul[0].header["FOCALLEN"] = OPTICDIC[hdul[0].header['OPTIC']]['FOCALLEN']
-        if not "APATURE" in hdul[0].header :
-            hdul[0].header["APATURE"] = OPTICDIC[hdul[0].header['OPTIC']]["APATURE"]
-
+        
         print(hdul[0].header['OPTIC']+'_'+hdul[0].header['CCDNAME'])
-        if "FLAT" in hdul[0].header["IMAGETYP"] or \
-            "LIGHT" in hdul[0].header["IMAGETYP"] :
-            if not "PIXSCALE" in hdul[0].header :
-                hdul[0].header["PIXSCALE"] = calPixScale(hdul[0].header['FOCALLEN'], 
-                                                            hdul[0].header['XPIXSZ'],
-                                                            hdul[0].header['XBINNING'],)
-            hdul[0].header["PIXSCALE"] = calPixScale(hdul[0].header['FOCALLEN'], 
-                                                            hdul[0].header['XPIXSZ'],
-                                                            hdul[0].header['XBINNING'],)
+               
         hdul[0].header['FLIPSTAT'] = " "
         print(f"The 'FLIPSTAT' is set {hdul[0].header['FLIPSTAT']}...")
         
@@ -650,145 +646,145 @@ def KevinFitsUpdater(
 
     return hdul
 
-#%%
-class KevinFitsHeader():
-    def __init__(self, fpath):
-        self.fpath = Path(fpath)
-        self.checkKEYs = ["OBJECT", "TELESCOP", "OPTIC", "CCDNAME", 'FILTER',
-            "GAIN", "EGAIN", "RDNOISE", "FOCALLEN", "PIXSCALE",
-            'XPIXSZ', 'YPIXSZ', "XBINNING", "YBINNING", "FLIPSTAT"]
-        '''
-        Parameters
-        ----------
-        fpath : string
-            The fullname of input file...
+# #%%
+# class KevinFitsHeader():
+#     def __init__(self, fpath):
+#         self.fpath = Path(fpath)
+#         self.checkKEYs = ["OBJECT", "TELESCOP", "OPTIC", "CCDNAME", 'FILTER',
+#             "GAIN", "EGAIN", "RDNOISE", "FOCALLEN", "PIXSCALE",
+#             'XPIXSZ', 'YPIXSZ', "XBINNING", "YBINNING", "FLIPSTAT"]
+#         '''
+#         Parameters
+#         ----------
+#         fpath : string
+#             The fullname of input file...
 
-        '''
-    def append_header(self):
-        with fits.open(str(self.fpath), mode="append") as self.hdul :
-            for self.checkKEY in self.checkKEYs: 
-                if not self.checkKEY in self.hdul[0].header :
-                    self.hdul[0].header.append(self.checkKEY, 
-                                    '', 
-                                    f"The keyword '{self.checkKEY}' is added.") 
-                print(f"{self.checkKEY}: ", self.hdul[0].header[self.checkKEY])
+#         '''
+#     def append_header(self):
+#         with fits.open(str(self.fpath), mode="append") as self.hdul :
+#             for self.checkKEY in self.checkKEYs: 
+#                 if not self.checkKEY in self.hdul[0].header :
+#                     self.hdul[0].header.append(self.checkKEY, 
+#                                     '', 
+#                                     f"The keyword '{self.checkKEY}' is added.") 
+#                 print(f"{self.checkKEY}: ", self.hdul[0].header[self.checkKEY])
 
-            self.hdul.flush()  # changes are written back to original.fits
-        return self.hdul
+#             self.hdul.flush()  # changes are written back to original.fits
+#         return self.hdul
 
-    def update_header(self): 
-        self.foldername_el = self.fpath.parts[-2].split('_')
-        self.fname_el = self.fpath.parts[-1].split('_')
-        print("foldername_el", self.foldername_el)
-        print("fname_el", self.fname_el)
-        self.object_name = self.foldername_el[0]
-        self.filter_name = self.fname_el[2]
-        self.optic_name = self.foldername_el[5]
-        self.ccd_name = self.foldername_el[6]
-        print("object_name", self.object_name)
-        print("filter_name", self.filter_name)
-        print("optic_name", self.optic_name)
-        print("ccd_name", self.ccd_name)
+#     def update_header(self): 
+#         self.foldername_el = self.fpath.parts[-2].split('_')
+#         self.fname_el = self.fpath.parts[-1].split('_')
+#         print("foldername_el", self.foldername_el)
+#         print("fname_el", self.fname_el)
+#         self.object_name = self.foldername_el[0]
+#         self.filter_name = self.fname_el[2]
+#         self.optic_name = self.foldername_el[5]
+#         self.ccd_name = self.foldername_el[6]
+#         print("object_name", self.object_name)
+#         print("filter_name", self.filter_name)
+#         print("optic_name", self.optic_name)
+#         print("ccd_name", self.ccd_name)
    
-        # Change something in hdul.
-        with fits.open(str(self.fpath), mode="update") as self.hdul :
+#         # Change something in hdul.
+#         with fits.open(str(self.fpath), mode="update") as self.hdul :
             
-            #if object_name != hdul[0].header["OBJECT"] : 
-            self.hdul[0].header["OBJECT"] = self.object_name.upper()
-            print(f"The 'OBJECT' is set {self.object_name.upper()}")
+#             #if object_name != hdul[0].header["OBJECT"] : 
+#             self.hdul[0].header["OBJECT"] = self.object_name.upper()
+#             print(f"The 'OBJECT' is set {self.object_name.upper()}")
         
-            if len(self.hdul[0].header['DATE-OBS']) == 10 \
-                and 'TIME-OBS' in self.hdul[0].header : 
-                self.hdul[0].header['DATE-OBS'] += 'T' + self.hdul[0].header['TIME-OBS']
-                print(f"The 'DATE-OBS' is set {self.hdul[0].header['DATE-OBS']}")
+#             if len(self.hdul[0].header['DATE-OBS']) == 10 \
+#                 and 'TIME-OBS' in self.hdul[0].header : 
+#                 self.hdul[0].header['DATE-OBS'] += 'T' + self.hdul[0].header['TIME-OBS']
+#                 print(f"The 'DATE-OBS' is set {self.hdul[0].header['DATE-OBS']}")
 
-            if "ze" in self.hdul[0].header["IMAGETYP"].lower() \
-                    or "bi" in self.hdul[0].header["IMAGETYP"].lower() :
-                self.hdul[0].header["IMAGETYP"] = "BIAS"
-                print(f"The 'IMAGETYP' is set {self.hdul[0].header['IMAGETYP']}")
-            elif "da" in self.hdul[0].header["IMAGETYP"].lower() :
-                self.hdul[0].header["IMAGETYP"] = "DARK"
-                print(f"The 'IMAGETYP' is set {self.hdul[0].header['IMAGETYP']}")
-            elif "fl" in self.hdul[0].header["IMAGETYP"].lower() :
-                self.hdul[0].header["IMAGETYP"] = "FLAT"
-                print(f"The 'IMAGETYP' is set {self.hdul[0].header['IMAGETYP']}")
-            elif "da" in self.hdul[0].header["IMAGETYP"].lower() \
-                    or "lig" in self.hdul[0].header["IMAGETYP"].lower() :
-                self.hdul[0].header["IMAGETYP"] = "LIGHT"
-                print(f"The 'IMAGETYP' is set {self.hdul[0].header['IMAGETYP']}")
+#             if "ze" in self.hdul[0].header["IMAGETYP"].lower() \
+#                     or "bi" in self.hdul[0].header["IMAGETYP"].lower() :
+#                 self.hdul[0].header["IMAGETYP"] = "BIAS"
+#                 print(f"The 'IMAGETYP' is set {self.hdul[0].header['IMAGETYP']}")
+#             elif "da" in self.hdul[0].header["IMAGETYP"].lower() :
+#                 self.hdul[0].header["IMAGETYP"] = "DARK"
+#                 print(f"The 'IMAGETYP' is set {self.hdul[0].header['IMAGETYP']}")
+#             elif "fl" in self.hdul[0].header["IMAGETYP"].lower() :
+#                 self.hdul[0].header["IMAGETYP"] = "FLAT"
+#                 print(f"The 'IMAGETYP' is set {self.hdul[0].header['IMAGETYP']}")
+#             elif "da" in self.hdul[0].header["IMAGETYP"].lower() \
+#                     or "lig" in self.hdul[0].header["IMAGETYP"].lower() :
+#                 self.hdul[0].header["IMAGETYP"] = "LIGHT"
+#                 print(f"The 'IMAGETYP' is set {self.hdul[0].header['IMAGETYP']}")
             
-            if "BIAS" in self.hdul[0].header["IMAGETYP"] \
-                or "DARK" in self.hdul[0].header["IMAGETYP"] :
-                self.hdul[0].header["FILTER"] = "-"
-                print(f"The 'FILTER' is set {self.hdul[0].header['FILTER']}")
-                self.hdul[0].header['OPTIC'] = "-"
-                print(f"The 'OPTIC' is set {self.hdul[0].header['OPTIC']}")
+#             if "BIAS" in self.hdul[0].header["IMAGETYP"] \
+#                 or "DARK" in self.hdul[0].header["IMAGETYP"] :
+#                 self.hdul[0].header["FILTER"] = "-"
+#                 print(f"The 'FILTER' is set {self.hdul[0].header['FILTER']}")
+#                 self.hdul[0].header['OPTIC'] = "-"
+#                 print(f"The 'OPTIC' is set {self.hdul[0].header['OPTIC']}")
 
-            if "FLAT" in self.hdul[0].header["IMAGETYP"] \
-                or "LIGHT" in self.hdul[0].header["IMAGETYP"] :
-                self.hdul[0].header["FILTER"] = self.filter_name.upper()
-                print(f"The 'FILTER' is set {self.hdul[0].header['FILTER']}")
-                self.hdul[0].header["OPTIC"] = self.optic_name
-                print(f"The 'OPTIC' is set {self.hdul[0].header['OPTIC']}")
+#             if "FLAT" in self.hdul[0].header["IMAGETYP"] \
+#                 or "LIGHT" in self.hdul[0].header["IMAGETYP"] :
+#                 self.hdul[0].header["FILTER"] = self.filter_name.upper()
+#                 print(f"The 'FILTER' is set {self.hdul[0].header['FILTER']}")
+#                 self.hdul[0].header["OPTIC"] = self.optic_name
+#                 print(f"The 'OPTIC' is set {self.hdul[0].header['OPTIC']}")
 
-            try : 
-                if 'qsi' in self.hdul[0].header['INSTRUME'] : 
-                    self.CCDNAME = 'QSI683ws'
-                elif 'st-8300' in self.hdul[0].header['INSTRUME'] : 
-                    self.CCDNAME = 'ST-8300M'
-                elif 'stf-8300' in self.hdul[0].header['INSTRUME'] : 
-                    self.CCDNAME = 'STF-8300M'
-                elif '11000' in self.hdul[0].header['INSTRUME'] : 
-                    self.CCDNAME = 'STL-11000M'
-                elif '16803' in self.hdul[0].header['INSTRUME'] : 
-                    self.CCDNAME = 'STX-16803'
-                elif "SBIG" in self.hdul[0].header['INSTRUME'] :
-                    if self.hdul[0].header['XPIXSZ'] == 5.4 \
-                            or self.hdul[0].header['XPIXSZ'] == 10.8 :
-                        self.CCDNAME = 'STF-8300M'
-                    elif self.hdul[0].header['XPIXSZ'] == 9.0 \
-                            or self.hdul[0].header['XPIXSZ'] == 18.0 :
-                        if self.hdul[0].header['NAXIS1'] == 2048 \
-                                or self.hdul[0].header['NAXIS1'] == 4096 :
-                            self.CCDNAME = 'STX-16803'
-                        elif self.hdul[0].header['NAXIS1'] == 4008 \
-                                or  self.hdul[0].header['NAXIS1'] == 2672 \
-                                or  self.hdul[0].header['NAXIS1'] == 2004 \
-                                or  self.hdul[0].header['NAXIS1'] == 1336 :
-                            self.CCDNAME = 'STL-11000M'
-                else :
-                    self.CCDNAME = self.ccd_name    
-            except :
-                self.CCDNAME = self.ccd_name
-            print("CCDNAME", self.CCDNAME)
+#             try : 
+#                 if 'qsi' in self.hdul[0].header['INSTRUME'] : 
+#                     self.CCDNAME = 'QSI683ws'
+#                 elif 'st-8300' in self.hdul[0].header['INSTRUME'] : 
+#                     self.CCDNAME = 'ST-8300M'
+#                 elif 'stf-8300' in self.hdul[0].header['INSTRUME'] : 
+#                     self.CCDNAME = 'STF-8300M'
+#                 elif '11000' in self.hdul[0].header['INSTRUME'] : 
+#                     self.CCDNAME = 'STL-11000M'
+#                 elif '16803' in self.hdul[0].header['INSTRUME'] : 
+#                     self.CCDNAME = 'STX-16803'
+#                 elif "SBIG" in self.hdul[0].header['INSTRUME'] :
+#                     if self.hdul[0].header['XPIXSZ'] == 5.4 \
+#                             or self.hdul[0].header['XPIXSZ'] == 10.8 :
+#                         self.CCDNAME = 'STF-8300M'
+#                     elif self.hdul[0].header['XPIXSZ'] == 9.0 \
+#                             or self.hdul[0].header['XPIXSZ'] == 18.0 :
+#                         if self.hdul[0].header['NAXIS1'] == 2048 \
+#                                 or self.hdul[0].header['NAXIS1'] == 4096 :
+#                             self.CCDNAME = 'STX-16803'
+#                         elif self.hdul[0].header['NAXIS1'] == 4008 \
+#                                 or  self.hdul[0].header['NAXIS1'] == 2672 \
+#                                 or  self.hdul[0].header['NAXIS1'] == 2004 \
+#                                 or  self.hdul[0].header['NAXIS1'] == 1336 :
+#                             self.CCDNAME = 'STL-11000M'
+#                 else :
+#                     self.CCDNAME = self.ccd_name    
+#             except :
+#                 self.CCDNAME = self.ccd_name
+#             print("CCDNAME", self.CCDNAME)
 
-            #self.hdul[0].header["CCDNAME"] = self.CCDNAME
-            #print(f"The 'CCDNAME' is set {self.CCDNAME}...")
+#             #self.hdul[0].header["CCDNAME"] = self.CCDNAME
+#             #print(f"The 'CCDNAME' is set {self.CCDNAME}...")
 
-            if (not 'XPIXSZ' in self.hdul[0].header) \
-                and self.CCDNAME == 'STX-16803' :
-                self.hdul[0].header['XPIXSZ'] = 9 * self.hdul[0].header['XBINNING']
-                self.hdul[0].header['YPIXSZ'] = 9 * self.hdul[0].header['YBINNING']
-                print(f"The 'XPIXSZ' and 'YPIXSZ' are set {9 * self.hdul[0].header['XBINNING']} and {9 * self.hdul[0].header['YBINNING']}...")
+#             if (not 'XPIXSZ' in self.hdul[0].header) \
+#                 and self.CCDNAME == 'STX-16803' :
+#                 self.hdul[0].header['XPIXSZ'] = 9 * self.hdul[0].header['XBINNING']
+#                 self.hdul[0].header['YPIXSZ'] = 9 * self.hdul[0].header['YBINNING']
+#                 print(f"The 'XPIXSZ' and 'YPIXSZ' are set {9 * self.hdul[0].header['XBINNING']} and {9 * self.hdul[0].header['YBINNING']}...")
 
-            if not "CCD-TEMP" in self.hdul[0].header :
-                self.hdul[0].header['CCD-TEMP'] = 'N'
-                print(f"The 'CCD-TEMP' is set {self.hdul[0].header['CCD-TEMP']}...")
+#             if not "CCD-TEMP" in self.hdul[0].header :
+#                 self.hdul[0].header['CCD-TEMP'] = 'N'
+#                 print(f"The 'CCD-TEMP' is set {self.hdul[0].header['CCD-TEMP']}...")
 
-            if not "EXPOSURE" in self.hdul[0].header :
-                self.hdul[0].header["EXPOSURE"] = self.hdul[0].header["EXPTIME"]
-                print(f"The 'EXPOSURE' is set {self.hdul[0].header['EXPTIME']}...")
+#             if not "EXPOSURE" in self.hdul[0].header :
+#                 self.hdul[0].header["EXPOSURE"] = self.hdul[0].header["EXPTIME"]
+#                 print(f"The 'EXPOSURE' is set {self.hdul[0].header['EXPTIME']}...")
 
-            self.hdul[0].header['GAIN'] = CCDDIC[self.CCDNAME]["GAIN"]
-            print(f"The 'GAIN' is set {self.hdul[0].header['GAIN']}...")
-            self.hdul[0].header['EGAIN'] = CCDDIC[self.CCDNAME]["EGAIN"]
-            print(f"The 'EGAIN' is set {self.hdul[0].header['EGAIN']}...")
-            self.hdul[0].header['RDNOISE'] = CCDDIC[self.CCDNAME]["RDNOISE"]
-            print(f"The 'RDNOISE' is set {self.hdul[0].header['RDNOISE']}...")
-            self.hdul.flush()  # changes are written back to original.fits
-            print('*'*30)
-            print(f"The header of {self.fpath.name} is updated..")
-        return self.hdul
+#             self.hdul[0].header['GAIN'] = CCDDIC[self.CCDNAME]["GAIN"]
+#             print(f"The 'GAIN' is set {self.hdul[0].header['GAIN']}...")
+#             self.hdul[0].header['EGAIN'] = CCDDIC[self.CCDNAME]["EGAIN"]
+#             print(f"The 'EGAIN' is set {self.hdul[0].header['EGAIN']}...")
+#             self.hdul[0].header['RDNOISE'] = CCDDIC[self.CCDNAME]["RDNOISE"]
+#             print(f"The 'RDNOISE' is set {self.hdul[0].header['RDNOISE']}...")
+#             self.hdul.flush()  # changes are written back to original.fits
+#             print('*'*30)
+#             print(f"The header of {self.fpath.name} is updated..")
+#         return self.hdul
 
 
 
@@ -870,7 +866,7 @@ def KevinSolver(fpath,
                     solved_dir = None,
                     downsample = 4,
                     pixscale = None,
-                    cpulimit = 15,
+                    cpulimit = 30,
                     SOLVE = False, 
                     nsigma = 15,
                     tryASTAP = True, 
@@ -893,172 +889,192 @@ def KevinSolver(fpath,
     """
     from astropy.coordinates import SkyCoord
     fpath = Path(fpath)
-    hdul = fits.open(fpath)
-    
-    if downsample == None :
-        downsample = 4    
-    
-    if pixscale is None :
-        if 'PIXSCALE' in hdul[0].header:
-            pixscale = hdul[0].header['PIXSCALE']
-        else : 
-            pixscale = calPixScale(hdul[0].header['FOCALLEN'], 
-                                        hdul[0].header['XPIXSZ'],
-                                        hdul[0].header['XBINNING'])
 
-    # print(f"pixscale: {pixscale:.03f}, L: {pixscale*0.97:.03f}, U: {pixscale*1.03:.03f}")
-    
-    if cpulimit == None :
-        cpulimit = 15  
-    if nsigma == None :
-        nsigma = 15  
-
-    vfov = pixscale * hdul[0].header['NAXIS1']/3600    
-    hfov = pixscale * hdul[0].header['NAXIS2']/3600
-    print("vfov , hfov  :", vfov , hfov )
-    
-    try : 
-        spd = 180 + hdul[0].header['DEC']
-        ra = hdul[0].header['RA']
-        dec = hdul[0].header['DEC']
-    except :
-        ra_h, ra_m, ra_s = hdul[0].header['RA'].split(':')
-        dec_d, dec_m, dec_s = hdul[0].header['DEC'].split(':')
-        ra_new = f"{ra_h}h{ra_m}m{ra_s}s"
-        dec_new = f"{dec_d}d{dec_m}m{dec_s}s"
-        c = SkyCoord(ra=ra_new, dec=dec_new)
-        spd = 180 + c.dec.deg
-        ra = c.ra.deg
-        dec = c.dec.deg
-    hdul.close()
-    # try :
-    SOLVE, ASTAP, LOCAL = checkPSolve(fpath)
-    print("SOLVE:", SOLVE, "ASTAP:", ASTAP, "LOCAL:", LOCAL)
-    if not SOLVE and tryASTAP == True : 
-        print(f"Trying to solve using ASTAP:\n   {fpath.parent/fpath} ")      
-        with subprocess.Popen(['astap', 
-                    '-f', str(fpath), 
-                    #'-o', 
-                    # '-r', f'{ra}',          
-                    # '-spd', f'{spd}',
-                    # '-fov', f'{hfov}',
-                    # '-z', f'{str(downsample)}',
-                    '-wcs',
-                    '-analyse2',
-                    '-update',],
-                    stdout=subprocess.PIPE) as proc :
-            print(proc.stdout.read())
+    if fpath.exists() and (fpath.parent/f'{fpath.stem}.new').exists():
+        #print(str(fpath))
+        shutil.move(str(fpath.parent/f'{fpath.stem}.new'), str(fpath))
+        print(str(fpath.parent/f'{fpath.stem}.new'), str(fpath))
+        #print(f"{str(fpath)} is removed...")
 
     SOLVE, ASTAP, LOCAL = checkPSolve(fpath)
     print("SOLVE:", SOLVE, "ASTAP:", ASTAP, "LOCAL:", LOCAL)
-    if not SOLVE and tryASTAP == True :
-        print(f"Trying to solve using ASTAP with variables:\n   {fpath.parent/fpath} ")
-        with subprocess.Popen(['astap', 
-                    '-f', str(fpath), 
-                    # '-o', 
-                    # '-spd ', f'{spd}',
-                    '-fov', f'{hfov}',
-                    '-z', f'{str(downsample)}',
-                    '-wcs',
-                    '-analyse2',
-                    '-update',],
-                    stdout=subprocess.PIPE) as proc :
-            print(proc.stdout.read())
-
-    SOLVE, ASTAP, LOCAL = checkPSolve(fpath)
-    print("SOLVE:", SOLVE, "ASTAP:", ASTAP, "LOCAL:", LOCAL)
-    if not SOLVE and tryLOCAL == True : 
-        print(f"Trying to solve using LOCAL:\n   {fpath.parent/fpath} ")
-        # solve-field -O -g --cpulimit 15 --nsigma 15 --downsample 4 -u app -L 0.6 -U 0.63 --no-plots
-        with subprocess.Popen(['solve-field', 
-                                '-O', #--overwrite: overwrite output files if they already exist
-                                # '-g', #--guess-scale: try to guess the image scale from the FITS headers
-                                '--cpulimit', f'{cpulimit}',  #will make it give up after 30 seconds.
-                                # '--nsigma', f'{nsigma}',
-                                # '--downsample', f'{str(downsample)}',
-                                # '-u', 'app', #'--scale-units', 'arcsecperpix', #pixel scale
-                                # '-L', f'{pixscale*0.95:.03f}', 
-                                # '-U', f'{pixscale*1.05:.03f}',   
-                                # '-N', f'{fpath.parent / fpath.stem}.new', #--new-fits <filename>: output filename of the new FITS file containingthe WCS header; "none" to not create this file
-                                # '-N', f'{fpath}', #--new-fits <filename>: output filename of the new FITS file containingthe WCS header; "none" to not create this file
-                                #-p', 
-                                '--no-plots',#: don't create any plots of the results
-                                #'-D', str(SOLVEDDIR),
-                                str(fpath)
-                                ], 
-                                stdout=subprocess.PIPE) as proc :
-            print(proc.stdout.read())
+    if not SOLVE :
+        hdul = fits.open(fpath)
         
-        if fpath.exists() and (fpath.parent/f'{fpath.stem}.new').exists():
-            #print(str(fpath))
-            shutil.move(str(fpath.parent/f'{fpath.stem}.new'), str(fpath))
-            print(str(fpath.parent/f'{fpath.stem}.new'), str(fpath))
-            #print(f"{str(fpath)} is removed...")
-      
-        # SOLVE, ASTAP, LOCAL = checkPSolve(fpath)
-        # print("SOLVE:", SOLVE, "ASTAP:", ASTAP, "LOCAL:", LOCAL)
-        # if not SOLVE and tryLOCAL == True : 
-        #     print(f"Trying to solve using LOCAL with variables:\n  {fpath.parent/fpath.name} ")
-        #     # solve-field -O -g --cpulimit 15 --nsigma 15 --downsample 4 -u app -L 0.6 -U 0.63 --no-plots
-        #     with subprocess.Popen(['solve-field', 
-        #                         '-O', #--overwrite: overwrite output files if they already exist
-        #                         '-g', #--guess-scale: try to guess the image scale from the FITS headers
-        #                         '--cpulimit', f'{cpulimit}',  #will make it give up after 30 seconds.
-        #                         '--nsigma', f'{nsigma}',
-        #                         '--downsample', f'{str(downsample)}',
-        #                         '-u', 'app', #'--scale-units', 'arcsecperpix', #pixel scale
-        #                         '-L', f'{pixscale*0.95:.03f}', '-H', f'{pixscale*1.05:.03f}',   
-        #                         # '--ra', f'{ra}', '--dec', f'{dec}',
-        #                         # '-N', f'{fpath.parent / fpath.stem}.new', #--new-fits <filename>: output filename of the new FITS file containingthe WCS header; "none" to not create this file
-        #                         # '-N', f'{fpath}', #--new-fits <filename>: output filename of the new FITS file containingthe WCS header; "none" to not create this file
-        #                         #-p', 
-        #                         '--no-plots',#: don't create any plots of the results
-        #                         #'-D', str(SOLVEDDIR),
-        #                         str(fpath)
-        #                         ], 
-        #                         stdout=subprocess.PIPE) as proc :
-        #         print(proc.stdout.read())
+        if downsample == None :
+            downsample = 4    
+        
+        if pixscale is None :
+            if 'PIXSCALE' in hdul[0].header:
+                pixscale = hdul[0].header['PIXSCALE']
+            else : 
+                pixscale = calPixScale(hdul[0].header['FOCALLEN'], 
+                                            hdul[0].header['XPIXSZ'],
+                                            hdul[0].header['XBINNING'])
 
-        # if fpath.exists() and (fpath.parent/f'{fpath.stem}.new').exists():
-        #     #print(str(fpath))
-        #     shutil.move(str(fpath.parent/f'{fpath.stem}.new'), str(fpath))
-        #     print(str(fpath.parent/f'{fpath.stem}.new'), str(fpath))
-        #     #print(f"{str(fpath)} is removed...")
+        # print(f"pixscale: {pixscale:.03f}, L: {pixscale*0.97:.03f}, U: {pixscale*1.03:.03f}")
+        
+        if cpulimit == None :
+            cpulimit = 15  
+        if nsigma == None :
+            nsigma = 15  
 
-        SOLVE, ASTAP, LOCAL = checkPSolve(fpath)
-        print("SOLVE:", SOLVE, "ASTAP:", ASTAP, "LOCAL:", LOCAL)
-        if not SOLVE and tryLOCAL == True : 
+        vfov = pixscale * hdul[0].header['NAXIS1']/3600    
+        hfov = pixscale * hdul[0].header['NAXIS2']/3600
+        print("vfov , hfov  :", vfov , hfov )
+        
+        try : 
+            spd = 180 + hdul[0].header['DEC']
+            ra = hdul[0].header['RA']
+            dec = hdul[0].header['DEC']
+        except :
+            ra_h, ra_m, ra_s = hdul[0].header['RA'].split(':')
+            dec_d, dec_m, dec_s = hdul[0].header['DEC'].split(':')
+            ra_new = f"{ra_h}h{ra_m}m{ra_s}s"
+            dec_new = f"{dec_d}d{dec_m}m{dec_s}s"
+            c = SkyCoord(ra=ra_new, dec=dec_new)
+            spd = 180 + c.dec.deg
+            ra = c.ra.deg
+            dec = c.dec.deg
+        hdul.close()
+
+        # trying plate solving using ASTAP twice...
+
+        if tryASTAP == True : 
+            print(f"Trying to solve using ASTAP:\n   {fpath.parent/fpath} ")  
+            print(f"astap -f {str(fpath)} -wcs -analyse2 -update")    
+            os.system(f"astap -f {str(fpath)} -wcs -analyse2 -update")
+    else : 
+        return 0
+    
+    SOLVE, ASTAP, LOCAL = checkPSolve(fpath)
+    print("SOLVE:", SOLVE, "ASTAP:", ASTAP, "LOCAL:", LOCAL)
+    if not SOLVE :
+        if tryASTAP == True : 
+            print(f"Trying to solve using ASTAP:\n   {fpath.parent/fpath} ") 
+            print(f"astap -f {str(fpath)} -fov {hfov} -z 2 -wcs -analyse2 -update")     
+            os.system(f"astap -f {str(fpath)} -fov {hfov} -z 2 -wcs -analyse2 -update")
+    else :
+        return 0
+    # trying plate solving using local astrometry solver twice...
+    # SOLVE, ASTAP, LOCAL = checkPSolve(fpath)
+    # print("SOLVE:", SOLVE, "ASTAP:", ASTAP, "LOCAL:", LOCAL)
+    # if not SOLVE and tryASTAP == True :
+    #     print(f"Trying to solve using ASTAP with variables:\n   {fpath.parent/fpath} ")
+    #     with subprocess.Popen(['astap', 
+    #                 '-f', str(fpath), 
+    #                 # '-o', 
+    #                 # '-spd ', f'{spd}',
+    #                 '-fov', f'{hfov}',
+    #                 '-z', f'{str(downsample)}',
+    #                 '-wcs',
+    #                 '-analyse2',
+    #                 '-update',],
+    #                 stdout=subprocess.PIPE) as proc :
+    #         print(proc.stdout.read())
+
+
+    SOLVE, ASTAP, LOCAL = checkPSolve(fpath)
+    print("SOLVE:", SOLVE, "ASTAP:", ASTAP, "LOCAL:", LOCAL)
+    if not SOLVE :
+        if tryLOCAL == True : 
+            print(f"Trying to solve using LOCAL:\n   {fpath.parent/fpath} ")
+            # solve-field -O -g --cpulimit 15 --nsigma 15 --downsample 4 -u app -L 0.6 -U 0.63 --no-plots
+            print(f"solve-field -O --cpulimit 15 --no-plots {str(fpath)}")
+            os.system(f"solve-field -O --cpulimit 15 --no-plots {str(fpath)}")
+            # with subprocess.Popen(['solve-field', 
+            #                         '-O', #--overwrite: overwrite output files if they already exist
+            #                         # '-g', #--guess-scale: try to guess the image scale from the FITS headers
+            #                         '--cpulimit', f'{cpulimit}',  #will make it give up after 30 seconds.
+            #                         # '--nsigma', f'{nsigma}',
+            #                         # '--downsample', f'{str(downsample)}',
+            #                         # '-u', 'app', #'--scale-units', 'arcsecperpix', #pixel scale
+            #                         # '-L', f'{pixscale*0.95:.03f}', 
+            #                         # '-U', f'{pixscale*1.05:.03f}',   
+            #                         # '-N', f'{fpath.parent / fpath.stem}.new', #--new-fits <filename>: output filename of the new FITS file containingthe WCS header; "none" to not create this file
+            #                         # '-N', f'{fpath}', #--new-fits <filename>: output filename of the new FITS file containingthe WCS header; "none" to not create this file
+            #                         #-p', 
+            #                         '--no-plots',#: don't create any plots of the results
+            #                         #'-D', str(SOLVEDDIR),
+            #                         str(fpath)
+            #                         ], 
+            #                         stdout=subprocess.PIPE) as proc :
+            #     print(proc.stdout.read())
+            
+        
+            # SOLVE, ASTAP, LOCAL = checkPSolve(fpath)
+            # print("SOLVE:", SOLVE, "ASTAP:", ASTAP, "LOCAL:", LOCAL)
+            # if not SOLVE and tryLOCAL == True : 
+            #     print(f"Trying to solve using LOCAL with variables:\n  {fpath.parent/fpath.name} ")
+            #     # solve-field -O -g --cpulimit 15 --nsigma 15 --downsample 4 -u app -L 0.6 -U 0.63 --no-plots
+            #     with subprocess.Popen(['solve-field', 
+            #                         '-O', #--overwrite: overwrite output files if they already exist
+            #                         '-g', #--guess-scale: try to guess the image scale from the FITS headers
+            #                         '--cpulimit', f'{cpulimit}',  #will make it give up after 30 seconds.
+            #                         '--nsigma', f'{nsigma}',
+            #                         '--downsample', f'{str(downsample)}',
+            #                         '-u', 'app', #'--scale-units', 'arcsecperpix', #pixel scale
+            #                         '-L', f'{pixscale*0.95:.03f}', '-H', f'{pixscale*1.05:.03f}',   
+            #                         # '--ra', f'{ra}', '--dec', f'{dec}',
+            #                         # '-N', f'{fpath.parent / fpath.stem}.new', #--new-fits <filename>: output filename of the new FITS file containingthe WCS header; "none" to not create this file
+            #                         # '-N', f'{fpath}', #--new-fits <filename>: output filename of the new FITS file containingthe WCS header; "none" to not create this file
+            #                         #-p', 
+            #                         '--no-plots',#: don't create any plots of the results
+            #                         #'-D', str(SOLVEDDIR),
+            #                         str(fpath)
+            #                         ], 
+            #                         stdout=subprocess.PIPE) as proc :
+            #         print(proc.stdout.read())
+
+            if fpath.exists() and (fpath.parent/f'{fpath.stem}.new').exists():
+                #print(str(fpath))
+                shutil.move(str(fpath.parent/f'{fpath.stem}.new'), str(fpath))
+                print(str(fpath.parent/f'{fpath.stem}.new'), str(fpath))
+                #print(f"{str(fpath)} is removed...")
+    else : 
+        return 0 
+     
+    SOLVE, ASTAP, LOCAL = checkPSolve(fpath)
+    print("SOLVE:", SOLVE, "ASTAP:", ASTAP, "LOCAL:", LOCAL)
+    if not SOLVE :
+        if tryLOCAL == True : 
             print(f"Trying to solve using LOCAL with variables again :\n  {fpath.parent/fpath.name} ")
             # solve-field -O -g --cpulimit 15 --nsigma 15 --downsample 4 -u app -L 0.6 -U 0.63 --no-plots
-            with subprocess.Popen(['solve-field', 
-                                '-O', #--overwrite: overwrite output files if they already exist
-                                '-g', #--guess-scale: try to guess the image scale from the FITS headers
-                                '--cpulimit', f'{cpulimit}',  #will make it give up after 30 seconds.
-                                '--nsigma', f'{nsigma}',
-                                '--downsample', f'{str(downsample)}',
-                                '-u', 'app', #'--scale-units', 'arcsecperpix', #pixel scale
-                                '-L', f'{pixscale*0.95:.03f}', '-H', f'{pixscale*1.05:.03f}',   
-                                '--ra', f'{ra}', '--dec', f'{dec}',
-                                # '-N', f'{fpath.parent / fpath.stem}.new', #--new-fits <filename>: output filename of the new FITS file containingthe WCS header; "none" to not create this file
-                                # '-N', f'{fpath}', #--new-fits <filename>: output filename of the new FITS file containingthe WCS header; "none" to not create this file
-                                #-p', 
-                                '--no-plots',#: don't create any plots of the results
-                                #'-D', str(SOLVEDDIR),
-                                str(fpath)
-                                ], 
-                                stdout=subprocess.PIPE) as proc :
-                print(proc.stdout.read())
+            print(f"solve-field -O --cpulimit {cpulimit} -g --nsigma {nsigma} --downsample {str(downsample)} -u app -L {pixscale*0.95:.03f} -H {pixscale*1.05:.03f} --ra {ra} --dec {dec} --no-plots {str(fpath)}")
+            os.system(f"solve-field -O --cpulimit {cpulimit} -g --nsigma {nsigma} --downsample {str(downsample)} -u app -L {pixscale*0.95:.03f} -H {pixscale*1.05:.03f} --ra {ra} --dec {dec} --no-plots {str(fpath)}")
+
+            # with subprocess.Popen(['solve-field', 
+            #                     '-O', #--overwrite: overwrite output files if they already exist
+            #                     '-g', #--guess-scale: try to guess the image scale from the FITS headers
+            #                     '--cpulimit', f'{cpulimit}',  #will make it give up after 30 seconds.
+            #                     '--nsigma', f'{nsigma}',
+            #                     '--downsample', f'{str(downsample)}',
+            #                     '-u', 'app', #'--scale-units', 'arcsecperpix', #pixel scale
+            #                     '-L', f'{pixscale*0.95:.03f}', '-H', f'{pixscale*1.05:.03f}',   
+            #                     '--ra', f'{ra}', '--dec', f'{dec}',
+            #                     # '-N', f'{fpath.parent / fpath.stem}.new', #--new-fits <filename>: output filename of the new FITS file containingthe WCS header; "none" to not create this file
+            #                     # '-N', f'{fpath}', #--new-fits <filename>: output filename of the new FITS file containingthe WCS header; "none" to not create this file
+            #                     #-p', 
+            #                     '--no-plots',#: don't create any plots of the results
+            #                     #'-D', str(SOLVEDDIR),
+            #                     str(fpath)
+            #                     ], 
+            #                     stdout=subprocess.PIPE) as proc :
+            #     print(proc.stdout.read())
 
         if fpath.exists() and (fpath.parent/f'{fpath.stem}.new').exists():
             #print(str(fpath))
             shutil.move(str(fpath.parent/f'{fpath.stem}.new'), str(fpath))
             print(str(fpath.parent/f'{fpath.stem}.new'), str(fpath))
             #print(f"{str(fpath)} is removed...")
-            
-        SOLVE, ASTAP, LOCAL = checkPSolve(fpath)
-        print("SOLVE:", SOLVE, "ASTAP:", ASTAP, "LOCAL:", LOCAL)
+    else :
+        return 0
+        
+    SOLVE, ASTAP, LOCAL = checkPSolve(fpath)
+    print("SOLVE:", SOLVE, "ASTAP:", ASTAP, "LOCAL:", LOCAL)
 
-        if not SOLVE and tryASTROMETRYNET == True : 
+    if not SOLVE :
+        if tryASTROMETRYNET == True : 
             print(f"Trying to solve using astrometry:\n  {fpath.parent/fpath.name} ")
             from astroquery.astrometry_net import AstrometryNet
             ast = AstrometryNet()
@@ -1108,6 +1124,8 @@ def KevinSolver(fpath,
             except Exception as err: 
                 print("Err :", err)
                 pass 
+    else :
+        return 0
 
     SOLVE, ASTAP, LOCAL = checkPSolve(fpath)
     print("SOLVE:", SOLVE, "ASTAP:", ASTAP, "LOCAL:", LOCAL)
@@ -1122,22 +1140,25 @@ def KevinSolver(fpath,
     #                     cpulimit = 30,
     #                     )
 
-    if not SOLVE and makeLOCALsh == True :
-        #solve-field -O -g --cpulimit 15 --nsigma 15 --downsample 4 -u app -L 0.6 -U 0.63 --no-plots
-        solve_sh += f"solve-field -O -g --cpulimit {cpulimit} --nsigma {nsigma} --downsample {downsample} -u app -L {pixscale*0.95:.03f} -U {pixscale*1.05:.03f} --no-plots {str(fpath)}\n"
-        solve_sh += f"mv {fpath.parent/fpath.stem}.new {str(fpath)}\n"
-        # solve_sh += f"rm {fpath.parent/fpath.stem}-indx.xyls\n"
-        # solve_sh += f"rm {fpath.parent/fpath.stem}-indx.axy\n"
-        # solve_sh += f"rm {fpath.parent/fpath.stem}.rdls\n"
-        # solve_sh += f"rm {fpath.parent/fpath.stem}.corr\n"
-        # solve_sh += f"rm {fpath.parent/fpath.stem}.solved\n"
-        # solve_sh += f"rm {fpath.parent/fpath.stem}.match\n"
-        # solve_sh += f"rm {fpath.parent/fpath.stem}.axy\n"
-        # solve_sh += f"rm {fpath.parent/fpath.stem}.wcs\n"
-        # print("result:", solve_sh)
+    if not SOLVE :
+        if makeLOCALsh == True :
+            #solve-field -O -g --cpulimit 15 --nsigma 15 --downsample 4 -u app -L 0.6 -U 0.63 --no-plots
+            solve_sh += f"solve-field -O -g --cpulimit {cpulimit} --nsigma {nsigma} --downsample {downsample} -u app -L {pixscale*0.95:.03f} -U {pixscale*1.05:.03f} --no-plots {str(fpath)}\n"
+            solve_sh += f"mv {fpath.parent/fpath.stem}.new {str(fpath)}\n"
+            # solve_sh += f"rm {fpath.parent/fpath.stem}-indx.xyls\n"
+            # solve_sh += f"rm {fpath.parent/fpath.stem}-indx.axy\n"
+            # solve_sh += f"rm {fpath.parent/fpath.stem}.rdls\n"
+            # solve_sh += f"rm {fpath.parent/fpath.stem}.corr\n"
+            # solve_sh += f"rm {fpath.parent/fpath.stem}.solved\n"
+            # solve_sh += f"rm {fpath.parent/fpath.stem}.match\n"
+            # solve_sh += f"rm {fpath.parent/fpath.stem}.axy\n"
+            # solve_sh += f"rm {fpath.parent/fpath.stem}.wcs\n"
+            # print("result:", solve_sh)
 
-        with open(f"__{datetime.now().strftime('%Y%m%d')}_todo_astrometry_solve.sh", 'a') as f:
-            f.write(solve_sh) 
+            with open(f"__{datetime.now().strftime('%Y%m%d')}_todo_astrometry_solve.sh", 'a') as f:
+                f.write(solve_sh) 
+    else : 
+        return 0
 
     return 0
         
@@ -1707,86 +1728,139 @@ def combine_BDF(BDFDIR,
                                 verbose = False,
                                 )
     
-    if summary is not None :
+    if summary is None :
+        print(f"summary is None...")
+    else :
         #print(summary)
         print("len(summary):", len(summary))
         print("summary:", summary)
         #print(summary["file"][0])
 
-        if (MASTERDIR / "master_bias.fits").exists() and not tryagain:
-            print("bias file is already exist....")
-        else :
-            #bias_fits = summary[summary["IMAGETYP"] == "BIAS"]["file"]
-            bias_fits = summary.loc[summary["IMAGETYP"] == "BIAS"].copy()
-            bias_fits.reset_index(inplace=True)
-            bias_fits = bias_fits["file"]
-            print(type(bias_fits))
-            print(len(bias_fits))
-            print(bias_fits)
+    # check_filters = summary['FILTER'].drop_duplicates()
+    # check_filters = check_filters.reset_index(drop=True)
+    # print("check_filters", check_filters)
 
-            bias_comb = yfu.group_combine(
-                            bias_fits.tolist(),
-                            type_key = ["IMAGETYP"],
-                            type_val = ["BIAS"],
-                            group_key = ["EXPTIME"],
-                            fmt = "master_bias.fits",  # output file name format
-                            outdir = MASTERDIR,  # output directory (will automatically be made if not exist)
-                            combine = "med",
-                            memlimit = 2.e+10,
-                            verbose = True,
-                        )
+    # EXPkeys = ['EXPSORE', 'EXPTIME']
+    # for EXPkey in EXPkeys :
+    #     if EXPkey in summary :
+    #         check_exptimes = summary[EXPkey].drop_duplicates()
+    #         check_exptimes = check_exptimes.reset_index(drop=True)
+    # print("check_exptimes", check_exptimes)
 
-        #dark_fits = summary[summary["IMAGETYP"] == "DARK"]["file"]
-        dark_fits = summary.loc[summary["IMAGETYP"] == "DARK"].copy()
-        dark_fits.reset_index(inplace=True)
-        dark_fits = dark_fits["file"]
-        print(type(dark_fits))
-        print(len(dark_fits))
-        print(dark_fits)
+    if (MASTERDIR / "master_bias.fits").exists() and tryagain == False :
+        print("bias file is already exist....")
+    else :
+        #bias_fits = summary[summary["IMAGETYP"] == "BIAS"]["file"]
+        summary_bias = summary.loc[summary["IMAGETYP"] == "BIAS"].copy()
+        summary_bias.reset_index(inplace=True)
+        # print("summary_bias", summary_bias)
 
-        # Say dark frames have header OBJECT = "calib" && "IMAGE-TYP" = "DARK"
-        dark_comb = yfu.group_combine(
-                        dark_fits.tolist(),
+        bias_fits = summary_bias["file"]
+        # print("type(bias_fits)", type(bias_fits))
+        print("len(bias_fits)", len(bias_fits))
+        # print("bias_fits", bias_fits)
+
+        bias_comb = yfu.group_combine(
+                        bias_fits.tolist(),
                         type_key = ["IMAGETYP"],
-                        type_val = ["DARK"],
+                        type_val = ["BIAS"],
                         group_key = ["EXPTIME"],
-                        fmt = "master_dark_{:.0f}sec.fits",  # output file name format
+                        fmt = "master_bias.fits",  # output file name format
                         outdir = MASTERDIR,  # output directory (will automatically be made if not exist)
                         combine = "med",
                         memlimit = 2.e+10,
                         verbose = True,
                     )
 
-        flat_fits = summary[summary["IMAGETYP"] == "FLAT"]["file"] 
-        # Say dark frames have header OBJECT = "calib" && "IMAGE-TYP" = "DARK"
-        flat_comb_norm = yfu.group_combine(
-                        flat_fits.tolist(),
-                        type_key = ["IMAGETYP"],
-                        type_val = ["FLAT"],
-                        group_key = ["FILTER"],
-                        fmt = "master_flat_{:s}_norm.fits",  # output file name format
-                        scale="med_sc", #norm
-                        scale_to_0th=False, #norm
-                        outdir = MASTERDIR,  # output directory (will automatically be made if not exist)
-                        combine = "med",
-                        memlimit = 2.e+10,
-                        verbose=True,
-                    )
+    #dark_fits = summary[summary["IMAGETYP"] == "DARK"]["file"]
+    summary_dark = summary.loc[summary["IMAGETYP"] == "DARK"].copy()
+    summary_dark.reset_index(inplace=True)
+    # print("summary_dark", summary_dark)
 
-        # Say dark frames have header OBJECT = "calib" && "IMAGE-TYP" = "DARK"
-        flat_comb = yfu.group_combine(
-                        flat_fits.tolist(),
-                        type_key = ["IMAGETYP"],
-                        type_val = ["FLAT"],
-                        group_key = ["FILTER"],
-                        fmt = "master_flat_{:s}.fits",  # output file name format
-                        #scale="med_sc", #norm
-                        #scale_to_0th=False, #norm
-                        outdir = MASTERDIR,  # output directory (will automatically be made if not exist)
-                        combine = "med",
-                        memlimit = 2.e+10,
-                        verbose=True,
-                    )
+    # EXPkeys = ['EXPSORE', 'EXPTIME']
+    # for EXPkey in EXPkeys :
+    #     if EXPkey in summary_dark :
+    #         check_exptimes = summary_dark[EXPkey].drop_duplicates()
+    #         check_exptimes = check_exptimes.reset_index(drop=True)
+
+    if 'EXPTIME' in summary_dark :
+        check_exptimes = summary_dark['EXPTIME'].drop_duplicates()
+        check_exptimes = check_exptimes.reset_index(drop=True)
+        print("check_exptimes", check_exptimes)
+
+        for exptime in check_exptimes :
+            if (MASTERDIR / f"master_dark_{exptime:.0f}sec.fits" ).exists() and tryagain == False :
+                print(f"master_dark_{exptime:.0f}sec.fits already exist....")
+            else :
+                summary_dark_each = summary_dark.loc[summary_dark['EXPTIME'] == exptime]
+                dark_fits = summary_dark_each['file']
+                # print("type(dark_fits)", type(dark_fits))
+                print("len(dark_fits)", len(dark_fits))
+                # print("dark_fits", dark_fits)
+
+                if len(dark_fits) > 0 : 
+                # Say dark frames have header OBJECT = "calib" && "IMAGE-TYP" = "DARK"
+                    dark_comb = yfu.group_combine(
+                                dark_fits.tolist(),
+                                type_key = ["IMAGETYP"],
+                                type_val = ["DARK"],
+                                group_key = ["EXPTIME"],
+                                fmt = "master_dark_{:.0f}sec.fits",  # output file name format
+                                outdir = MASTERDIR,  # output directory (will automatically be made if not exist)
+                                combine = "med",
+                                memlimit = 2.e+10,
+                                verbose = True,
+                            )
+                
+    summary_flat = summary.loc[summary["IMAGETYP"] == "FLAT"].copy()
+    summary_flat.reset_index(inplace=True)
+
+    if 'FILTER' in summary_flat :
+        check_filters = summary_flat['FILTER'].drop_duplicates()
+        check_filters.reset_index(drop=True)
+        print("check_filters", check_filters)
+
+        for filter in check_filters :
+            if (MASTERDIR / f"master_flat_{filter:s}_norm.fits" ).exists() and tryagain == False  :
+                print(f"master_flat_{filter:s}_norm.fits already exist....")
+            else : 
+                summary_flat_each = summary_flat.loc[summary_flat['FILTER'] == filter]
+                flat_fits = summary_flat_each['file']
+                # print("type(flat_fits)", type(flat_fits))
+                print("len(flat_fits)", len(flat_fits))
+                # print("flat_fits", flat_fits)
+
+                if len(flat_fits) > 0 : 
+                # Say dark frames have header OBJECT = "calib" && "IMAGE-TYP" = "DARK"
+                    flat_comb_norm = yfu.group_combine(
+                                flat_fits.tolist(),
+                                type_key = ["IMAGETYP"],
+                                type_val = ["FLAT"],
+                                group_key = ["FILTER"],
+                                fmt = "master_flat_{:s}_norm.fits",  # output file name format
+                                scale="med_sc", #norm
+                                scale_to_0th=False, #norm
+                                outdir = MASTERDIR,  # output directory (will automatically be made if not exist)
+                                combine = "med",
+                                memlimit = 2.e+10,
+                                verbose=True,
+                            )
+
+                # Say dark frames have header OBJECT = "calib" && "IMAGE-TYP" = "DARK"
+                    flat_comb = yfu.group_combine(
+                                flat_fits.tolist(),
+                                type_key = ["IMAGETYP"],
+                                type_val = ["FLAT"],
+                                group_key = ["FILTER"],
+                                fmt = "master_flat_{:s}.fits",  # output file name format
+                                #scale="med_sc", #norm
+                                #scale_to_0th=False, #norm
+                                outdir = MASTERDIR,  # output directory (will automatically be made if not exist)
+                                combine = "med",
+                                memlimit = 2.e+10,
+                                verbose=True,
+                            )
+
     return 0
 
 #%%
@@ -1795,6 +1869,7 @@ def combine_BDF(BDFDIR,
 #########################################
 def solving_fits_file(DOINGDIR,
                 SOLVINGDIR = None,
+                downsample = 4,
                 tryagain = False,  
                 # tryASTAP = True, 
                 # tryLOCAL = True,
@@ -1832,7 +1907,7 @@ def solving_fits_file(DOINGDIR,
             try : 
                 KevinSolver(fpath, 
                             # solved_dir = None,
-                            # downsample = 4,
+                            downsample = downsample,
                             # pixscale = None ,
                             # cpulimit = 15,
                             # tryASTAP = True, 
@@ -1854,6 +1929,8 @@ def ccd_Reducuction (DOINGDIR,
                     BDFDIR,
                     tryagain = False,
                     trynightsky = True,
+                    OWrite = False,
+                    file_age = 365,
                     **kwarg) :
     DOINGDIR = Path(DOINGDIR)
     print(f"Starting: {str(DOINGDIR.parts[-1])}")
@@ -1880,46 +1957,73 @@ def ccd_Reducuction (DOINGDIR,
         df_light = summary.loc[summary["IMAGETYP"] == "LIGHT"].copy()
         df_light = df_light.reset_index(drop=True)
 
+        summary_master = yfu.make_summary(MASTERDIR/"*.fit*", 
+                           verbose = False,
+                           )
+        # print("summary_master", summary_master)
+
+        summary_master_dark = summary_master.loc[summary_master["IMAGETYP"] == "DARK"].copy()
+        summary_master_dark.reset_index(inplace=True)
+        # print("summary_master_dark", summary_master_dark)
+
+        if 'EXPTIME' in summary_master_dark :
+            check_exptimes = summary_master_dark['EXPTIME'].drop_duplicates()
+            check_exptimes = check_exptimes.reset_index(drop=True)
+            print("check_exptimes", check_exptimes)
+
         for _, row in df_light.iterrows():
 
             fpath = Path(row["file"])
+            fpath_age = _Python_utilities.get_file_age(fpath)
             ccd = yfu.load_ccd(fpath)
             filt = ccd.header["FILTER"]
             expt = ccd.header["EXPTIME"]
-            if (REDUCEDDIR/ fpath.name).exists() and not tryagain:
+            
+            idx = abs(summary_master_dark['EXPTIME'] - expt).idxmin()
+            # print(idx)
+
+            if (REDUCEDDIR/ fpath.name).exists() and tryagain == False and fpath_age.days < file_age :
                 print(f"reduction file already exists...\n{fpath.name}")
                 pass
             else :
                 try : 
-                    red = yfu.ccdred(
-                        ccd,
-                        output = REDUCEDDIR/ fpath.name,
-                        mbiaspath = MASTERDIR / "master_bias.fits",
-                        mdarkpath = MASTERDIR / f"master_dark_{expt:.0f}sec.fits",
-                        mflatpath = MASTERDIR / f"master_flat_{filt.upper()}_norm.fits",
-                        # flat_norm_value=1,  # 1 = skip normalization, None = normalize by mean
-                        dark_scale = False,
-                        overwrite=True
-                        )
-                except : 
-                    dark_exp = 100
-                    red = yfu.ccdred(
-                        ccd,
-                        output = REDUCEDDIR / fpath.name,
-                        mbiaspath = MASTERDIR / "master_bias.fits",
-                        mdarkpath = MASTERDIR / f"master_dark_{dark_exp}sec.fits",
-                        mflatpath = MASTERDIR / f"master_flat_{filt.upper()}_norm.fits",
-                        dark_scale = True,
-                        exptime_dark = dark_exp,
-                        # flat_norm_value=1,  # 1 = skip normalization, None = normalize by mean
-                        overwrite=True,
-                        )
+                    if not (MASTERDIR / f"master_flat_{filt.upper()}_norm.fits").exists() :
+                        print(f"{MASTERDIR}/master_flat_{filt.upper()}_norm.fits is not exists...")
+                    else :
+                        if (MASTERDIR / f"master_dark_{expt:.0f}sec.fits").exists() :
+                            print(f"Reduce with master_dark_{expt:.0f}sec.fits ...")
+
+                            red = yfu.ccdred(
+                                ccd,
+                                output=Path(f"{REDUCEDDIR/ fpath.name}"),
+                                mdarkpath=str(MASTERDIR / "master_dark_{:.0f}sec.fits".format(expt)),
+                                mflatpath=str(MASTERDIR / "master_flat_{}_norm.fits".format(filt.upper())),
+                                # flat_norm_value=1,  # 1 = skip normalization, None = normalize by mean
+                                overwrite=True,
+                                )
+                        else : 
+                            print(f"Reduce with master_dark_{summary_master_dark['EXPTIME'][idx]:.0f}sec.fits is not exists...")
+                            red = yfu.ccdred(
+                                ccd,
+                                output=Path(f"{REDUCEDDIR/ fpath.name}"),
+                                mdarkpath=str(MASTERDIR / f"master_dark_{summary_master_dark['EXPTIME'][idx]:.0f}sec.fits"),
+                                mflatpath=str(MASTERDIR / f"master_flat_{filt.upper()}_norm.fits"),
+                                dark_scale = True,
+                                exptime_dark = summary_master_dark['EXPTIME'][idx],
+                                # flat_norm_value=1,  # 1 = skip normalization, None = normalize by mean
+                                overwrite=True,
+                                )
+                        print (f"Reduce Reduce {fpath.name} +++...")
+
+                except Exception as e: 
+                    print("err:", e)
+                    pass
 
     if trynightsky == True : 
-        REDUC_nightsky = DOINGDIR / reduced_nightsky_dir
-        if not REDUC_nightsky.exists():
-            os.makedirs("{}".format(str(REDUC_nightsky)))
-            print("{} is created...".format(str(REDUC_nightsky)))
+        REDUCNSKYDIR = DOINGDIR / reduced_nightsky_dir
+        if not REDUCNSKYDIR.exists():
+            os.makedirs("{}".format(str(REDUCNSKYDIR)))
+            print("{} is created...".format(str(REDUCNSKYDIR)))
     
         summary = yfu.make_summary(REDUCEDDIR /"*.fit*")
         if summary is not None :
@@ -1930,59 +2034,65 @@ def ccd_Reducuction (DOINGDIR,
             df_light = summary.loc[summary["IMAGETYP"] == "LIGHT"].copy()
             df_light = df_light.reset_index(drop=True)
 
-            for filt in ["B", "V", "R", "L", "R", "G", "B", "b", "v", "r"]:
-            #for filt in ["V"]:
-                df_light_filt = df_light.loc[df_light["FILTER"] == filt].copy()
-                
-                if df_light_filt.empty:
-                    print(f"The dataframe(df_light_filt) {filt} is empty")
-                    pass
-                else:
+            if 'FILTER' in df_light :
+                check_filters = df_light['FILTER'].drop_duplicates()
+                check_filters = check_filters.reset_index(drop=True)
+                print("check_filters", check_filters)
 
-                    print("len(df_light_filt):", len(df_light_filt))
-                    print("df_light_filt:", df_light_filt)
-                
-                    if (sMASTERDIR / f"nightskyflat-{filt}.fits").exists() and not tryagain :
+                for filt in check_filters:
+                #for filt in ["V"]:
+                    df_light_filt = df_light.loc[df_light["FILTER"] == filt].copy()
+                    
+                    if df_light_filt.empty:
+                        print(f"The dataframe(df_light_filt) {filt} is empty")
                         pass
-                    else :      
-                        File_Num = 80
-                        if len(df_light_filt["file"]) > File_Num :
-                            combine_lst = df_light_filt["file"].tolist()[:File_Num]
-                        else : 
-                            combine_lst = df_light_filt["file"].tolist()
-                        if (sMASTERDIR / f"nightskyflat-{filt}_norm.fits").exists():
+                    else:
+
+                        print("len(df_light_filt):", len(df_light_filt))
+                        print("df_light_filt:", df_light_filt)
+                    
+                        if (sMASTERDIR / f"nightskyflat-{filt}.fits").exists() and tryagain ==False :
                             pass
-                        else :
-                            try : 
-                                ccd = yfu.imcombine(
-                                                    combine_lst, 
-                                                    combine="med",
-                                                    scale="avg", 
-                                                    scale_to_0th=False, #norm
-                                                    reject="sc", 
-                                                    sigma=2.5,
-                                                    verbose=True,
-                                                    memlimit = 2.e+11,
-                                                    )
-                            except :
-                                ccd = yfu.imcombine(
-                                                    combine_lst, 
-                                                    combine="med",
-                                                    scale="avg", 
-                                                    scale_to_0th=False, #norm
-                                                    reject="sc", 
-                                                    # sigma=2.5,
-                                                    verbose=True,
-                                                    memlimit = 2.e+11,
-                                                    )
-                            ccd.write(sMASTERDIR / f"nightskyflat-{filt}_norm.fits", overwrite=True)
-                            print (f"Create Create nightskyflat-{filt}_norm.fits +++...")
+                        else :      
+                            File_Num = 80
+                            if len(df_light_filt["file"]) > File_Num :
+                                combine_lst = df_light_filt["file"].tolist()[:File_Num]
+                            else : 
+                                combine_lst = df_light_filt["file"].tolist()
+                            if (sMASTERDIR / f"nightskyflat-{filt}_norm.fits").exists():
+                                pass
+                            else :
+                                try : 
+                                    ccd = yfu.imcombine(
+                                                        combine_lst, 
+                                                        combine="med",
+                                                        scale="avg", 
+                                                        scale_to_0th=False, #norm
+                                                        reject="sc", 
+                                                        sigma=2.5,
+                                                        verbose=True,
+                                                        memlimit = 2.e+11,
+                                                        )
+                                except :
+                                    ccd = yfu.imcombine(
+                                                        combine_lst, 
+                                                        combine="med",
+                                                        scale="avg", 
+                                                        scale_to_0th=False, #norm
+                                                        reject="sc", 
+                                                        # sigma=2.5,
+                                                        verbose=True,
+                                                        memlimit = 2.e+11,
+                                                        )
+                                ccd.write(sMASTERDIR / f"nightskyflat-{filt}_norm.fits", overwrite=True)
+                                print (f"Create Create nightskyflat-{filt}_norm.fits +++...")
 
             for _, row in df_light.iterrows():
                 fpath = Path(row["file"])
+                fpath_age = _Python_utilities.get_file_age(fpath)
                 ccd = yfu.load_ccd(REDUCEDDIR / fpath.name)
                 filt = row["FILTER"]
-                if (REDUC_nightsky / fpath.name).exists() and not tryagain:
+                if (REDUCNSKYDIR / fpath.name).exists() and tryagain == False and fpath_age.days < file_age:
                     print(f"Nightsky reduction file already exists...\n{fpath.name}")
                     pass
                 else :
@@ -1990,7 +2100,7 @@ def ccd_Reducuction (DOINGDIR,
                         ccd = yfu.ccdred(
                                         ccd, 
                                         mflatpath = sMASTERDIR / f"nightskyflat-{filt}_norm.fits",
-                                        output = REDUC_nightsky / fpath.name
+                                        output = REDUCNSKYDIR / fpath.name
                                     )
                     except : 
                         # _Python_utilities.write_log(err_log_file, "FileNotFoundError") 
@@ -2005,7 +2115,7 @@ def plot_light_curve_variables_using_csv(DOINGDIR,
                                         READINGDIR = reduced_dir,
                                         FWHM_INIT = 6,
                                         Mag_target = 12.5,
-                                        ERR_Min = 0.5,
+                                        ERR_Max = 0.5,
                                         coord_deltas = np.arange(0.00001, 0.00050, 0.00001),
                                         #  READINGDIR = _astro_utilities.reduced__nightsky_dir,
                                          **kwarg
@@ -2055,15 +2165,15 @@ def plot_light_curve_variables_using_csv(DOINGDIR,
 
             # type(result_table['RA'][0])
             # result_table['RA'][0].split(" ")
-            targ_sky = SkyCoord(ra=f"{result_table['RA'][0].split(' ')[0]}h{result_table['RA'][0].split(' ')[1]}m{result_table['RA'][0].split(" ")[2]}s",
-                        dec=f"{result_table['DEC'][0].split(' ')[0]}d{result_table['DEC'][0].split(' ')[1]}m{result_table['DEC'][0].split(" ")[2]}s", frame='icrs')
+            targ_sky = SkyCoord(ra=f"{result_table['RA'][0].split(' ')[0]}h{result_table['RA'][0].split(' ')[1]}m{result_table['RA'][0].split(' ')[2]}s",
+                        dec=f"{result_table['DEC'][0].split(' ')[0]}d{result_table['DEC'][0].split(' ')[1]}m{result_table['DEC'][0].split(' ')[2]}s", frame='icrs')
             print("targ_sky :", targ_sky)
             for coord_delta in coord_deltas :
                 df_targ = df.loc[(df["RAJ2000"] > targ_sky.ra.value*(1-coord_delta)) \
                                 & (df["RAJ2000"] < targ_sky.ra.value*(1+coord_delta)) \
                                 & (df["DEJ2000"] > targ_sky.dec.value*(1-coord_delta))\
                                 & (df["DEJ2000"] < targ_sky.dec.value*(1+coord_delta))\
-                                & (df["merr_ann"] < ERR_Min)]
+                                & (df["merr_ann"] < ERR_Max)]
 
                 if df_targ.empty :
                     print("df_targ is empty")
@@ -2073,8 +2183,8 @@ def plot_light_curve_variables_using_csv(DOINGDIR,
 
                     ttime = Time(df_targ["t_middle_dt"])
 
-                    fig, axs = plt.subplots(1, 2, figsize=(16, 10), 
-                                sharex=False, sharey=False, gridspec_kw=None)
+                    fig, axs = plt.subplots(2, 1, figsize=(12, 8), 
+                            sharex=False, sharey=False, gridspec_kw=None)
 
                     chls = ['B', 'V', 'R']
                     for chl in chls :
@@ -2103,6 +2213,10 @@ def plot_light_curve_variables_using_csv(DOINGDIR,
                     axs[0].set(
                         xlabel='Time (MJD)',
                         ylabel="Magnitude",
+                        # ylim=(10.8+1, 10.8-1),
+                        # ylim=(11.25+1.2, 11.25-1.2),   
+                        # ylim=(10.75+.6, 10.75-.6),   
+                        # ylim=(10.8+.9, 10.8-.9), 
                     )
                     axs[0].legend()
                     axs[0].grid(linestyle=':')
@@ -2115,7 +2229,7 @@ def plot_light_curve_variables_using_csv(DOINGDIR,
                     axs[1].set(
                         xlabel='Time (date)',
                         ylabel="flux",
-                    )
+                    ) 
                     axs[1].legend()
                     axs[1].grid(linestyle=':')
 
@@ -2133,167 +2247,230 @@ def plot_light_curve_variables_using_csv(DOINGDIR,
 #########################################
 #reduceLightFrame
 #########################################
-def reduceLightFrame(
-        DOINGDIR,
-        MASTERDIR,
-        OWrite=False,
-        **kwargs
-        ):
-    ''' Gives the new path of the FITS file from header.
-    Parameters
-    ----------
-    DOINGDIR: pathlike
-        The path to the original .
-    summary : dataframe
+# def reduceLightFrame(
+#         DOINGDIR,
+#         MASTERDIR,
+#         OWrite=False,
+#         tryagain = False, 
+#         **kwargs
+#         ):
+#     ''' Gives the new path of the FITS file from header.
+#     Parameters
+#     ----------
+#     DOINGDIR: pathlike
+#         The path to the original .
+#     summary : dataframe
         
-    Returns
-    -------
+#     Returns
+#     -------
     
-    '''
-    DOINGDIR = Path(DOINGDIR)
-    print (DOINGDIR.parts[-1])
-    sMASTERDIR = DOINGDIR / master_dir
-    REDUCEDDIR = DOINGDIR / reduced_dir
+#     '''
+#     DOINGDIR = Path(DOINGDIR)
+#     print(f"Starting: {str(DOINGDIR.parts[-1])}")
+    
+#     sMASTERDIR = DOINGDIR / master_dir
+#     REDUCEDDIR = DOINGDIR / reduced_dir
 
-    if not sMASTERDIR.exists():
-        os.makedirs(str(sMASTERDIR))
-        print("{} is created...".format(str(sMASTERDIR)))
+#     if not sMASTERDIR.exists():
+#         os.makedirs(str(sMASTERDIR))
+#         print("{} is created...".format(str(sMASTERDIR)))
 
-    if not REDUCEDDIR.exists():
-        os.makedirs(str(REDUCEDDIR))
-        print("{} is created...".format(str(REDUCEDDIR)))
+#     if not REDUCEDDIR.exists():
+#         os.makedirs(str(REDUCEDDIR))
+#         print("{} is created...".format(str(REDUCEDDIR)))
 
-    summary = yfu.make_summary(DOINGDIR/"*.fit*")
-    if summary is not None :
-        #print(summary)
-        print("len(summary):", len(summary))
-        print("summary:", summary)
-        #print(summary["file"][0])
+#     summary = yfu.make_summary(DOINGDIR/"*.fit*")
+#     if summary is not None :
+#         #print(summary)
+#         print("len(summary):", len(summary))
+#         print("summary:", summary)
+#         #print(summary["file"][0])
 
-        df_light = summary.loc[summary["IMAGETYP"] == "LIGHT"].copy()
-        df_light = df_light.reset_index(drop=True)
+#         df_light = summary.loc[summary["IMAGETYP"] == "LIGHT"].copy()
+#         df_light = df_light.reset_index(drop=True)
 
-        for _, row in df_light.iterrows():
+#         summary_master = yfu.make_summary(MASTERDIR/"*.fit*", 
+#                            verbose = False,
+#                            )
+#         # print("summary_master", summary_master)
 
-            fpath = Path(row["file"])
-            ccd = yfu.load_ccd(fpath)
-            filt = ccd.header["FILTER"]
-            expt = ccd.header["EXPTIME"]
-            if (not (REDUCEDDIR/fpath.name).exists()) or OWrite==True :
-                red = yfu.ccdred(
-                    ccd,
-                    output=Path(f"{REDUCEDDIR/ fpath.name}"),
-                    mdarkpath=str(MASTERDIR / "master_dark_{:.0f}sec.fits".format(expt)),
-                    mflatpath=str(MASTERDIR / "master_flat_{}_norm.fits".format(filt.upper())),
-                    # flat_norm_value=1,  # 1 = skip normalization, None = normalize by mean
-                    # overwrite=OWrite,
-                    )
-                print (f"Reduce Reduce {fpath.name} +++...")
+#         summary_master_dark = summary_master.loc[summary_master["IMAGETYP"] == "DARK"].copy()
+#         summary_master_dark.reset_index(inplace=True)
+#         # print("summary_master_dark", summary_master_dark)
 
-    return 0
+#         if 'EXPTIME' in summary_master_dark :
+#             check_exptimes = summary_master_dark['EXPTIME'].drop_duplicates()
+#             check_exptimes = check_exptimes.reset_index(drop=True)
+#         print("check_exptimes", check_exptimes)
 
-#%%
-#########################################
-#makeNightskyflatReduceLightFrame
-#########################################
-def makeNightskyflatReduceLightFrame(
-        DOINGDIR,
-        MASTERDIR,
-        OWrite=False,
-        **kwargs
-        ):
-    ''' Gives the new path of the FITS file from header.
-    Parameters
-    ----------
-    DOINGDIR: pathlike
-        The path to the original .
-    summary : dataframe
+#         for _, row in df_light.iterrows():
+
+#             fpath = Path(row["file"])
+#             ccd = yfu.load_ccd(fpath)
+#             filt = ccd.header["FILTER"]
+#             expt = ccd.header["EXPTIME"]
+
+#             idx = abs(summary_master_dark['EXPTIME'] - expt).idxmin()
+#             # print(idx)
+
+#             if (REDUCEDDIR / fpath.name).exists() and tryagain == False :
+#                 print(f"reduction file already exists...\n{fpath.name}")
+#                 pass
+#             else :
+#                 try : 
+#                     if not (MASTERDIR / f"master_flat_{filt.upper()}_norm.fits").exists() :
+#                         print(f"{MASTERDIR}/master_flat_{filt.upper()}_norm.fits is not exists...")
+#                     else :
+#                         if (MASTERDIR / f"master_dark_{expt:.0f}sec.fits").exists() :
+#                             print(f"Reduce with master_dark_{expt:.0f}sec.fits ...")
+
+#                             red = yfu.ccdred(
+#                                 ccd,
+#                                 output=Path(f"{REDUCEDDIR/ fpath.name}"),
+#                                 mdarkpath=str(MASTERDIR / "master_dark_{:.0f}sec.fits".format(expt)),
+#                                 mflatpath=str(MASTERDIR / "master_flat_{}_norm.fits".format(filt.upper())),
+#                                 # flat_norm_value=1,  # 1 = skip normalization, None = normalize by mean
+#                                 overwrite=True,
+#                                 )
+#                         else : 
+#                             print(f"Reduce with master_dark_{summary_master_dark['EXPTIME'][idx]:.0f}sec.fits is not exists...")
+#                             red = yfu.ccdred(
+#                                 ccd,
+#                                 output=Path(f"{REDUCEDDIR/ fpath.name}"),
+#                                 mdarkpath=str(MASTERDIR / f"master_dark_{summary_master_dark['EXPTIME'][idx]:.0f}sec.fits"),
+#                                 mflatpath=str(MASTERDIR / f"master_flat_{filt.upper()}_norm.fits"),
+#                                 dark_scale = True,
+#                                 exptime_dark = summary_master_dark['EXPTIME'][idx],
+#                                 # flat_norm_value=1,  # 1 = skip normalization, None = normalize by mean
+#                                 overwrite=True,
+#                                 )
+#                         print (f"Reduce Reduce {fpath.name} +++...")
+
+#                 except Exception as e: 
+#                     print("err:", e)
+#                     pass
+
+#     return 0
+
+# #%%
+# #########################################
+# #makeNightskyflatReduceLightFrame
+# #########################################
+# def makeNightskyflatReduceLightFrame(
+#         DOINGDIR,
+#         MASTERDIR,
+#         tryagain = False, 
+#         OWrite = False,
+#         **kwargs
+#         ):
+#     ''' Gives the new path of the FITS file from header.
+#     Parameters
+#     ----------
+#     DOINGDIR: pathlike
+#         The path to the original .
+#     summary : dataframe
         
-    Returns
-    -------
+#     Returns
+#     -------
     
-    '''
-    DOINGDIR = Path(DOINGDIR)
-    print (DOINGDIR.parts[-1])
-    sMASTERDIR = DOINGDIR / master_dir
-    REDUCEDDIR = DOINGDIR / reduced_dir
-    REDUCNSKYDIR = DOINGDIR / reduced_nightsky_dir
+#     '''
+#     DOINGDIR = Path(DOINGDIR)
+#     print (DOINGDIR.parts[-1])
+#     sMASTERDIR = DOINGDIR / master_dir
+#     REDUCEDDIR = DOINGDIR / reduced_dir
+#     REDUCNSKYDIR = DOINGDIR / reduced_nightsky_dir
 
-    # if not MASTERDIR.exists():
-    # shutil.copytree(MASTERDIR, MASTERDIR, dirs_exist_ok=True)
+#     # if not MASTERDIR.exists():
+#     # shutil.copytree(MASTERDIR, MASTERDIR, dirs_exist_ok=True)
 
-    if not sMASTERDIR.exists():
-        os.makedirs(str(sMASTERDIR))
-        print("{} is created...".format(str(sMASTERDIR)))
+#     if not sMASTERDIR.exists():
+#         os.makedirs(str(sMASTERDIR))
+#         print("{} is created...".format(str(sMASTERDIR)))
 
-    if not REDUCNSKYDIR.exists():
-        os.makedirs("{}".format(str(REDUCNSKYDIR)))
-        print("{} is created...".format(str(REDUCNSKYDIR)))
+#     if not REDUCNSKYDIR.exists():
+#         os.makedirs("{}".format(str(REDUCNSKYDIR)))
+#         print("{} is created...".format(str(REDUCNSKYDIR)))
     
-    summary = yfu.make_summary(DOINGDIR/"*.fit*")
-    if summary is not None :
-        print("len(summary):", len(summary))
-        print("summary:", summary)
-        #print(summary["file"][0])   
+#     summary = yfu.make_summary(REDUCEDDIR /"*.fit*")
+#     if summary is not None :
+#         print("len(summary):", len(summary))
+#         print("summary:", summary)
+#         #print(summary["file"][0])   
 
-        summary_light = summary.loc[summary["IMAGETYP"] == "LIGHT"].copy()
-        summary_light = summary_light.reset_index(drop=True) 
+#         df_light = summary.loc[summary["IMAGETYP"] == "LIGHT"].copy()
+#         df_light = df_light.reset_index(drop=True)
 
-        for filt in ["V", "L", "R", "G", "B"]:
-        #for filt in ["V"]:
-            summary_light_filt = summary_light.loc[summary_light["FILTER"] == filt].copy()
+#         if 'FILTER' in df_light :
+#             check_filters = df_light['FILTER'].drop_duplicates()
+#             check_filters = check_filters.reset_index(drop=True)
+#         print("check_filters", check_filters)
+
+#         for filt in check_filters:
+#         #for filt in ["V"]:
+#             df_light_filt = df_light.loc[df_light["FILTER"] == filt].copy()
             
-            if summary_light_filt.empty:
-                print("The dataframe(summary_light_filt) is empty")
-                pass
-            else:
-                if (not (sMASTERDIR / f"nightskyflat-{filt}.fits").exists()) or OWrite==True :
-                    print("len(summary_light_filt):", len(summary_light_filt))
-                    print("summary_light_filt:", summary_light_filt)
-                    
-                    File_Num = 80
-                    if len(summary_light_filt["file"]) > File_Num :
-                        combine_lst = summary_light_filt["file"].tolist()[:File_Num]
-                    else : 
-                        combine_lst = summary_light_filt["file"].tolist()
-                    try : 
-                        ccd = yfu.imcombine(
-                                            combine_lst, 
-                                            combine="med",
-                                            scale="avg", 
-                                            scale_to_0th=False, 
-                                            reject="sc", 
-                                            sigma=2.5,
-                                            verbose=True,
-                                            memlimit = 2.e+11,
-                                            )
-                        ccd.write(sMASTERDIR / f"nightskyflat-{filt}.fits", overwrite=True)
-                        print (f"Create Create nightskyflat-{filt}.fits +++...")
-                    except :
-                        ccd = yfu.imcombine(
-                                            combine_lst, 
-                                            combine="med",
-                                            scale="avg", 
-                                            scale_to_0th=False, 
-                                            reject="sc", 
-                                            # sigma=2.5,
-                                            verbose=True,
-                                            memlimit = 2.e+11,
-                                            )
-                        ccd.write(sMASTERDIR / f"nightskyflat-{filt}.fits", overwrite=True)
-                        print (f"Create Create nightskyflat-{filt}.fits +++...")
+#             if df_light_filt.empty:
+#                 print(f"The dataframe(df_light_filt) {filt} is empty")
+#                 pass
+#             else:
 
-        for _, row in summary_light.iterrows():
-            fpath = Path(row["file"])
-            filt = row["FILTER"]
-            if (not (REDUCNSKYDIR/fpath.name).exists()) or OWrite==True :
-                ccd = yfu.ccdred(
-                                fpath, 
-                                mflatpath=str(sMASTERDIR / f"nightskyflat-{filt}.fits"),
-                                output=REDUCNSKYDIR/fpath.name,
-                                )
-                print (f"Reduce using nightskyflat {fpath.name} +++...")
-    return 0
+#                 print("len(df_light_filt):", len(df_light_filt))
+#                 print("df_light_filt:", df_light_filt)
+            
+#                 if (sMASTERDIR / f"nightskyflat-{filt}.fits").exists() and tryagain == False :
+#                     pass
+#                 else :      
+#                     File_Num = 80
+#                     if len(df_light_filt["file"]) > File_Num :
+#                         combine_lst = df_light_filt["file"].tolist()[:File_Num]
+#                     else : 
+#                         combine_lst = df_light_filt["file"].tolist()
+#                     if (sMASTERDIR / f"nightskyflat-{filt}_norm.fits").exists():
+#                         pass
+#                     else :
+#                         try : 
+#                             ccd = yfu.imcombine(
+#                                                 combine_lst, 
+#                                                 combine="med",
+#                                                 scale="avg", 
+#                                                 scale_to_0th=False, #norm
+#                                                 reject="sc", 
+#                                                 sigma=2.5,
+#                                                 verbose=True,
+#                                                 memlimit = 2.e+11,
+#                                                 )
+#                         except :
+#                             ccd = yfu.imcombine(
+#                                                 combine_lst, 
+#                                                 combine="med",
+#                                                 scale="avg", 
+#                                                 scale_to_0th=False, #norm
+#                                                 reject="sc", 
+#                                                 # sigma=2.5,
+#                                                 verbose=True,
+#                                                 memlimit = 2.e+11,
+#                                                 )
+#                         ccd.write(sMASTERDIR / f"nightskyflat-{filt}_norm.fits", overwrite=True)
+#                         print (f"Create Create nightskyflat-{filt}_norm.fits +++...")
+
+#         for _, row in df_light.iterrows():
+#             fpath = Path(row["file"])
+#             ccd = yfu.load_ccd(REDUCEDDIR / fpath.name)
+#             filt = row["FILTER"]
+#             if (REDUCNSKYDIR / fpath.name).exists() and tryagain == false:
+#                     print(f"Nightsky reduction file already exists...\n{fpath.name}")
+#                     pass
+#             else :
+#                 try:    
+#                     ccd = yfu.ccdred(
+#                                     ccd, 
+#                                     mflatpath = sMASTERDIR / f"nightskyflat-{filt}_norm.fits",
+#                                     output = REDUCNSKYDIR / fpath.name
+#                                 )
+#                 except : 
+#                     # _Python_utilities.write_log(err_log_file, "FileNotFoundError") 
+#                     pass
+#     return 0
 #%%    
 # #########################################
 # mag_inst
@@ -2420,9 +2597,10 @@ def diff_Photometry_PS1 (DOINGDIR,
                         Mag_High = 15,
                         Mag_target = 12.5,
                         Mag_delta = 2,
-                        ERR_Min = 0.5,
+                        ERR_Max = 0.5,
                         READINGDIR = reduced_dir,
                         # READINGDIR =  reduced_nightsky_dir,
+                        file_age = 365,
                     **kwarg
                     ) :
     from astropy.wcs import WCS
@@ -2465,8 +2643,9 @@ def diff_Photometry_PS1 (DOINGDIR,
         for _, row  in df_light.iterrows():
             try:
                 fpath = Path(row["file"])
+                fpath_age = _Python_utilities.get_file_age(fpath)
 
-                if (DIFFPRESULTDIR/f"{fpath.stem}_result_photometry.csv").exists() and not tryagain:
+                if (DIFFPRESULTDIR/f"{fpath.stem}_result_photometry.csv").exists() and tryagain == False and fpath_age.days < file_age:
                     print("*"*10)
                     print(f"{fpath.stem}_result_photometry.csv is already exist...")
                 else :
@@ -2648,12 +2827,11 @@ def diff_Photometry_PS1 (DOINGDIR,
 
                         axs.coords.grid(True, color='white', ls=':')
                         axs.coords['ra'].set_axislabel('Right Ascension (J2000)', minpad=0.5, fontsize=8)
-                        axs.coords['ra'].set_ticklabel_position('b')
+                        axs.coords['ra'].set_ticklabel_position('bl')
                         axs.coords['dec'].set_axislabel('Declination (J2000)', minpad=0.4, fontsize=8)
-                        axs.coords['dec'].set_ticklabel_position('l')
+                        axs.coords['dec'].set_ticklabel_position('bl')
                         axs.coords['ra'].set_major_formatter('hh:mm')
                         axs.coords['dec'].set_major_formatter('dd:mm')
-
                         axs.coords['ra'].display_minor_ticks(True)
                         axs.coords['dec'].display_minor_ticks(True)
                         axs.coords['ra'].set_minor_frequency(2)
@@ -2678,7 +2856,7 @@ def diff_Photometry_PS1 (DOINGDIR,
                         df_phot_stars_na = df_phot_stars.dropna()
                         print(len(df_phot_stars_na))
 
-                        df_phot_stars_na = df_phot_stars[df_phot_stars["merr"] < ERR_Min]
+                        df_phot_stars_na = df_phot_stars[df_phot_stars["merr"] < ERR_Max]
                         # phot_stars_na = phot_stars_na.set_index('id', drop=True)
                         df_phot_stars_na = df_phot_stars_na.reset_index(drop=True)
                         print(len(df_phot_stars_na))
@@ -2974,7 +3152,7 @@ def diff_Photometry_PS1 (DOINGDIR,
                         
                         df_apphot_sub = df_apphot.dropna()
                         print(len(df_apphot_sub))
-                        df_apphot_sub = df_apphot_sub.loc[(df_apphot_sub["merr_ann"] < ERR_Min)]
+                        df_apphot_sub = df_apphot_sub.loc[(df_apphot_sub["merr_ann"] < ERR_Max)]
                         df_apphot_sub
 
                         #%%
@@ -3095,6 +3273,7 @@ def checkAsteroids(DOINGDIR,
 
     for _, row  in df_light.iterrows():
         fpath = Path(row["file"])
+        fpath_age = _Python_utilities.get_file_age(fpath)
         hdul = fits.open(fpath)
 
         SOLVE, ASTAP, LOCAL = checkPSolve(fpath)

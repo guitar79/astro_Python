@@ -68,6 +68,33 @@ def print_working_time(cht_start_time):
 # =============================================================================
 #     
 # =============================================================================
+def get_file_age(file_path):
+    """
+    파일이 생성된 후 지난 시간을 계산하는 함수
+
+    Args:
+    file_path: 파일의 경로
+
+    Returns:
+    datetime.timedelta: 파일이 생성된 후 지난 시간 (일, 시, 분, 초)
+    """
+
+    # 파일의 수정 시간을 Unix 시간으로 가져옴
+    mtime = os.path.getmtime(file_path)
+
+    # Unix 시간을 datetime 객체로 변환
+    mtime_datetime = datetime.fromtimestamp(mtime)
+
+    # 현재 시간과의 차이 계산
+    now = datetime.now()
+    delta = now - mtime_datetime
+
+    return delta
+
+#%%
+# =============================================================================
+#     
+# =============================================================================
 def nearest_date(items, pivot) :
     nearest = min(items, 
                 key=lambda x: abs(x - pivot))

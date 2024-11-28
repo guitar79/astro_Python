@@ -21,9 +21,9 @@ print ("err_log_file: {}".format(err_log_file))
 if not os.path.exists('{0}'.format(log_dir)):
     os.makedirs('{0}'.format(log_dir))
 
-BASEDIR = "../CCD_new_files/"
+BASEDIR = "../A1_CCD_new_files/"
 #BASEDIR = "../CCD_wcs_one/"
-BASEDIR = "../CCD_obs_raw/"
+BASEDIR = "../A3_CCD_obs_raw/"
 
 fullnames = _Python_utilities.getFullnameListOfallFiles(BASEDIR)
 print ("fullnames: {}".format(fullnames))

@@ -76,7 +76,7 @@ else :
 
 #%%
 #########################################
-BASEDIRs = ['../CCD_obs_raw/']
+BASEDIRs = ['../A3_CCD_obs_raw/']
 
 fullnames = []
 for dirName in BASEDIRs :

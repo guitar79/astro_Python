@@ -20,7 +20,7 @@ print ("err_log_file: {}".format(err_log_file))
 if not os.path.exists('{0}'.format(log_dir)):
     os.makedirs('{0}'.format(log_dir))
 
-BASEDIR = "../CCD_new_files/"
+BASEDIR = "../A1_CCD_new_files/"
 #BASEDIR = "../CCD_wcs_One/"
 
 fullnames = sorted(_astro_utilities.getFullnameListOfallFiles(BASEDIR))

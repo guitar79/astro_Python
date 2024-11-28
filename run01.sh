@@ -1,5 +1,5 @@
 #!/bin/sh
-# PROJECT="03-EXO";
+# PROJECT="C3-EXO";
 # YRMN="2024-08" ;
 # OPTIC="GSON300";
 # CCDNAME="STF-8300M";
@@ -7,47 +7,47 @@
 
 # # for BDF in "BIAS" "DARK" ;
 # # do 
-# #     find /mnt/Rdata/OBS_data/CCD_obs_raw/${CCDNAME}_${BIN}/Cal -type f -name "-_${BDF}*${YRMN}*.fit*" -exec cp -f "{}" "/mnt/Rdata/OBS_data/${PROJECT}/-_-_-_${YRMN}_-_${OPTIC}_${CCDNAME}_-_${BIN}/-_CAL-BDF_-_${YRMN}_-_${OPTIC}_${CCDNAME}_-_${BIN}/" \;
+# #     find /mnt/Rdata/OBS_data/A3_CCD_obs_raw/${CCDNAME}_${BIN}/Cal -type f -name "-_${BDF}*${YRMN}*.fit*" -exec cp -f "{}" "/mnt/Rdata/OBS_data/${PROJECT}/-_-_-_${YRMN}_-_${OPTIC}_${CCDNAME}_-_${BIN}/-_CAL-BDF_-_${YRMN}_-_${OPTIC}_${CCDNAME}_-_${BIN}/" \;
 # # done ;
-# # find /mnt/Rdata/OBS_data/CCD_obs_raw/${CCDNAME}_${BIN}/Cal_${OPTIC} -type f -name "-_FLAT*${YRMN}*.fit*" -exec cp -f "{}" "/mnt/Rdata/OBS_data/${PROJECT}/-_-_-_${YRMN}_-_${OPTIC}_${CCDNAME}_-_${BIN}/-_CAL-BDF_-_${YRMN}_-_${OPTIC}_${CCDNAME}_-_${BIN}/" \;
+# # find /mnt/Rdata/OBS_data/A3_CCD_obs_raw/${CCDNAME}_${BIN}/Cal_${OPTIC} -type f -name "-_FLAT*${YRMN}*.fit*" -exec cp -f "{}" "/mnt/Rdata/OBS_data/${PROJECT}/-_-_-_${YRMN}_-_${OPTIC}_${CCDNAME}_-_${BIN}/-_CAL-BDF_-_${YRMN}_-_${OPTIC}_${CCDNAME}_-_${BIN}/" \;
 
-# find /mnt/Rdata/OBS_data/CCD_obs_raw/${CCDNAME}_${BIN}/Cal_${OPTIC} -type f -name "-_FLAT*${YRMN}*.fit*" -exec cp -f "{}" "/mnt/Rdata/OBS_data/${PROJECT}/-_-_-_2024-09_-_${OPTIC}_${CCDNAME}_-_${BIN}/-_CAL-BDF_-_2024-09_-_${OPTIC}_${CCDNAME}_-_${BIN}/" \;
+# find /mnt/Rdata/OBS_data/A3_CCD_obs_raw/${CCDNAME}_${BIN}/Cal_${OPTIC} -type f -name "-_FLAT*${YRMN}*.fit*" -exec cp -f "{}" "/mnt/Rdata/OBS_data/${PROJECT}/-_-_-_2024-09_-_${OPTIC}_${CCDNAME}_-_${BIN}/-_CAL-BDF_-_2024-09_-_${OPTIC}_${CCDNAME}_-_${BIN}/" \;
 
-# rsync -avuz --progress --delete --rsh='ssh -p2022' 'guitar79@parksparks.iptime.org:/volume1/Rdata/OBS_data/01-Variable' '/mnt/Rdata/OBS_data/' 
-# rsync -avuz --progress --rsh='ssh -p2022' 'guitar79@parksparks.iptime.org:/volume1/Rdata/OBS_data/02-Asteroid' '/mnt/Rdata/OBS_data/' 
-# rsync -avuz --progress --rsh='ssh -p2022' 'guitar79@parksparks.iptime.org:/volume1/Rdata/OBS_data/03-EXO' '/mnt/Rdata/OBS_data/'
-# rsync -avuz --progress --rsh='ssh -p2022' 'guitar79@parksparks.iptime.org:/volume1/Rdata/OBS_data/04-Spectra' '/mnt/Rdata/OBS_data/'
+# rsync -avuz --progress --delete --rsh='ssh -p2022' 'guitar79@parksparks.iptime.org:/volume1/Rdata/OBS_data/C1-Variable' '/mnt/Rdata/OBS_data/' 
+# rsync -avuz --progress --rsh='ssh -p2022' 'guitar79@parksparks.iptime.org:/volume1/Rdata/OBS_data/C2-Asteroid' '/mnt/Rdata/OBS_data/' 
+# rsync -avuz --progress --rsh='ssh -p2022' 'guitar79@parksparks.iptime.org:/volume1/Rdata/OBS_data/C3-EXO' '/mnt/Rdata/OBS_data/'
+# rsync -avuz --progress --rsh='ssh -p2022' 'guitar79@parksparks.iptime.org:/volume1/Rdata/OBS_data/C4-Spectra' '/mnt/Rdata/OBS_data/'
 # rsync -avuz --progress --delete --rsh='ssh -p2022' 'guitar79@parksparks.iptime.org:/volume1/Rdata/OBS_data/2024-OA' '/mnt/Rdata/OBS_data/'
 
-# rsync -avuz --progress --rsh='ssh -p2022' '/mnt/Rdata/OBS_data/01-Variable' 'guitar79@parksparks.iptime.org:/volume1/Rdata/OBS_data/' 
-# rsync -avuz --progress --rsh='ssh -p2022' '/mnt/Rdata/OBS_data/02-Asteroid' 'guitar79@parksparks.iptime.org:/volume1/Rdata/OBS_data/' 
-# rsync -avuz --progress --delete --rsh='ssh -p2022' '/mnt/Rdata/OBS_data/03-EXO' 'guitar79@parksparks.iptime.org:/volume1/Rdata/OBS_data/' 
-# rsync -avuz --progress --rsh='ssh -p2022' '/mnt/Rdata/OBS_data/04-Spectra' 'guitar79@parksparks.iptime.org:/volume1/Rdata/OBS_data/' 
+# rsync -avuz --progress --rsh='ssh -p2022' '/mnt/Rdata/OBS_data/C1-Variable' 'guitar79@parksparks.iptime.org:/volume1/Rdata/OBS_data/' 
+# rsync -avuz --progress --rsh='ssh -p2022' '/mnt/Rdata/OBS_data/C2-Asteroid' 'guitar79@parksparks.iptime.org:/volume1/Rdata/OBS_data/' 
+# rsync -avuz --progress --delete --rsh='ssh -p2022' '/mnt/Rdata/OBS_data/C3-EXO' 'guitar79@parksparks.iptime.org:/volume1/Rdata/OBS_data/' 
+# rsync -avuz --progress --rsh='ssh -p2022' '/mnt/Rdata/OBS_data/C4-Spectra' 'guitar79@parksparks.iptime.org:/volume1/Rdata/OBS_data/' 
 # rsync -avuz --progress --delete --rsh='ssh -p2022' '/mnt/Rdata/OBS_data/2024-OA' 'guitar79@parksparks.iptime.org:/volume1/Rdata/OBS_data/' 
 
-# rsync -avuz --progress --delete --rsh='ssh -p2022' 'guitar79@parksparks.iptime.org:/volume1/Rdata/OBS_data/01-Variable' '/mnt/Rdata/OBS_data/' 
-# rsync -avuz --progress --delete --rsh='ssh -p2022' 'guitar79@parksparks.iptime.org:/volume1/Rdata/OBS_data/02-Asteroid' '/mnt/Rdata/OBS_data/' 
-# rsync -avuz --progress --delete --rsh='ssh -p2022' 'guitar79@parksparks.iptime.org:/volume1/Rdata/OBS_data/03-EXO' '/mnt/Rdata/OBS_data/'
-# rsync -avuz --progress --delete --rsh='ssh -p2022' 'guitar79@parksparks.iptime.org:/volume1/Rdata/OBS_data/04-Spectra' '/mnt/Rdata/OBS_data/'
+# rsync -avuz --progress --delete --rsh='ssh -p2022' 'guitar79@parksparks.iptime.org:/volume1/Rdata/OBS_data/C1-Variable' '/mnt/Rdata/OBS_data/' 
+# rsync -avuz --progress --delete --rsh='ssh -p2022' 'guitar79@parksparks.iptime.org:/volume1/Rdata/OBS_data/C2-Asteroid' '/mnt/Rdata/OBS_data/' 
+# rsync -avuz --progress --delete --rsh='ssh -p2022' 'guitar79@parksparks.iptime.org:/volume1/Rdata/OBS_data/C3-EXO' '/mnt/Rdata/OBS_data/'
+# rsync -avuz --progress --delete --rsh='ssh -p2022' 'guitar79@parksparks.iptime.org:/volume1/Rdata/OBS_data/C4-Spectra' '/mnt/Rdata/OBS_data/'
 rsync -avuz --progress --delete --rsh='ssh -p2022' 'guitar79@parksparks.iptime.org:/volume1/Rdata/OBS_data/2024-OA' '/mnt/Rdata/OBS_data/'
 
 
 # BASEDIR = "/mnt/Rdata/OBS_data"
-# PROJECTDIR = "01-Variable
+# PROJECTDIR = "C1-Variable
 
 # for dir_list in "-_-_-_2016-_-_RiLA600_STX-16803_-_2bin"
 # do
-#         rsync -avuz --progress --rsh='ssh -p2022' "guitar79@parksparks.iptime.org:/volume1/Rdata/OBS_data/01-Variable/$dir_list" "/mnt/Rdata/OBS_data/01-Variable/"
+#         rsync -avuz --progress --rsh='ssh -p2022' "guitar79@parksparks.iptime.org:/volume1/Rdata/OBS_data/C1-Variable/$dir_list" "/mnt/Rdata/OBS_data/C1-Variable/"
 # done
 
-# find /mnt/Rdata/OBS_data/CCD_obs_raw/ -type f -name '*.wcs' -delete
-# find /mnt/Rdata/OBS_data/CCD_obs_raw/ -type f -name '*.rdls' -delete
-# find /mnt/Rdata/OBS_data/CCD_obs_raw/ -type f -name '*.asy' -delete
-# find /mnt/Rdata/OBS_data/CCD_obs_raw/ -type f -name '*.corr' -delete
-# find /mnt/Rdata/OBS_data/CCD_obs_raw/ -type f -name '*.match' -delete
-# find /mnt/Rdata/OBS_data/CCD_obs_raw/ -type f -name '*.solved' -delete
+# find /mnt/Rdata/OBS_data/A3_CCD_obs_raw/ -type f -name '*.wcs' -delete
+# find /mnt/Rdata/OBS_data/A3_CCD_obs_raw/ -type f -name '*.rdls' -delete
+# find /mnt/Rdata/OBS_data/A3_CCD_obs_raw/ -type f -name '*.asy' -delete
+# find /mnt/Rdata/OBS_data/A3_CCD_obs_raw/ -type f -name '*.corr' -delete
+# find /mnt/Rdata/OBS_data/A3_CCD_obs_raw/ -type f -name '*.match' -delete
+# find /mnt/Rdata/OBS_data/A3_CCD_obs_raw/ -type f -name '*.solved' -delete
 
-# find /mnt/Rdata/OBS_data/CCD_obs_raw/ -type f \( -name '*.wcs' -o -name '*.rdls' -o -name '*.asy' -o -name '*.corr' -o -name '*.match' -o -name '*.soled' \) -delete
+# find /mnt/Rdata/OBS_data/A3_CCD_obs_raw/ -type f \( -name '*.wcs' -o -name '*.rdls' -o -name '*.asy' -o -name '*.corr' -o -name '*.match' -o -name '*.soled' \) -delete
 
 # mkdir /mnt/Rdata/OBS_data/2024-OA/1반/23116최현준
 # mkdir /mnt/Rdata/OBS_data/2024-OA/1반/23067신재헌

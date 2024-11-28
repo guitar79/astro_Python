@@ -69,7 +69,7 @@ BASEDIR = Path(r"r:\CCD_obs")
 BASEDIR = Path("/mnt/Rdata/OBS_data") 
 #BASEDIR = Path("/mnt/OBS_data") 
 DOINGDIR = Path(BASEDIR/ "RnE_2022/GSON300_STF-8300M")
-#DOINGDIR = Path(BASEDIR/ "CCD_new_files1")
+#DOINGDIR = Path(BASEDIR/ "A1_CCD_new_files1")
 
 #DOINGDIRs = sorted(_Python_utilities.getFullnameListOfsubDirs(DOINGDIR))
 DOINGDIRs = sorted([x for x in DOINGDIR.iterdir() if x.is_dir()])

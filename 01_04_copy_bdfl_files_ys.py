@@ -202,7 +202,7 @@ print ("len(BASEDIRs): {}".format(len(BASEDIRs)))
             print("BASEDIR.parts:", BASEDIR.parts)
             "{}_{}".format(BASEDIR.parts[-1].split("_")[5], BASEDIR.parts[-1].split("_")[6])
             
-            calBDDIR = Path("../CCD_obs_raw/") /  \
+            calBDDIR = Path("../A3_CCD_obs_raw/") /  \
                                 "{}_{}".format(BASEDIR.parts[-1].split("_")[6], 
                                             BASEDIR.parts[-1].split("_")[8]) / "cal" 
             print("calBDDIR: ", calBDDIR)

@@ -64,7 +64,7 @@ if not os.path.exists('{0}'.format(log_dir)):
 #######################################################
 BASEDIR = Path("/mnt/Rdata/OBS_data")  
 
-PROJECDIR = BASEDIR / "01-Variable"
+PROJECDIR = BASEDIR / "C1-Variable"
 TODODIR = PROJECDIR / "-_-_-_2016-_-_RiLA600_STX-16803_-_2bin"
 # TODODIR = PROJECDIR / "-_-_-_2017-01_-_RiLA600_STX-16803_-_2bin"
 # TODODIR = PROJECDIR / "-_-_-_2017-03_-_RiLA600_STX-16803_-_2bin"
@@ -73,7 +73,7 @@ TODODIR = PROJECDIR / "-_-_-_2016-_-_RiLA600_STX-16803_-_2bin"
 # TODODIR = PROJECDIR / "-_-_-_2021-10_-_RiLA600_STX-16803_-_2bin"
 # TODODIR = PROJECDIR / "-_-_-_2022-01_-_RiLA600_STX-16803_-_2bin"
 
-# PROJECDIR = BASEDIR / "02-Asteroid"
+# PROJECDIR = BASEDIR / "C2-Asteroid"
 # TODODIR = PROJECDIR / "-_-_-_2022-_-_GSON300_STF-8300M_-_1bin"
 # TODODIR = PROJECDIR / "-_-_-_2022-_-_RiLA600_STX-16803_-_1bin"
 # TODODIR = PROJECDIR / "-_-_-_2022-_-_RiLA600_STX-16803_-_2bin"
@@ -81,14 +81,14 @@ TODODIR = PROJECDIR / "-_-_-_2016-_-_RiLA600_STX-16803_-_2bin"
 # TODODIR = PROJECDIR / "-_-_-_2023-_-_RiLA600_STX-16803_-_1bin"
 # TODODIR = PROJECDIR / "-_-_-_2023-_-_RiLA600_STX-16803_-_2bin"
 
-# PROJECDIR = BASEDIR / "03-EXO"
+# PROJECDIR = BASEDIR / "C3-EXO"
 # TODODIR = PROJECDIR / "-_-_-_2024-05_-_GSON300_STF-8300M_-_1bin"
 # TODODIR = PROJECDIR / "-_-_-_2024-05_-_RiLA600_STX-16803_-_1bin"
 # TODODIR = PROJECDIR / "-_-_-_2024-06_-_GSON300_STF-8300M_-_1bin"
 # TODODIR = PROJECDIR / "-_-_-_2024-06_-_RiLA600_STX-16803_-_2bin"
 # TODODIR = PROJECDIR / "-_-_-_2024-09_-_GSON300_STF-8300M_-_1bin"
 
-# PROJECDIR = BASEDIR / "04-Spectra"
+# PROJECDIR = BASEDIR / "C4-Spectra"
 # TODODIR = PROJECDIR / "-_-_-_2024-05_TEC140_ASI183MMPro_-_1bin"
 
 DOINGDIRs = sorted(_Python_utilities.getFullnameListOfsubDirs(TODODIR))
@@ -143,7 +143,7 @@ Mag_High = 15
 
 Mag_target = 12.5
 Mag_delta = 2
-ERR_Min = 0.5
+ERR_Max = 0.5
 
 ### TT-ARI
 # Mag_Low = 10
@@ -151,7 +151,7 @@ ERR_Min = 0.5
 
 # Mag_target = 11
 # Mag_delta = 2
-# ERR_Min = 0.5
+# ERR_Max = 0.5
 #######################################################
 
 #%%
@@ -167,7 +167,7 @@ for DOINGDIR in DOINGDIRs[:5] :
                         Mag_High = Mag_High,
                         Mag_target = Mag_target,
                         Mag_delta = Mag_delta,
-                        ERR_Min = ERR_Min,
+                        ERR_Max = ERR_Max,
                         READINGDIR =  _astro_utilities.reduced_dir,
                         # READINGDIR =  _astro_utilities.reduced_nightsky_dir,
                     ) 
@@ -180,7 +180,7 @@ for DOINGDIR in DOINGDIRs[:5] :
                         Mag_High = Mag_High,
                         Mag_target = Mag_target,
                         Mag_delta = Mag_delta,
-                        ERR_Min = ERR_Min,
+                        ERR_Max = ERR_Max,
                         # READINGDIR =  _astro_utilities.reduced_dir,
                         READINGDIR =  _astro_utilities.reduced_nightsky_dir,
                     ) 

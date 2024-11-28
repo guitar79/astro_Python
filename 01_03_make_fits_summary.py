@@ -40,7 +40,7 @@ if not os.path.exists('{0}'.format(log_dir)):
 #######################################################
 # read all files in base directory for processing
 BASEDIR = Path("/mnt/Rdata/OBS_data") 
-DOINGDIR = Path('/mnt/Rdata/OBS_data/CCD_obs_raw/')
+DOINGDIR = Path('/mnt/Rdata/OBS_data/A3_CCD_obs_raw/')
 
 CCDDIRs = sorted(_Python_utilities.getFullnameListOfsubDirs(DOINGDIR))
 print ("CCDDIRs: ", CCDDIRs)

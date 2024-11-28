@@ -46,16 +46,16 @@ if not os.path.exists('{0}'.format(log_dir)):
 #######################################################
 BASEDIR = Path("/mnt/Rdata/OBS_data")  
 
-PROJECDIR = BASEDIR / "01-Variable"
+PROJECDIR = BASEDIR / "C1-Variable"
 TODODIR = PROJECDIR / "-_-_-_2016-_-_RiLA600_STX-16803_-_2bin"
 TODODIR = PROJECDIR / "-_-_-_2017-01_-_RiLA600_STX-16803_-_2bin"
 TODODIR = PROJECDIR / "-_-_-_2017-03_-_RiLA600_STX-16803_-_2bin"
-# TODODIR = PROJECDIR / "-_-_-_2017-05_-_RiLA600_STX-16803_-_2bin"
+TODODIR = PROJECDIR / "-_-_-_2017-05_-_RiLA600_STX-16803_-_2bin"
 # TODODIR = PROJECDIR / "-_-_-_2017-06_-_RiLA600_STX-16803_-_2bin"
 # TODODIR = PROJECDIR / "-_-_-_2021-10_-_RiLA600_STX-16803_-_2bin"
 # TODODIR = PROJECDIR / "-_-_-_2022-01_-_RiLA600_STX-16803_-_2bin"
 
-# PROJECDIR = BASEDIR / "02-Asteroid"
+# PROJECDIR = BASEDIR / "C2-Asteroid"
 # TODODIR = PROJECDIR / "-_-_-_2022-_-_GSON300_STF-8300M_-_1bin"
 # TODODIR = PROJECDIR / "-_-_-_2022-_-_RiLA600_STX-16803_-_1bin"
 # TODODIR = PROJECDIR / "-_-_-_2022-_-_RiLA600_STX-16803_-_2bin"
@@ -63,13 +63,13 @@ TODODIR = PROJECDIR / "-_-_-_2017-03_-_RiLA600_STX-16803_-_2bin"
 # TODODIR = PROJECDIR / "-_-_-_2023-_-_RiLA600_STX-16803_-_1bin"
 # TODODIR = PROJECDIR / "-_-_-_2023-_-_RiLA600_STX-16803_-_2bin"
 
-# PROJECDIR = BASEDIR / "03-EXO"
+# PROJECDIR = BASEDIR / "C3-EXO"
 # TODODIR = PROJECDIR / "-_-_-_2024-05_-_GSON300_STF-8300M_-_1bin"
 # TODODIR = PROJECDIR / "-_-_-_2024-05_-_RiLA600_STX-16803_-_1bin"
 # TODODIR = PROJECDIR / "-_-_-_2024-06_-_GSON300_STF-8300M_-_1bin"
 # TODODIR = PROJECDIR / "-_-_-_2024-06_-_RiLA600_STX-16803_-_2bin"
 
-# PROJECDIR = BASEDIR / "04-Spectra"
+# PROJECDIR = BASEDIR / "C4-Spectra"
 # TODODIR = PROJECDIR / "-_-_-_2024-05_TEC140_ASI183MMPro_-_1bin"
 
 DOINGDIRs = sorted(_Python_utilities.getFullnameListOfsubDirs(TODODIR))
@@ -127,7 +127,7 @@ Mag_High = 15
 
 Mag_target = 12.5
 Mag_delta = 2
-ERR_Min = 0.5
+ERR_Max = 0.5
 
 coord_delta = 0.00001
 coord_delta = 0.00003
@@ -189,15 +189,15 @@ for DOINGDIR in DOINGDIRs[:] :
 
             # type(result_table['RA'][0])
             # result_table['RA'][0].split(" ")
-            targ_sky = SkyCoord(ra=f"{result_table['RA'][0].split(' ')[0]}h{result_table['RA'][0].split(' ')[1]}m{result_table['RA'][0].split(" ")[2]}s",
-                        dec=f"{result_table['DEC'][0].split(' ')[0]}d{result_table['DEC'][0].split(' ')[1]}m{result_table['DEC'][0].split(" ")[2]}s", frame='icrs')
+            targ_sky = SkyCoord(ra=f"{result_table['RA'][0].split(' ')[0]}h{result_table['RA'][0].split(' ')[1]}m{result_table['RA'][0].split(' ')[2]}s",
+                        dec=f"{result_table['DEC'][0].split(' ')[0]}d{result_table['DEC'][0].split(' ')[1]}m{result_table['DEC'][0].split(' ')[2]}s", frame='icrs')
             print("targ_sky :", targ_sky)
             for coord_delta in coord_deltas :
                 df_targ = df.loc[(df["RAJ2000"] > targ_sky.ra.value*(1-coord_delta)) \
                                 & (df["RAJ2000"] < targ_sky.ra.value*(1+coord_delta)) \
                                 & (df["DEJ2000"] > targ_sky.dec.value*(1-coord_delta))\
                                 & (df["DEJ2000"] < targ_sky.dec.value*(1+coord_delta))\
-                                & (df["merr_ann"] < ERR_Min)]
+                                & (df["merr_ann"] < ERR_Max)]
 
                 if df_targ.empty :
                     print("df_targ is empty")
@@ -207,8 +207,8 @@ for DOINGDIR in DOINGDIRs[:] :
 
                     ttime = Time(df_targ["t_middle_dt"])
 
-                    fig, axs = plt.subplots(1, 2, figsize=(16, 10), 
-                                sharex=False, sharey=False, gridspec_kw=None)
+                    fig, axs = plt.subplots(2, 1, figsize=(12, 8), 
+                            sharex=False, sharey=False, gridspec_kw=None)
 
                     chls = ['B', 'V', 'R']
                     for chl in chls :
@@ -237,6 +237,10 @@ for DOINGDIR in DOINGDIRs[:] :
                     axs[0].set(
                         xlabel='Time (MJD)',
                         ylabel="Magnitude",
+                        # ylim=(10.8+1, 10.8-1),
+                        # ylim=(11.25+1.2, 11.25-1.2),   
+                        # ylim=(10.75+.6, 10.75-.6),   
+                        # ylim=(10.8+.9, 10.8-.9), 
                     )
                     axs[0].legend()
                     axs[0].grid(linestyle=':')
@@ -249,7 +253,7 @@ for DOINGDIR in DOINGDIRs[:] :
                     axs[1].set(
                         xlabel='Time (date)',
                         ylabel="flux",
-                    )
+                    ) 
                     axs[1].legend()
                     axs[1].grid(linestyle=':')
 
@@ -262,8 +266,7 @@ for DOINGDIR in DOINGDIRs[:] :
                     plt.savefig(f"{LIGHTCUEVEDIR}/{READINGDIR.parts[-2]}_{READINGDIR.parts[-1]}_DPhot_Mag{Mag_target}_fw{FWHM_INIT}_light_curve_{coord_delta:.05f}.png")
 
                     plt.show()
-                    # plt.close()
-        
+                    # plt.close()       
 
 # except Exception as err: 
 #     print ('Error messgae .......')

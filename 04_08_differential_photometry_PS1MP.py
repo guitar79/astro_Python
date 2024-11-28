@@ -92,7 +92,7 @@ class Multiprocessor():
 #######################################################
 BASEDIR = Path("/mnt/Rdata/OBS_data")  
 
-PROJECDIR = BASEDIR / "01-Variable"
+PROJECDIR = BASEDIR / "C1-Variable"
 TODODIR = PROJECDIR / "-_-_-_2016-_-_RiLA600_STX-16803_-_2bin"
 TODODIR = PROJECDIR / "-_-_-_2017-01_-_RiLA600_STX-16803_-_2bin"
 TODODIR = PROJECDIR / "-_-_-_2017-03_-_RiLA600_STX-16803_-_2bin"
@@ -101,7 +101,7 @@ TODODIR = PROJECDIR / "-_-_-_2017-06_-_RiLA600_STX-16803_-_2bin"
 TODODIR = PROJECDIR / "-_-_-_2021-10_-_RiLA600_STX-16803_-_2bin"
 TODODIR = PROJECDIR / "-_-_-_2022-01_-_RiLA600_STX-16803_-_2bin"
 
-# PROJECDIR = BASEDIR / "02-Asteroid"
+# PROJECDIR = BASEDIR / "C2-Asteroid"
 # TODODIR = PROJECDIR / "-_-_-_2022-_-_GSON300_STF-8300M_-_1bin"
 # TODODIR = PROJECDIR / "-_-_-_2022-_-_RiLA600_STX-16803_-_1bin"
 # TODODIR = PROJECDIR / "-_-_-_2022-_-_RiLA600_STX-16803_-_2bin"
@@ -109,13 +109,13 @@ TODODIR = PROJECDIR / "-_-_-_2022-01_-_RiLA600_STX-16803_-_2bin"
 # TODODIR = PROJECDIR / "-_-_-_2023-_-_RiLA600_STX-16803_-_1bin"
 # TODODIR = PROJECDIR / "-_-_-_2023-_-_RiLA600_STX-16803_-_2bin"
 
-# PROJECDIR = BASEDIR / "03-EXO"
+# PROJECDIR = BASEDIR / "C3-EXO"
 # TODODIR = PROJECDIR / "-_-_-_2024-05_-_GSON300_STF-8300M_-_1bin"
 # TODODIR = PROJECDIR / "-_-_-_2024-05_-_RiLA600_STX-16803_-_1bin"
 # TODODIR = PROJECDIR / "-_-_-_2024-06_-_GSON300_STF-8300M_-_1bin"
 # TODODIR = PROJECDIR / "-_-_-_2024-06_-_RiLA600_STX-16803_-_2bin"
 
-# PROJECDIR = BASEDIR / "04-Spectra"
+# PROJECDIR = BASEDIR / "C4-Spectra"
 # TODODIR = PROJECDIR / "-_-_-_2024-05_TEC140_ASI183MMPro_-_1bin"
 
 DOINGDIRs = sorted(_Python_utilities.getFullnameListOfsubDirs(TODODIR))
@@ -184,7 +184,7 @@ Mag_High = 15
 
 Mag_target = 12.5
 Mag_delta = 2
-ERR_Min = 0.5
+ERR_Max = 0.5
 
 ### TT-ARI
 # Mag_Low = 10
@@ -192,7 +192,7 @@ ERR_Min = 0.5
 
 # Mag_target = 11
 # Mag_delta = 2
-# ERR_Min = 0.5
+# ERR_Max = 0.5
 #######################################################
 
 #%%
@@ -415,7 +415,7 @@ def p(fpath,
             df_phot_stars_na = df_phot_stars.dropna()
             print(len(df_phot_stars_na))
 
-            df_phot_stars_na = df_phot_stars[df_phot_stars["merr"] < ERR_Min]
+            df_phot_stars_na = df_phot_stars[df_phot_stars["merr"] < ERR_Max]
             # phot_stars_na = phot_stars_na.set_index('id', drop=True)
             df_phot_stars_na = df_phot_stars_na.reset_index(drop=True)
             print(len(df_phot_stars_na))
@@ -711,7 +711,7 @@ def p(fpath,
             
             df_apphot_sub = df_apphot.dropna()
             print(len(df_apphot_sub))
-            df_apphot_sub = df_apphot_sub.loc[(df_apphot_sub["merr_ann"] < ERR_Min)]
+            df_apphot_sub = df_apphot_sub.loc[(df_apphot_sub["merr_ann"] < ERR_Max)]
             df_apphot_sub
 
             #%%

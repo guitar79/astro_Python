@@ -38,8 +38,9 @@ if not os.path.exists('{0}'.format(log_dir)):
 
 #######################################################
 # read all files in base directory for processing
-BASEDIR = Path(r"r:\CCD_obs") 
-BASEDIR = Path("/mnt/Rdata/OBS_data") 
+BASEDIR = Path(r"r:\OBS_data")
+# BASEDIR = Path(r"O:")
+# BASEDIR = Path("/mnt/Rdata/OBS_data") 
 #BASEDIR = Path("/Volumes/OBS_data")
 
 DOINGDIR = ( BASEDIR/ _astro_utilities.CCD_NEW_dir)
@@ -91,7 +92,7 @@ for DOINGDIR in DOINGDIRs[:] :
                         
                     new_folder = _astro_utilities.get_new_foldername_from_filename(new_fname)
                     #print("new_folder: ", new_folder)
-                    new_fpath =  BASEDIR /_astro_utilities.CCD_obs_raw_dir / new_folder / new_fname
+                    new_fpath =  BASEDIR /_astro_utilities.A3_CCD_obs_raw_dir / new_folder / new_fname
                     print("new_fpath: ", new_fpath)
 
                     if not new_fpath.parents[0].exists():
@@ -107,9 +108,9 @@ for DOINGDIR in DOINGDIRs[:] :
                     print(f"move {str(fpath.name)} to {str(new_fpath)}")
 
 
-                    # new_fpath =  BASEDIR /_astro_utilities.CCD_obs_raw_dir / new_folder / new_fname
-                    # new_fpath_fit =  BASEDIR /_astro_utilities.CCD_obs_raw_dir / new_folder / f'{new_fpath.stem}.fit'
-                    # new_fpath_fits =  BASEDIR /_astro_utilities.CCD_obs_raw_dir / new_folder / f'{new_fpath.stem}.fits'
+                    # new_fpath =  BASEDIR /_astro_utilities.A3_CCD_obs_raw_dir / new_folder / new_fname
+                    # new_fpath_fit =  BASEDIR /_astro_utilities.A3_CCD_obs_raw_dir / new_folder / f'{new_fpath.stem}.fit'
+                    # new_fpath_fits =  BASEDIR /_astro_utilities.A3_CCD_obs_raw_dir / new_folder / f'{new_fpath.stem}.fits'
                     # print("new_fpath: ", new_fpath)
 
                     # if not new_fpath_fit.parents[0].exists():

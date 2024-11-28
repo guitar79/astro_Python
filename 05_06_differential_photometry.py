@@ -281,7 +281,7 @@ for DOINGDIR in DOINGDIRs[:] :
                     # fig_set = plt.figure(figsize=val_figsize)
                     # ax1 = plt.subplot2grid((1,2), (0,0),
                     #                     fig=fig_set)
-                    # im1 = _tool_visualization.norm_imshow(ax1, hdul[0].data, 
+                    # im1 = _astro_utilities.norm_imshow(ax1, hdul[0].data, 
                     #                                     zscale=True)
                     # ax1.set_title('Pixel coordinate system', fontsize=9)
                     # ax1.tick_params(labelsize=8)
@@ -292,7 +292,7 @@ for DOINGDIR in DOINGDIRs[:] :
                     # ax2 = plt.subplot2grid((1,2), (0,1),
                     #                     projection=wcs,
                     #                     fig=fig_set)
-                    # im2 = _tool_visualization.norm_imshow(ax2, hdul[0].data, 
+                    # im2 = _astro_utilities.norm_imshow(ax2, hdul[0].data, 
                     #                                     zscale=True)
                     # ax2.set_title('World coordinate system', fontsize=9)
                     # ap_stars_all.plot(ax2, color='w', lw=2)
@@ -331,14 +331,14 @@ for DOINGDIR in DOINGDIRs[:] :
 
                     ax1 = plt.subplot2grid((1,2), (0,0),
                                         fig=fig_set)
-                    im1 = _tool_visualization.zimshow(ax1, hdul[0].data, )
+                    im1 = _astro_utilities.zimshow(ax1, hdul[0].data, )
                     ax1.set_title('Pixel coordinate system', fontsize=9)
                     ax1.tick_params(labelsize=8)
 
                     ax2 = plt.subplot2grid((1,2), (0,1),
                                         projection=wcs,
                                         fig=fig_set)
-                    im2 = _tool_visualization.zimshow(ax2, hdul[0].data, )
+                    im2 = _astro_utilities.zimshow(ax2, hdul[0].data, )
 
                     _phot_stars = []
 
@@ -476,14 +476,14 @@ for DOINGDIR in DOINGDIRs[:] :
 
                     ax1 = plt.subplot2grid((1,2), (0,0),
                                         fig=fig_set)
-                    im1 = _tool_visualization.zimshow(ax1, hdul[0].data, )
+                    im1 = _astro_utilities.zimshow(ax1, hdul[0].data, )
                     ax1.set_title('Pixel coordinate system', fontsize=9)
                     ax1.tick_params(labelsize=8)
 
                     ax2 = plt.subplot2grid((1,2), (0,1),
                                         projection=wcs,
                                         fig=fig_set)
-                    im2 = _tool_visualization.zimshow(ax2, hdul[0].data, )
+                    im2 = _astro_utilities.zimshow(ax2, hdul[0].data, )
                     ax2.set_title('World coordinate system', fontsize=9)
                     ax2.coords.grid(True, color='white', ls=':')
                     ax2.coords['ra'].set_axislabel('Right Ascension (J2000)', minpad=0.5, fontsize=8)
@@ -554,7 +554,7 @@ for DOINGDIR in DOINGDIRs[:] :
                             
                             ax11 = plt.subplot2grid((2, 2), (0,0),
                                         fig=fig_set)
-                            #im11 = _tool_visualization.zimshow(ax11, cut_hdu.data)
+                            #im11 = _astro_utilities.zimshow(ax11, cut_hdu.data)
                             im11 = ax11.imshow(cut_hdu.data,
                                             origin="lower")
 

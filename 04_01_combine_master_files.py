@@ -73,7 +73,7 @@ class Multiprocessor():
 #######################################################
 BASEDIR = Path("/mnt/Rdata/OBS_data")  
 
-PROJECDIR = BASEDIR / "01-Variable"
+PROJECDIR = BASEDIR / "C1-Variable"
 TODODIR = PROJECDIR / "-_-_-_2016-_-_RiLA600_STX-16803_-_2bin"
 TODODIR = PROJECDIR / "-_-_-_2017-01_-_RiLA600_STX-16803_-_2bin"
 TODODIR = PROJECDIR / "-_-_-_2017-03_-_RiLA600_STX-16803_-_2bin"
@@ -82,7 +82,7 @@ TODODIR = PROJECDIR / "-_-_-_2017-05_-_RiLA600_STX-16803_-_2bin"
 # TODODIR = PROJECDIR / "-_-_-_2021-10_-_RiLA600_STX-16803_-_2bin"
 # TODODIR = PROJECDIR / "-_-_-_2022-01_-_RiLA600_STX-16803_-_2bin"
 
-# PROJECDIR = BASEDIR / "02-Asteroid"
+# PROJECDIR = BASEDIR / "C2-Asteroid"
 # TODODIR = PROJECDIR / "-_-_-_2022-_-_GSON300_STF-8300M_-_1bin"
 # TODODIR = PROJECDIR / "-_-_-_2022-_-_RiLA600_STX-16803_-_1bin"
 # TODODIR = PROJECDIR / "-_-_-_2022-_-_RiLA600_STX-16803_-_2bin"
@@ -90,13 +90,13 @@ TODODIR = PROJECDIR / "-_-_-_2017-05_-_RiLA600_STX-16803_-_2bin"
 # TODODIR = PROJECDIR / "-_-_-_2023-_-_RiLA600_STX-16803_-_1bin"
 # TODODIR = PROJECDIR / "-_-_-_2023-_-_RiLA600_STX-16803_-_2bin"
 
-# PROJECDIR = BASEDIR / "03-EXO"
+# PROJECDIR = BASEDIR / "C3-EXO"
 # TODODIR = PROJECDIR / "-_-_-_2024-05_-_GSON300_STF-8300M_-_1bin"
 # TODODIR = PROJECDIR / "-_-_-_2024-05_-_RiLA600_STX-16803_-_1bin"
 # TODODIR = PROJECDIR / "-_-_-_2024-06_-_GSON300_STF-8300M_-_1bin"
 # TODODIR = PROJECDIR / "-_-_-_2024-06_-_RiLA600_STX-16803_-_2bin"
 
-# PROJECDIR = BASEDIR / "04-Spectra"
+# PROJECDIR = BASEDIR / "C4-Spectra"
 # TODODIR = PROJECDIR / "-_-_-_2024-05_TEC140_ASI183MMPro_-_1bin"
 
 DOINGDIRs = sorted(_Python_utilities.getFullnameListOfsubDirs(TODODIR))
@@ -140,22 +140,37 @@ MASTERDIR = DOINGDIR / _astro_utilities.master_dir
 summary = yfu.make_summary(DOINGDIR/"*.fit*", 
                             verbose = False,
                             )
-if summary is not None :
+if summary is None :
+    print(f"summary is None...")
+else :
     #print(summary)
     print("len(summary):", len(summary))
     print("summary:", summary)
     #print(summary["file"][0])
 
+# check_filters = summary['FILTER'].drop_duplicates()
+# check_filters = check_filters.reset_index(drop=True)
+# print("check_filters", check_filters)
+
+# EXPkeys = ['EXPSORE', 'EXPTIME']
+# for EXPkey in EXPkeys :
+#     if EXPkey in summary :
+#         check_exptimes = summary[EXPkey].drop_duplicates()
+#         check_exptimes = check_exptimes.reset_index(drop=True)
+# print("check_exptimes", check_exptimes)
+
 if (MASTERDIR / "master_bias.fits").exists() and not tryagain:
     print("bias file is already exist....")
 else :
     #bias_fits = summary[summary["IMAGETYP"] == "BIAS"]["file"]
-    bias_fits = summary.loc[summary["IMAGETYP"] == "BIAS"].copy()
-    bias_fits.reset_index(inplace=True)
-    bias_fits = bias_fits["file"]
-    print(type(bias_fits))
-    print(len(bias_fits))
-    print(bias_fits)
+    summary_bias = summary.loc[summary["IMAGETYP"] == "BIAS"].copy()
+    summary_bias.reset_index(inplace=True)
+    # print("summary_bias", summary_bias)
+
+    bias_fits = summary_bias["file"]
+    # print("type(bias_fits)", type(bias_fits))
+    print("len(bias_fits)", len(bias_fits))
+    # print("bias_fits", bias_fits)
 
     bias_comb = yfu.group_combine(
                     bias_fits.tolist(),
@@ -169,60 +184,90 @@ else :
                     verbose = True,
                 )
 
-if not tryagain:
-    print("try making dark file is skipped....")
-else : 
-    #dark_fits = summary[summary["IMAGETYP"] == "DARK"]["file"]
-    dark_fits = summary.loc[summary["IMAGETYP"] == "DARK"].copy()
-    dark_fits.reset_index(inplace=True)
-    dark_fits = dark_fits["file"]
-    print(type(dark_fits))
-    print(len(dark_fits))
-    print(dark_fits)
+#dark_fits = summary[summary["IMAGETYP"] == "DARK"]["file"]
+summary_dark = summary.loc[summary["IMAGETYP"] == "DARK"].copy()
+summary_dark.reset_index(inplace=True)
+# print("summary_dark", summary_dark)
 
-    # Say dark frames have header OBJECT = "calib" && "IMAGE-TYP" = "DARK"
-    dark_comb = yfu.group_combine(
-                    dark_fits.tolist(),
-                    type_key = ["IMAGETYP"],
-                    type_val = ["DARK"],
-                    group_key = ["EXPTIME"],
-                    fmt = "master_dark_{:.0f}sec.fits",  # output file name format
-                    outdir = MASTERDIR,  # output directory (will automatically be made if not exist)
-                    combine = "med",
-                    memlimit = 2.e+10,
-                    verbose = True,
-                )
+# EXPkeys = ['EXPSORE', 'EXPTIME']
+# for EXPkey in EXPkeys :
+#     if EXPkey in summary_dark :
+#         check_exptimes = summary_dark[EXPkey].drop_duplicates()
+#         check_exptimes = check_exptimes.reset_index(drop=True)
 
-if not tryagain:
-    print("try making flat file is skipped....")
-else :     
-    flat_fits = summary[summary["IMAGETYP"] == "FLAT"]["file"] 
-    # Say dark frames have header OBJECT = "calib" && "IMAGE-TYP" = "DARK"
-    flat_comb_norm = yfu.group_combine(
-                    flat_fits.tolist(),
-                    type_key = ["IMAGETYP"],
-                    type_val = ["FLAT"],
-                    group_key = ["FILTER"],
-                    fmt = "master_flat_{:s}_norm.fits",  # output file name format
-                    scale="med_sc", #norm
-                    scale_to_0th=False, #norm
-                    outdir = MASTERDIR,  # output directory (will automatically be made if not exist)
-                    combine = "med",
-                    memlimit = 2.e+10,
-                    verbose=True,
-                )
+if 'EXPTIME' in summary_dark :
+    check_exptimes = summary_dark['EXPTIME'].drop_duplicates()
+    check_exptimes = check_exptimes.reset_index(drop=True)
+    print("check_exptimes", check_exptimes)
 
-    # Say dark frames have header OBJECT = "calib" && "IMAGE-TYP" = "DARK"
-    flat_comb = yfu.group_combine(
-                    flat_fits.tolist(),
-                    type_key = ["IMAGETYP"],
-                    type_val = ["FLAT"],
-                    group_key = ["FILTER"],
-                    fmt = "master_flat_{:s}.fits",  # output file name format
-                    #scale="med_sc", #norm
-                    #scale_to_0th=False, #norm
-                    outdir = MASTERDIR,  # output directory (will automatically be made if not exist)
-                    combine = "med",
-                    memlimit = 2.e+10,
-                    verbose=True,
-                )
+    for exptime in check_exptimes :
+        if (MASTERDIR / f"master_dark_{exptime:.0f}sec.fits" ).exists() and not tryagain :
+            print(f"master_dark_{exptime:.0f}sec.fits already exist....")
+        else :
+            summary_dark_each = summary_dark.loc[summary_dark['EXPTIME'] == exptime]
+            dark_fits = summary_dark_each['file']
+            # print("type(dark_fits)", type(dark_fits))
+            print("len(dark_fits)", len(dark_fits))
+            # print("dark_fits", dark_fits)
+
+            # Say dark frames have header OBJECT = "calib" && "IMAGE-TYP" = "DARK"
+            dark_comb = yfu.group_combine(
+                        dark_fits.tolist(),
+                        type_key = ["IMAGETYP"],
+                        type_val = ["DARK"],
+                        group_key = ["EXPTIME"],
+                        fmt = "master_dark_{:.0f}sec.fits",  # output file name format
+                        outdir = MASTERDIR,  # output directory (will automatically be made if not exist)
+                        combine = "med",
+                        memlimit = 2.e+10,
+                        verbose = True,
+                    )
+            
+
+summary_flat = summary.loc[summary["IMAGETYP"] == "FLAT"].copy()
+summary_flat.reset_index(inplace=True)
+
+if 'FILTER' in summary_flat :
+    check_filters = summary_flat['FILTER'].drop_duplicates()
+    check_filters = check_filters.reset_index(drop=True)
+    print("check_filters", check_filters)
+
+    for filter in check_filters :
+        if (MASTERDIR / f"master_flat_{filter:s}_norm.fits" ).exists() and not tryagain :
+            print(f"master_flat_{filter:s}_norm.fits already exist....")
+        else : 
+            summary_flat_each = summary_flat.loc[summary_flat['FILTER'] == filter]
+            flat_fits = summary_flat_each['file']
+            # print("type(flat_fits)", type(flat_fits))
+            print("len(flat_fits)", len(flat_fits))
+            # print("flat_fits", flat_fits)
+
+            # Say dark frames have header OBJECT = "calib" && "IMAGE-TYP" = "DARK"
+            flat_comb_norm = yfu.group_combine(
+                            flat_fits.tolist(),
+                            type_key = ["IMAGETYP"],
+                            type_val = ["FLAT"],
+                            group_key = ["FILTER"],
+                            fmt = "master_flat_{:s}_norm.fits",  # output file name format
+                            scale="med_sc", #norm
+                            scale_to_0th=False, #norm
+                            outdir = MASTERDIR,  # output directory (will automatically be made if not exist)
+                            combine = "med",
+                            memlimit = 2.e+10,
+                            verbose=True,
+                        )
+
+            # Say dark frames have header OBJECT = "calib" && "IMAGE-TYP" = "DARK"
+            flat_comb = yfu.group_combine(
+                            flat_fits.tolist(),
+                            type_key = ["IMAGETYP"],
+                            type_val = ["FLAT"],
+                            group_key = ["FILTER"],
+                            fmt = "master_flat_{:s}.fits",  # output file name format
+                            #scale="med_sc", #norm
+                            #scale_to_0th=False, #norm
+                            outdir = MASTERDIR,  # output directory (will automatically be made if not exist)
+                            combine = "med",
+                            memlimit = 2.e+10,
+                            verbose=True,
+                        )

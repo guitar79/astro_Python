@@ -12,11 +12,11 @@ conda create -n astro_Python_env
 conda activate astro_Python_env
 
 ## deactivate 가상환경 종료
-deactivate
+conda deactivate
 
 ## install module
 conda install astropy pymysql
-pip install opencv-python photutils astroquery
+pip install opencv-python photutils==1.12 astroquery sep
 pip install ysfitsutilpy ysphotutilpy chardet ccdproc xarray
 
 
