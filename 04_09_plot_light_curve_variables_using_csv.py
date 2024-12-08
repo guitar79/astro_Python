@@ -44,7 +44,7 @@ if not os.path.exists('{0}'.format(log_dir)):
 #######################################################
 #%%
 #######################################################
-BASEDIR = Path("/mnt/Rdata/OBS_data")  
+BASEDIR = Path("/mnt/Rdata/ASTRO_data")  
 
 PROJECDIR = BASEDIR / "C1-Variable"
 TODODIR = PROJECDIR / "-_-_-_2016-_-_RiLA600_STX-16803_-_2bin"
@@ -205,16 +205,20 @@ for DOINGDIR in DOINGDIRs[:] :
                     df_targ.to_csv(f"{LIGHTCUEVEDIR}/{READINGDIR.parts[-2]}_{READINGDIR.parts[-1]}_DPhot_Mag{Mag_target}_fw{FWHM_INIT}_light_curve_{coord_delta:.05f}.csv")
                     print(f"{READINGDIR.parts[-2]}_{READINGDIR.parts[-1]}_DPhot_Mag{Mag_target}_fw{FWHM_INIT}_light_curve_{coord_delta:.05f}.csv is created...")
 
+                    check_filters = df_targ['filter'].drop_duplicates()
+                    check_filters.reset_index(drop=True)
+                    # print("check_filters)", check_filters)
+                    
                     ttime = Time(df_targ["t_middle_dt"])
 
                     fig, axs = plt.subplots(2, 1, figsize=(12, 8), 
-                            sharex=False, sharey=False, gridspec_kw=None)
-
-                    chls = ['B', 'V', 'R']
-                    for chl in chls :
+                                        sharex=False, sharey=False, gridspec_kw=None)
+                        
+                    for chl in check_filters :
+                        if f'{chl}_magnitude' in df_targ:
                         # if f'{chl}_magnitude' in df_targ:    
-                        df_targ_chl = df_targ.loc[df_targ["filter"] == chl].copy()
-                        if not df_targ_chl.empty :
+                            df_targ_chl = df_targ.loc[df_targ["filter"] == chl].copy()
+                            # if not df_targ_chl.empty :
                             # print(df_targ_chl)
                             # ttime = Time(df_targ_chl["t_middle_dt"])
                             im0 = axs[0].errorbar(Time(df_targ_chl["t_middle_dt"]).mjd, 

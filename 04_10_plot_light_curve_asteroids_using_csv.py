@@ -42,7 +42,7 @@ if not os.path.exists('{0}'.format(log_dir)):
 #######################################################
 #%%
 #######################################################
-BASEDIR = Path("/mnt/Rdata/OBS_data")  
+BASEDIR = Path("/mnt/Rdata/ASTRO_data")  
 
 PROJECDIR = BASEDIR / "C1-Variable"
 TODODIR = PROJECDIR / "-_-_-_2016-_-_RiLA600_STX-16803_-_2bin"
@@ -56,10 +56,10 @@ TODODIR = PROJECDIR / "-_-_-_2017-01_-_RiLA600_STX-16803_-_2bin"
 PROJECDIR = BASEDIR / "C2-Asteroid"
 TODODIR = PROJECDIR / "-_-_-_2022-_-_GSON300_STF-8300M_-_1bin"
 TODODIR = PROJECDIR / "-_-_-_2022-_-_RiLA600_STX-16803_-_1bin"
-TODODIR = PROJECDIR / "-_-_-_2022-_-_RiLA600_STX-16803_-_2bin"
-# TODODIR = PROJECDIR / "-_-_-_2023-_-_GSON300_STF-8300M_-_1bin"
-# TODODIR = PROJECDIR / "-_-_-_2023-_-_RiLA600_STX-16803_-_1bin"
-# TODODIR = PROJECDIR / "-_-_-_2023-_-_RiLA600_STX-16803_-_2bin"
+# TODODIR = PROJECDIR / "-_-_-_2022-_-_RiLA600_STX-16803_-_2bin"
+TODODIR = PROJECDIR / "-_-_-_2023-_-_GSON300_STF-8300M_-_1bin"
+TODODIR = PROJECDIR / "-_-_-_2023-_-_RiLA600_STX-16803_-_1bin"
+TODODIR = PROJECDIR / "-_-_-_2023-_-_RiLA600_STX-16803_-_2bin"
 
 # PROJECDIR = BASEDIR / "C3-EXO"
 # TODODIR = PROJECDIR / "-_-_-_2024-05_-_GSON300_STF-8300M_-_1bin"
@@ -104,7 +104,7 @@ print ("len(DOINGDIRs): ", len(DOINGDIRs))
 #####################################################################
 # Observed location
 LOCATION = dict(lon=127.005, lat=37.308889, elevation=101)
-Suwon = location = EarthLocation(lon=127.005 * u.deg, 
+Suwon = EarthLocation(lon=127.005 * u.deg, 
                                  lat=37.308889 * u.deg, 
                                  height=101 * u.m)
 observatory_code = "P64"
@@ -114,7 +114,7 @@ SKYC_KW = dict(unit=u.deg, frame='icrs')
 
 #######################################################
 # Initial guess of FWHM in pixel
-FWHM_INIT = 6
+FWHM_INIT = 4
 
 # Photometry parameters
 R_AP = 1.5*FWHM_INIT # Aperture radius
@@ -129,8 +129,8 @@ Mag_delta = 2
 ERR_Max = 0.5
 
 coord_delta = 0.00001
-coord_delta = 0.0001
-coord_deltas = np.arange(0.00001, 0.00050, 0.00001)
+coord_delta = 0.0005
+coord_deltas = np.arange(0.0001, 0.0090, 0.0005)
 #######################################################
 
 #%%
@@ -141,7 +141,7 @@ for DOINGDIR in DOINGDIRs[:] :
     READINGDIR = DOINGDIR / _astro_utilities.reduced_dir
     # READINGDIR = DOINGDIR / _astro_utilities.reduced_nightsky_dir
 
-    DIFFPRESULTDIR = DOINGDIR / f"{READINGDIR.parts[-1]}_DPhot_Mag{Mag_target}"
+    DIFFPRESULTDIR = DOINGDIR / f"{READINGDIR.parts[-1]}_DPhot_Mag{Mag_target}_fw{FWHM_INIT}"
     LIGHTCUEVEDIR = DOINGDIR / "LightCurve"
     if not LIGHTCUEVEDIR .exists():
         os.makedirs("{}".format(str(LIGHTCUEVEDIR )))
@@ -170,8 +170,8 @@ for DOINGDIR in DOINGDIRs[:] :
         targ_name = ''.join([i for i in targ_name  if not i.isdigit()])
         print("targ_name :", targ_name)
 
-        check_ttimes = df['t_middle_dt'].drop_duplicates()
-        check_ttimes = check_ttimes.reset_index()
+        check_ttimes = df[['t_middle_dt']].drop_duplicates()
+        check_ttimes = check_ttimes.reset_index(drop=True)
         check_ttimes
 
         df_targ = pd.DataFrame()
@@ -195,6 +195,7 @@ for DOINGDIR in DOINGDIRs[:] :
                 targ_sky = pos_sky
                 print("targ_sky :", targ_sky)
 
+                # for coord_delta in coord_deltas :
                 df_one = df.loc[(df["RAJ2000"] > targ_sky.ra.value*(1-coord_delta)) \
                                 & (df["RAJ2000"] < targ_sky.ra.value*(1+coord_delta)) \
                                 & (df["DEJ2000"] > targ_sky.dec.value*(1-coord_delta))\
@@ -202,73 +203,81 @@ for DOINGDIR in DOINGDIRs[:] :
                                 & (df['t_middle_dt'] == row['t_middle_dt'])]
                 print("df_one :", df_one)
                 df_targ = pd.concat([df_targ, df_one], axis=0)
-
+            
         if df_targ.empty :
             print("df_targ is empty")
-        else : 
-            df_targ.to_csv(f"{LIGHTCUEVEDIR}/{READINGDIR.parts[-2]}_{READINGDIR.parts[-1]}_light_curve_{coord_delta}.csv")
-            print(f"{READINGDIR.parts[-2]}_{READINGDIR.parts[-1]}_light_curve_{coord_delta}.csv is created...")
+        else :
+            print("df_targ :", df_targ) 
+            df_targ.to_csv(f"{LIGHTCUEVEDIR}/{READINGDIR.parts[-2]}_{READINGDIR.parts[-1]}_DPhot_Mag{Mag_target}_fw{FWHM_INIT}_light_curve_{coord_delta:.05f}.csv")
+            print(f"{READINGDIR.parts[-2]}_{READINGDIR.parts[-1]}_DPhot_Mag{Mag_target}_fw{FWHM_INIT}_light_curve_{coord_delta:.05f}.csv is created...")
+
+            check_filters = df_targ['filter'].drop_duplicates()
+            check_filters.reset_index(drop=True)
+            # print("check_filters)", check_filters)
 
             ttime = Time(df_targ["t_middle_dt"])
 
-            fig, axs = plt.subplots(1, 2, figsize=(16, 10), 
-                            sharex=False, sharey=False, gridspec_kw=None)
+            fig, axs = plt.subplots(2, 1, figsize=(12, 8), 
+                                    sharex=False, sharey=False, gridspec_kw=None)
 
-            chls = ['B', 'V', 'R']
-            for chl in chls :
+            for chl in check_filters :
                 if f'{chl}_magnitude' in df_targ:
-                    im0 = axs[0].errorbar(ttime.mjd, 
-                            df_targ[f'{chl}_magnitude'], yerr=abs(df_targ["merr_ann"]),
+                    df_targ_chl = df_targ.loc[df_targ["filter"] == chl].copy()
+                    # if not df_targ_chl.empty :
+                    # print(df_targ_chl)
+                    # ttime = Time(df_targ_chl["t_middle_dt"])
+                    im0 = axs[0].errorbar(Time(df_targ_chl["t_middle_dt"]).mjd, 
+                            df_targ_chl[f'{chl}_magnitude'], yerr=abs(df_targ_chl["merr_ann"]),
                             marker='x',
                             ls='none',
                             #ms=10,
                             capsize=3,
                             label=f'{chl}_magnitude')
-                    axs[1].errorbar(df_targ['t_middle_dt'], 
-                            df_targ['flux_star'], yerr=abs(df_targ["flux_err"]),
+                    axs[1].errorbar(df_targ_chl["t_middle_dt"], 
+                            df_targ_chl['flux_star'], yerr=abs(df_targ_chl["flux_err"]),
                             marker='x',
                             ls='none',
                             #ms=10,
                             capsize=3,
-                            label=f'flux_star')
-                    # im1 = axs[1].scatter(df_targ['t_middle_dt'], 
-                    #         df_targ['flux_star'], 
-                    #         marker='x',
-                    #         # ls='none',
-                    #         #ms=10,
-                    #         # capsize=3,
-                    #         label=f'flux_star')
+                            label=f'flux_star at {chl}')
 
             axs[0].invert_yaxis()
 
             axs[0].set(
                 xlabel='Time (MJD)',
                 ylabel="Magnitude",
+                # ylim=(10.8+1, 10.8-1),
+                # ylim=(11.25+1.2, 11.25-1.2),   
+                # ylim=(10.75+.6, 10.75-.6),   
+                # ylim=(10.8+.9, 10.8-.9), 
             )
             axs[0].legend()
             axs[0].grid(linestyle=':')
 
             axs[0].set_title(f"light curve of {targ_name}", fontsize=12,)
-            axs[0].annotate(f'Coord: {targ_sky} +-{coord_delta}', fontsize=8,
-                        xy=(0, 0), xytext=(-10, -30), va='top', ha='left',
-                        xycoords='axes fraction', textcoords='offset points')
+            # axs[0].annotate(f'Coord: {targ_sky} +-{coord_delta}', fontsize=8,
+            #             xy=(0, 0), xytext=(-10, -30), va='top', ha='left',
+            #             xycoords='axes fraction', textcoords='offset points')
 
             axs[1].set(
                 xlabel='Time (date)',
                 ylabel="flux",
-            )
+            ) 
             axs[1].legend()
             axs[1].grid(linestyle=':')
 
             axs[1].set_title(f"light curve of {targ_name}", fontsize=12,)
             axs[1].annotate(f'Coord: {targ_sky} +-{coord_delta}', fontsize=8,
-                        xy=(0, 0), xytext=(-10, -30), va='top', ha='left',
+                        xy=(0, 0), xytext=(0, -30), va='top', ha='left',
                         xycoords='axes fraction', textcoords='offset points')
+            axs[1].annotate(f'tatal data: {len(df_targ)}', fontsize=8,
+                    xy=(0, 0), xytext=(200, -30), va='top', ha='left',
+                    xycoords='axes fraction', textcoords='offset points')
 
             plt.tight_layout()
-            plt.savefig(f"{LIGHTCUEVEDIR}/{READINGDIR.parts[-2]}_{READINGDIR.parts[-1]}_light_curve_{coord_delta}.png")
+            plt.savefig(f"{LIGHTCUEVEDIR}/{READINGDIR.parts[-2]}_{READINGDIR.parts[-1]}_DPhot_Mag{Mag_target}_fw{FWHM_INIT}_light_curve_{coord_delta:.05f}.png")
 
-            plt.show()
+            # plt.show()
             # plt.close()
         
 

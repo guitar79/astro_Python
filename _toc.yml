@@ -1,0 +1,22 @@
+# Table of contents
+# Learn more at https://jupyterbook.org/customize/toc.html
+
+format: jb-book
+root: 00_00_intro.md
+parts: 
+  - caption: Introduction
+    numbered: True
+    chapters:
+    - file: 00_00_computer_and_network.ipynb
+      title: 천문대 컴퓨터 및 네트워트 구성
+    - file: 01_01_management_fits_file_GSHSOBS
+      title: 관측 파일(fits) 관리
+    # - file: 01_01_computer_basic.ipynb
+    #   title: 컴퓨터 기초
+
+
+  # - caption: Manage fits file 
+  #   numbered: True
+  #   chapters:
+  #   - file: 01_01_management_fits_file_GSHSOBS.ipynb
+      # title: fits file header update 

@@ -15,10 +15,11 @@ conda activate astro_Python_env
 conda deactivate
 
 ## install module
+conda install -c conda-forge jupyter-book
 conda install astropy pymysql
-pip install opencv-python photutils==1.12 astroquery sep
+pip install opencv-python astroquery sep
 pip install ysfitsutilpy ysphotutilpy chardet ccdproc xarray
-
+pip install photutils==1.12
 
 ## 가상환경 내보내기 (export)
 conda env export > astro_Python_env.yaml
@@ -27,7 +28,7 @@ conda env export > astro_Python_env.yaml
 conda env create -f astro_Python_env.yaml
 
 ## .yaml 파일로 가상환경 업데이트(activate 되어있을 때)
-conda env update --file astro_Python_env.yaml
+conda env update --file astro_Python_env_241208.yaml
 
 ## .yaml 파일로 가상환경 업데이트(deactivate 되어있을 때)
 conda env update --astro_Python_env envname --file astro_Python_env.yaml

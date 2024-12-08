@@ -39,7 +39,7 @@ if not os.path.exists('{0}'.format(log_dir)):
 #######################################################
 #%%
 #######################################################
-BASEDIR = Path("/mnt/Rdata/OBS_data")  
+BASEDIR = Path("/mnt/Rdata/ASTRO_data")  
 
 PROJECDIR = BASEDIR / "C1-Variable"
 TODODIR = PROJECDIR / "-_-_-_2016-_-_RiLA600_STX-16803_-_2bin"

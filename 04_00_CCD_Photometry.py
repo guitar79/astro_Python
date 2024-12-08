@@ -73,28 +73,28 @@ class Multiprocessor():
 ########################################################%%
 #%%
 #######################################################
-BASEDIR = Path("/mnt/Rdata/OBS_data")  
+BASEDIR = Path("/mnt/Rdata/ASTRO_data")  
 
 PROJECDIR = BASEDIR / "C1-Variable"
 TODODIR = PROJECDIR / "-_-_-_2016-_-_RiLA600_STX-16803_-_2bin"
 TODODIR = PROJECDIR / "-_-_-_2017-01_-_RiLA600_STX-16803_-_2bin"
-TODODIR = PROJECDIR / "-_-_-_2017-03_-_RiLA600_STX-16803_-_2bin"
-TODODIR = PROJECDIR / "-_-_-_2017-05_-_RiLA600_STX-16803_-_2bin"
+# TODODIR = PROJECDIR / "-_-_-_2017-03_-_RiLA600_STX-16803_-_2bin"
+# TODODIR = PROJECDIR / "-_-_-_2017-05_-_RiLA600_STX-16803_-_2bin"
 # TODODIR = PROJECDIR / "-_-_-_2017-06_-_RiLA600_STX-16803_-_2bin"
 # TODODIR = PROJECDIR / "-_-_-_2021-10_-_RiLA600_STX-16803_-_2bin"
 # TODODIR = PROJECDIR / "-_-_-_2022-01_-_RiLA600_STX-16803_-_2bin"
 
 PROJECDIR = BASEDIR / "C2-Asteroid"
 TODODIR = PROJECDIR / "-_-_-_2022-_-_GSON300_STF-8300M_-_1bin"
-TODODIR = PROJECDIR / "-_-_-_2022-_-_RiLA600_STX-16803_-_1bin"
-TODODIR = PROJECDIR / "-_-_-_2022-_-_RiLA600_STX-16803_-_2bin"
+# TODODIR = PROJECDIR / "-_-_-_2022-_-_RiLA600_STX-16803_-_1bin"
+# TODODIR = PROJECDIR / "-_-_-_2022-_-_RiLA600_STX-16803_-_2bin"
 TODODIR = PROJECDIR / "-_-_-_2023-_-_GSON300_STF-8300M_-_1bin"
-TODODIR = PROJECDIR / "-_-_-_2023-_-_RiLA600_STX-16803_-_1bin"
-TODODIR = PROJECDIR / "-_-_-_2023-_-_RiLA600_STX-16803_-_2bin"
+# TODODIR = PROJECDIR / "-_-_-_2023-_-_RiLA600_STX-16803_-_1bin"
+# TODODIR = PROJECDIR / "-_-_-_2023-_-_RiLA600_STX-16803_-_2bin"
 
-# PROJECDIR = BASEDIR / "C3-EXO"
-# TODODIR = PROJECDIR / "-_-_-_2024-05_-_GSON300_STF-8300M_-_1bin"
-# TODODIR = PROJECDIR / "-_-_-_2024-05_-_RiLA600_STX-16803_-_1bin"
+PROJECDIR = BASEDIR / "C3-EXO"
+TODODIR = PROJECDIR / "-_-_-_2024-05_-_GSON300_STF-8300M_-_1bin"
+TODODIR = PROJECDIR / "-_-_-_2024-05_-_RiLA600_STX-16803_-_1bin"
 # TODODIR = PROJECDIR / "-_-_-_2024-06_-_GSON300_STF-8300M_-_1bin"
 # TODODIR = PROJECDIR / "-_-_-_2024-06_-_RiLA600_STX-16803_-_2bin"
 # TODODIR = PROJECDIR / "-_-_-_2024-09_-_GSON300_STF-8300M_-_1bin"
@@ -102,6 +102,9 @@ TODODIR = PROJECDIR / "-_-_-_2023-_-_RiLA600_STX-16803_-_2bin"
 
 # PROJECDIR = BASEDIR / "C4-Spectra"
 # TODODIR = PROJECDIR / "-_-_-_2024-05_TEC140_ASI183MMPro_-_1bin"
+
+# PROJECDIR = BASEDIR / "C5-Test"
+# TODODIR = PROJECDIR / "-_-_-_-_GSON300_STF-8300M_-_1bin"
 
 DOINGDIRs = sorted(_Python_utilities.getFullnameListOfsubDirs(TODODIR))
 print ("DOINGDIRs: ", format(DOINGDIRs))
@@ -119,7 +122,7 @@ DOINGDIRs = sorted([x for x in DOINGDIRs if "_LIGHT_" in str(x)])
 # print ("DOINGDIRs: ", format(DOINGDIRs))
 # print ("len(DOINGDIRs): ", format(len(DOINGDIRs)))
 
-# filter_str = '2024-10-04'
+# filter_str = '127JOHANNA_LIGHT_-_2023-11-17_-_GSON300_STF-8300M_-_1bin'
 # DOINGDIRs = [x for x in DOINGDIRs if filter_str in str(x)]
 # remove = 'BIAS'
 # DOINGDIRs = [x for x in DOINGDIRs if remove not in x]
@@ -158,14 +161,6 @@ Mag_target = 12.5
 Mag_delta = 2
 ERR_Max = 0.5
 
-### TT-ARI
-# Mag_Low = 10
-# Mag_High = 15
-
-# Mag_target = 11
-# Mag_delta = 2
-# ERR_Max = 0.5
-
 coord_deltas = np.arange(0.00001, 0.00050, 0.00001)
 #######################################################
 #%%
@@ -173,25 +168,44 @@ coord_deltas = np.arange(0.00001, 0.00050, 0.00001)
 #%%
 tryagain = False
 trynightsky = True
-tryASTROMETRYNET=True
-file_age = 30
+tryASTROMETRYNET = True
+file_age = 80
 downsample = 4
 
-### combine_BDF
-_astro_utilities.combine_BDF(BDFDIR,
-                tryagain = tryagain,
-                file_age = file_age,
+###################################################################
+# 각 프로젝트 'PROJECDIR' 아래에 'TODODIR' 이 위치하며 
+# 전처리를 수행할 파일은 단 하나의 '*CAL-DBF*' 폴더에 위치한다.
+### combine_BDF 함수를 이용하여 BIAS, DARK, FLAT 파일을 그룹별로 합성하여 
+### master 파일을 만든다.
+###################################################################
+
+_astro_utilities.combine_BDF(BDFDIR,  # 전처리를 수행할 파일드리 들어있는 경로이다.
+                tryagain = tryagain,  #bool 형태로 입력한다. 이미 파일이 존재하는 경우 다시 시도할지를 결정한다.
+                file_age = file_age,  #int 형태로 day 단위로 입력한다. 이보다 오래된 파일은 덮어 쓴다.
                 )
 
+###################################################################
+# 각 관측대상/관측일 별로 폴더에 나누어 저장한 폴더별로 측광을 수행한다.
+###################################################################
+print ("DOINGDIRs: ", DOINGDIRs)
+print ("len(DOINGDIRs): ", len(DOINGDIRs))
+
 for DOINGDIR in DOINGDIRs[:] :
+
+    # find '/mnt/Rdata/ASTRO_data/C5-Test/-_-_-_-_GSON300_STF-8300M_-_1bin' -type f -name '*.fit' -exec astap -f '{}' -wcs -analyse2 -update \;
+    # find '/mnt/Rdata/ASTRO_data/C5-Test/-_-_-_-_GSON300_STF-8300M_-_1bin' -type f -name '*.fit' -exec solve-field -O --downsample 4 --nsigma 30 --cpulimit 20 '{}' \;
+    # print(f"astap -f {str(fpath)} -fov {hfov} -wcs -analyse2 -update")    
+    # os.system(f"astap -f {str(fpath)} -fov {hfov} -wcs -analyse2 -update")
+     
     _astro_utilities.solving_fits_file(DOINGDIR,
                 downsample = downsample,
+                count_stars= True,
                 tryagain = tryagain,
                 tryASTROMETRYNET = tryASTROMETRYNET,
                 )    
     
     _astro_utilities.ccd_Reducuction(DOINGDIR,
-                                      BDFDIR,
+                                    BDFDIR,
                                     tryagain = False,
                                     trynightsky = trynightsky,
                                     file_age = file_age,
@@ -206,7 +220,7 @@ for DOINGDIR in DOINGDIRs[:] :
                 )     
     
     _astro_utilities.diff_Photometry_PS1(DOINGDIR,
-                        tryagain = True, # tryagain, # True, 
+                        tryagain = False, # tryagain, # True, 
                         LOCATION = LOCATION,
                         SKYC_KW = SKYC_KW,
                         FWHM_INIT = FWHM_INIT,
@@ -226,6 +240,14 @@ for DOINGDIR in DOINGDIRs[:] :
                                          READINGDIR = _astro_utilities.reduced_dir,
                                         #  READINGDIR = _astro_utilities.reduced_nightsky_dir,
                                         )
+    
+    _astro_utilities.plot_light_curve_asteroids_using_csv(DOINGDIR,
+                                         Mag_target = Mag_target,
+                                         FWHM_INIT = FWHM_INIT,
+                                         READINGDIR = _astro_utilities.reduced_dir,
+                                        #  READINGDIR = _astro_utilities.reduced_nightsky_dir,
+                                        )
+    
     if trynightsky == True : 
         _astro_utilities.solving_fits_file(DOINGDIR,
                     SOLVINGDIR = _astro_utilities.reduced_nightsky_dir,
@@ -235,7 +257,7 @@ for DOINGDIR in DOINGDIRs[:] :
                     ) 
             
         _astro_utilities.diff_Photometry_PS1 (DOINGDIR,
-                            tryagain = True, # tryagain, # True, 
+                            tryagain = False, # tryagain, # True, 
                             LOCATION = LOCATION,
                             SKYC_KW = SKYC_KW,
                             FWHM_INIT = FWHM_INIT,
@@ -255,3 +277,10 @@ for DOINGDIR in DOINGDIRs[:] :
                                             #  READINGDIR = _astro_utilities.reduced_dir,
                                             READINGDIR = _astro_utilities.reduced_nightsky_dir,
                                             )
+        
+        _astro_utilities.plot_light_curve_asteroids_using_csv(DOINGDIR,
+                                         Mag_target = Mag_target,
+                                         FWHM_INIT = FWHM_INIT,
+                                        #  READINGDIR = _astro_utilities.reduced_dir,
+                                         READINGDIR = _astro_utilities.reduced_nightsky_dir,
+                                        )

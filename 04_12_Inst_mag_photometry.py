@@ -54,7 +54,7 @@ if not os.path.exists('{0}'.format(log_dir)):
 #%%
 #######################################################
 # read all files in base directory for processing
-BASEDIR = Path("/mnt/Rdata/OBS_data") 
+BASEDIR = Path("/mnt/Rdata/ASTRO_data") 
 DOINGDIR = Path(BASEDIR/ "2024-EXO" / "RiLA600-STX-16803_-_1bin")
 DOINGDIR = Path(BASEDIR/ "2024-EXO" / "GSON300_STF-8300M_-_1bin")
 

@@ -40,7 +40,7 @@ if not os.path.exists('{0}'.format(log_dir)):
 #%%
 #######################################################
 #%%
-BASEDIR = Path("/mnt/Rdata/OBS_data") 
+BASEDIR = Path("/mnt/Rdata/ASTRO_data") 
 PROJECDIR = BASEDIR/ "2024-Spectra"
 TODODIR = PROJECDIR / "TEC140_ASI183MMPro_2024-05_1bin"
 # TODODIR = PROJECDIR / "_-_-_2024-06_-_GSON300_STF-8300M_-_1bin"

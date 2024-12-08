@@ -41,7 +41,7 @@ if not os.path.exists('{0}'.format(log_dir)):
 #%%
 #######################################################
 # read all files in base directory for processing
-BASEDIR = Path("/mnt/Rdata/OBS_data") 
+BASEDIR = Path("/mnt/Rdata/ASTRO_data") 
 DOINGDIR = Path(BASEDIR/ "2024-Spectra" / "TEC140_ASI183MMPro_-_1bin")
 DOINGDIRs = sorted(_Python_utilities.getFullnameListOfsubDirs(DOINGDIR))
 DOINGDIRs = sorted([x for x in DOINGDIR.iterdir() if x.is_dir()])

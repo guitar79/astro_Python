@@ -13,24 +13,25 @@ import os
 import numpy as np
 import pandas as pd
 import matplotlib.pyplot as plt
-from ccdproc import combine
 import shutil
+from ccdproc import combine
+
 from astropy.io import fits
 from astropy.wcs import WCS
 from astropy import units as u
 from astropy.time import Time
 from astropy.coordinates import SkyCoord, EarthLocation, AltAz
-from astroquery.astrometry_net import AstrometryNet
-
 from astropy.nddata import Cutout2D
 from astropy.stats import sigma_clip, sigma_clipped_stats
-from photutils.centroids import centroid_com
 
 from photutils.aperture import CircularAperture as CAp
 from photutils.aperture import CircularAnnulus as CAn
+from photutils import DAOStarFinder, detect_threshold
+from photutils.centroids import centroid_com
 
 from astroquery.jplhorizons import Horizons
 from astroquery.imcce import Skybot
+from astroquery.astrometry_net import AstrometryNet
 
 import ysfitsutilpy as yfu
 import ysphotutilpy as ypu
@@ -49,6 +50,7 @@ CCD_NEW_dir = "A1_CCD_new_files"
 CCD_NEWUP_dir = "A2_CCD_newUpdated_files"
 CCD_duplicate_dir = "A4_CCD_duplicate_files"
 
+bad_fits_dir = "Bad_fits"
 master_dir = "master_files_ys"
 reduced_dir = "reduced"
 reduced_dir2 = "reduced2"
@@ -137,8 +139,6 @@ OPTICDIC = {"TMB130ss": {"APATURE" : 130,
             "TEC140-x72": {"APATURE": 140,
                        "FOCALLEN": 980*0.72},
                        }
-
-
 #######################################################
 
 #%%
@@ -646,147 +646,6 @@ def KevinFitsUpdater(
 
     return hdul
 
-# #%%
-# class KevinFitsHeader():
-#     def __init__(self, fpath):
-#         self.fpath = Path(fpath)
-#         self.checkKEYs = ["OBJECT", "TELESCOP", "OPTIC", "CCDNAME", 'FILTER',
-#             "GAIN", "EGAIN", "RDNOISE", "FOCALLEN", "PIXSCALE",
-#             'XPIXSZ', 'YPIXSZ', "XBINNING", "YBINNING", "FLIPSTAT"]
-#         '''
-#         Parameters
-#         ----------
-#         fpath : string
-#             The fullname of input file...
-
-#         '''
-#     def append_header(self):
-#         with fits.open(str(self.fpath), mode="append") as self.hdul :
-#             for self.checkKEY in self.checkKEYs: 
-#                 if not self.checkKEY in self.hdul[0].header :
-#                     self.hdul[0].header.append(self.checkKEY, 
-#                                     '', 
-#                                     f"The keyword '{self.checkKEY}' is added.") 
-#                 print(f"{self.checkKEY}: ", self.hdul[0].header[self.checkKEY])
-
-#             self.hdul.flush()  # changes are written back to original.fits
-#         return self.hdul
-
-#     def update_header(self): 
-#         self.foldername_el = self.fpath.parts[-2].split('_')
-#         self.fname_el = self.fpath.parts[-1].split('_')
-#         print("foldername_el", self.foldername_el)
-#         print("fname_el", self.fname_el)
-#         self.object_name = self.foldername_el[0]
-#         self.filter_name = self.fname_el[2]
-#         self.optic_name = self.foldername_el[5]
-#         self.ccd_name = self.foldername_el[6]
-#         print("object_name", self.object_name)
-#         print("filter_name", self.filter_name)
-#         print("optic_name", self.optic_name)
-#         print("ccd_name", self.ccd_name)
-   
-#         # Change something in hdul.
-#         with fits.open(str(self.fpath), mode="update") as self.hdul :
-            
-#             #if object_name != hdul[0].header["OBJECT"] : 
-#             self.hdul[0].header["OBJECT"] = self.object_name.upper()
-#             print(f"The 'OBJECT' is set {self.object_name.upper()}")
-        
-#             if len(self.hdul[0].header['DATE-OBS']) == 10 \
-#                 and 'TIME-OBS' in self.hdul[0].header : 
-#                 self.hdul[0].header['DATE-OBS'] += 'T' + self.hdul[0].header['TIME-OBS']
-#                 print(f"The 'DATE-OBS' is set {self.hdul[0].header['DATE-OBS']}")
-
-#             if "ze" in self.hdul[0].header["IMAGETYP"].lower() \
-#                     or "bi" in self.hdul[0].header["IMAGETYP"].lower() :
-#                 self.hdul[0].header["IMAGETYP"] = "BIAS"
-#                 print(f"The 'IMAGETYP' is set {self.hdul[0].header['IMAGETYP']}")
-#             elif "da" in self.hdul[0].header["IMAGETYP"].lower() :
-#                 self.hdul[0].header["IMAGETYP"] = "DARK"
-#                 print(f"The 'IMAGETYP' is set {self.hdul[0].header['IMAGETYP']}")
-#             elif "fl" in self.hdul[0].header["IMAGETYP"].lower() :
-#                 self.hdul[0].header["IMAGETYP"] = "FLAT"
-#                 print(f"The 'IMAGETYP' is set {self.hdul[0].header['IMAGETYP']}")
-#             elif "da" in self.hdul[0].header["IMAGETYP"].lower() \
-#                     or "lig" in self.hdul[0].header["IMAGETYP"].lower() :
-#                 self.hdul[0].header["IMAGETYP"] = "LIGHT"
-#                 print(f"The 'IMAGETYP' is set {self.hdul[0].header['IMAGETYP']}")
-            
-#             if "BIAS" in self.hdul[0].header["IMAGETYP"] \
-#                 or "DARK" in self.hdul[0].header["IMAGETYP"] :
-#                 self.hdul[0].header["FILTER"] = "-"
-#                 print(f"The 'FILTER' is set {self.hdul[0].header['FILTER']}")
-#                 self.hdul[0].header['OPTIC'] = "-"
-#                 print(f"The 'OPTIC' is set {self.hdul[0].header['OPTIC']}")
-
-#             if "FLAT" in self.hdul[0].header["IMAGETYP"] \
-#                 or "LIGHT" in self.hdul[0].header["IMAGETYP"] :
-#                 self.hdul[0].header["FILTER"] = self.filter_name.upper()
-#                 print(f"The 'FILTER' is set {self.hdul[0].header['FILTER']}")
-#                 self.hdul[0].header["OPTIC"] = self.optic_name
-#                 print(f"The 'OPTIC' is set {self.hdul[0].header['OPTIC']}")
-
-#             try : 
-#                 if 'qsi' in self.hdul[0].header['INSTRUME'] : 
-#                     self.CCDNAME = 'QSI683ws'
-#                 elif 'st-8300' in self.hdul[0].header['INSTRUME'] : 
-#                     self.CCDNAME = 'ST-8300M'
-#                 elif 'stf-8300' in self.hdul[0].header['INSTRUME'] : 
-#                     self.CCDNAME = 'STF-8300M'
-#                 elif '11000' in self.hdul[0].header['INSTRUME'] : 
-#                     self.CCDNAME = 'STL-11000M'
-#                 elif '16803' in self.hdul[0].header['INSTRUME'] : 
-#                     self.CCDNAME = 'STX-16803'
-#                 elif "SBIG" in self.hdul[0].header['INSTRUME'] :
-#                     if self.hdul[0].header['XPIXSZ'] == 5.4 \
-#                             or self.hdul[0].header['XPIXSZ'] == 10.8 :
-#                         self.CCDNAME = 'STF-8300M'
-#                     elif self.hdul[0].header['XPIXSZ'] == 9.0 \
-#                             or self.hdul[0].header['XPIXSZ'] == 18.0 :
-#                         if self.hdul[0].header['NAXIS1'] == 2048 \
-#                                 or self.hdul[0].header['NAXIS1'] == 4096 :
-#                             self.CCDNAME = 'STX-16803'
-#                         elif self.hdul[0].header['NAXIS1'] == 4008 \
-#                                 or  self.hdul[0].header['NAXIS1'] == 2672 \
-#                                 or  self.hdul[0].header['NAXIS1'] == 2004 \
-#                                 or  self.hdul[0].header['NAXIS1'] == 1336 :
-#                             self.CCDNAME = 'STL-11000M'
-#                 else :
-#                     self.CCDNAME = self.ccd_name    
-#             except :
-#                 self.CCDNAME = self.ccd_name
-#             print("CCDNAME", self.CCDNAME)
-
-#             #self.hdul[0].header["CCDNAME"] = self.CCDNAME
-#             #print(f"The 'CCDNAME' is set {self.CCDNAME}...")
-
-#             if (not 'XPIXSZ' in self.hdul[0].header) \
-#                 and self.CCDNAME == 'STX-16803' :
-#                 self.hdul[0].header['XPIXSZ'] = 9 * self.hdul[0].header['XBINNING']
-#                 self.hdul[0].header['YPIXSZ'] = 9 * self.hdul[0].header['YBINNING']
-#                 print(f"The 'XPIXSZ' and 'YPIXSZ' are set {9 * self.hdul[0].header['XBINNING']} and {9 * self.hdul[0].header['YBINNING']}...")
-
-#             if not "CCD-TEMP" in self.hdul[0].header :
-#                 self.hdul[0].header['CCD-TEMP'] = 'N'
-#                 print(f"The 'CCD-TEMP' is set {self.hdul[0].header['CCD-TEMP']}...")
-
-#             if not "EXPOSURE" in self.hdul[0].header :
-#                 self.hdul[0].header["EXPOSURE"] = self.hdul[0].header["EXPTIME"]
-#                 print(f"The 'EXPOSURE' is set {self.hdul[0].header['EXPTIME']}...")
-
-#             self.hdul[0].header['GAIN'] = CCDDIC[self.CCDNAME]["GAIN"]
-#             print(f"The 'GAIN' is set {self.hdul[0].header['GAIN']}...")
-#             self.hdul[0].header['EGAIN'] = CCDDIC[self.CCDNAME]["EGAIN"]
-#             print(f"The 'EGAIN' is set {self.hdul[0].header['EGAIN']}...")
-#             self.hdul[0].header['RDNOISE'] = CCDDIC[self.CCDNAME]["RDNOISE"]
-#             print(f"The 'RDNOISE' is set {self.hdul[0].header['RDNOISE']}...")
-#             self.hdul.flush()  # changes are written back to original.fits
-#             print('*'*30)
-#             print(f"The header of {self.fpath.name} is updated..")
-#         return self.hdul
-
-
 
 #%%
 def fits_newpath(
@@ -869,7 +728,7 @@ def KevinSolver(fpath,
                     cpulimit = 30,
                     SOLVE = False, 
                     nsigma = 15,
-                    tryASTAP = True, 
+                    tryASTAP = False, 
                     tryLOCAL = True,
                     tryASTROMETRYNET = True,
                     makeLOCALsh = False,
@@ -901,8 +760,8 @@ def KevinSolver(fpath,
     if not SOLVE :
         hdul = fits.open(fpath)
         
-        if downsample == None :
-            downsample = 4    
+        # if downsample == None :
+        #     downsample = 4    
         
         if pixscale is None :
             if 'PIXSCALE' in hdul[0].header:
@@ -912,170 +771,127 @@ def KevinSolver(fpath,
                                             hdul[0].header['XPIXSZ'],
                                             hdul[0].header['XBINNING'])
 
-        # print(f"pixscale: {pixscale:.03f}, L: {pixscale*0.97:.03f}, U: {pixscale*1.03:.03f}")
-        
-        if cpulimit == None :
-            cpulimit = 15  
-        if nsigma == None :
-            nsigma = 15  
-
+        print(f"pixscale: {pixscale:.03f}, L: {pixscale*0.97:.03f}, U: {pixscale*1.03:.03f}")
         vfov = pixscale * hdul[0].header['NAXIS1']/3600    
         hfov = pixscale * hdul[0].header['NAXIS2']/3600
         print("vfov , hfov  :", vfov , hfov )
         
-        try : 
-            spd = 180 + hdul[0].header['DEC']
-            ra = hdul[0].header['RA']
-            dec = hdul[0].header['DEC']
-        except :
-            ra_h, ra_m, ra_s = hdul[0].header['RA'].split(':')
-            dec_d, dec_m, dec_s = hdul[0].header['DEC'].split(':')
-            ra_new = f"{ra_h}h{ra_m}m{ra_s}s"
-            dec_new = f"{dec_d}d{dec_m}m{dec_s}s"
-            c = SkyCoord(ra=ra_new, dec=dec_new)
-            spd = 180 + c.dec.deg
-            ra = c.ra.deg
-            dec = c.dec.deg
+        # if cpulimit == None :
+        #     cpulimit = 15  
+        # if nsigma == None :
+        #     nsigma = 15  
+        if "RA" in hdul[0].header and "DEC" in hdul[0].header :
+            try : 
+                spd = 180 + hdul[0].header['DEC']
+                ra = hdul[0].header['RA']
+                dec = hdul[0].header['DEC']
+            except :
+                ra_h, ra_m, ra_s = hdul[0].header['RA'].split(':')
+                dec_d, dec_m, dec_s = hdul[0].header['DEC'].split(':')
+                ra_new = f"{ra_h}h{ra_m}m{ra_s}s"
+                dec_new = f"{dec_d}d{dec_m}m{dec_s}s"
+                c = SkyCoord(ra=ra_new, dec=dec_new)
+                spd = 180 + c.dec.deg
+                ra = c.ra.deg
+                dec = c.dec.deg
+        elif "OBJECTRA" in hdul[0].header and "OBJECTDEC" in hdul[0].header :
+            try : 
+                spd = 180 + hdul[0].header['OBJECTDEC']
+                ra = hdul[0].header['OBJECTRA']
+                dec = hdul[0].header['OBJECTDEC']
+            except :
+                ra_h, ra_m, ra_s = hdul[0].header['OBJECTRA'].split(':')
+                dec_d, dec_m, dec_s = hdul[0].header['OBJECTDEC'].split(':')
+                ra_new = f"{ra_h}h{ra_m}m{ra_s}s"
+                dec_new = f"{dec_d}d{dec_m}m{dec_s}s"
+                c = SkyCoord(ra=ra_new, dec=dec_new)
+                spd = 180 + c.dec.deg
+                ra = c.ra.deg
+                dec = c.dec.deg
         hdul.close()
 
         # trying plate solving using ASTAP twice...
 
         if tryASTAP == True : 
-            print(f"Trying to solve using ASTAP:\n   {fpath.parent/fpath} ")  
-            print(f"astap -f {str(fpath)} -wcs -analyse2 -update")    
-            os.system(f"astap -f {str(fpath)} -wcs -analyse2 -update")
+            
+            print(f"Trying to solve using ASTAP:\n   {fpath.parent/fpath} ") 
+            ASTAP_solve_cmd = f"astap -f {str(fpath)} "
+            ASTAP_solve_cmd = f"-z {str(downsample)} "
+            # ASTAP_solve_cmd = f"-z {str(downsample*2)} "
+            ASTAP_solve_cmd = f"--wcs -analyse2 -update "
+            print(ASTAP_solve_cmd)
+            os.system(ASTAP_solve_cmd)
+            # print(f"astap -f {str(fpath)} -z {str(downsample*2)} -wcs -analyse2 -update")     
+            # os.system(f"astap -f {str(fpath)} -z {str(downsample*2)} -wcs -analyse2 -update")
+
+            SOLVE, ASTAP, LOCAL = checkPSolve(fpath)
+            print("SOLVE:", SOLVE, "ASTAP:", ASTAP, "LOCAL:", LOCAL)
+            if not SOLVE :
+                print(f"ASTAP : trying again downsample X 2 :\n   {fpath.parent/fpath} ")  
+                ASTAP_solve_cmd = f"astap -f {str(fpath)} "
+                ASTAP_solve_cmd = f"-z {str(downsample*2)} "
+                # ASTAP_solve_cmd = f"-z {str(downsample*2)} "
+                ASTAP_solve_cmd = f"--wcs -analyse2 -update "
+                print(ASTAP_solve_cmd)
+                os.system(ASTAP_solve_cmd)    
+            else : 
+                return 0
     else : 
         return 0
-    
-    SOLVE, ASTAP, LOCAL = checkPSolve(fpath)
-    print("SOLVE:", SOLVE, "ASTAP:", ASTAP, "LOCAL:", LOCAL)
-    if not SOLVE :
-        if tryASTAP == True : 
-            print(f"Trying to solve using ASTAP:\n   {fpath.parent/fpath} ") 
-            print(f"astap -f {str(fpath)} -fov {hfov} -z 2 -wcs -analyse2 -update")     
-            os.system(f"astap -f {str(fpath)} -fov {hfov} -z 2 -wcs -analyse2 -update")
-    else :
-        return 0
-    # trying plate solving using local astrometry solver twice...
-    # SOLVE, ASTAP, LOCAL = checkPSolve(fpath)
-    # print("SOLVE:", SOLVE, "ASTAP:", ASTAP, "LOCAL:", LOCAL)
-    # if not SOLVE and tryASTAP == True :
-    #     print(f"Trying to solve using ASTAP with variables:\n   {fpath.parent/fpath} ")
-    #     with subprocess.Popen(['astap', 
-    #                 '-f', str(fpath), 
-    #                 # '-o', 
-    #                 # '-spd ', f'{spd}',
-    #                 '-fov', f'{hfov}',
-    #                 '-z', f'{str(downsample)}',
-    #                 '-wcs',
-    #                 '-analyse2',
-    #                 '-update',],
-    #                 stdout=subprocess.PIPE) as proc :
-    #         print(proc.stdout.read())
-
-
+            
+    ######################################
+    ###### LOCAL SOLVER
+    ######################################
     SOLVE, ASTAP, LOCAL = checkPSolve(fpath)
     print("SOLVE:", SOLVE, "ASTAP:", ASTAP, "LOCAL:", LOCAL)
     if not SOLVE :
         if tryLOCAL == True : 
             print(f"Trying to solve using LOCAL:\n   {fpath.parent/fpath} ")
-            # solve-field -O -g --cpulimit 15 --nsigma 15 --downsample 4 -u app -L 0.6 -U 0.63 --no-plots
-            print(f"solve-field -O --cpulimit 15 --no-plots {str(fpath)}")
-            os.system(f"solve-field -O --cpulimit 15 --no-plots {str(fpath)}")
-            # with subprocess.Popen(['solve-field', 
-            #                         '-O', #--overwrite: overwrite output files if they already exist
-            #                         # '-g', #--guess-scale: try to guess the image scale from the FITS headers
-            #                         '--cpulimit', f'{cpulimit}',  #will make it give up after 30 seconds.
-            #                         # '--nsigma', f'{nsigma}',
-            #                         # '--downsample', f'{str(downsample)}',
-            #                         # '-u', 'app', #'--scale-units', 'arcsecperpix', #pixel scale
-            #                         # '-L', f'{pixscale*0.95:.03f}', 
-            #                         # '-U', f'{pixscale*1.05:.03f}',   
-            #                         # '-N', f'{fpath.parent / fpath.stem}.new', #--new-fits <filename>: output filename of the new FITS file containingthe WCS header; "none" to not create this file
-            #                         # '-N', f'{fpath}', #--new-fits <filename>: output filename of the new FITS file containingthe WCS header; "none" to not create this file
-            #                         #-p', 
-            #                         '--no-plots',#: don't create any plots of the results
-            #                         #'-D', str(SOLVEDDIR),
-            #                         str(fpath)
-            #                         ], 
-            #                         stdout=subprocess.PIPE) as proc :
-            #     print(proc.stdout.read())
-            
-        
-            # SOLVE, ASTAP, LOCAL = checkPSolve(fpath)
-            # print("SOLVE:", SOLVE, "ASTAP:", ASTAP, "LOCAL:", LOCAL)
-            # if not SOLVE and tryLOCAL == True : 
-            #     print(f"Trying to solve using LOCAL with variables:\n  {fpath.parent/fpath.name} ")
-            #     # solve-field -O -g --cpulimit 15 --nsigma 15 --downsample 4 -u app -L 0.6 -U 0.63 --no-plots
-            #     with subprocess.Popen(['solve-field', 
-            #                         '-O', #--overwrite: overwrite output files if they already exist
-            #                         '-g', #--guess-scale: try to guess the image scale from the FITS headers
-            #                         '--cpulimit', f'{cpulimit}',  #will make it give up after 30 seconds.
-            #                         '--nsigma', f'{nsigma}',
-            #                         '--downsample', f'{str(downsample)}',
-            #                         '-u', 'app', #'--scale-units', 'arcsecperpix', #pixel scale
-            #                         '-L', f'{pixscale*0.95:.03f}', '-H', f'{pixscale*1.05:.03f}',   
-            #                         # '--ra', f'{ra}', '--dec', f'{dec}',
-            #                         # '-N', f'{fpath.parent / fpath.stem}.new', #--new-fits <filename>: output filename of the new FITS file containingthe WCS header; "none" to not create this file
-            #                         # '-N', f'{fpath}', #--new-fits <filename>: output filename of the new FITS file containingthe WCS header; "none" to not create this file
-            #                         #-p', 
-            #                         '--no-plots',#: don't create any plots of the results
-            #                         #'-D', str(SOLVEDDIR),
-            #                         str(fpath)
-            #                         ], 
-            #                         stdout=subprocess.PIPE) as proc :
-            #         print(proc.stdout.read())
+            LOCAL_solve_cmd = f"solve-field -O --cpulimit {cpulimit} "
+            LOCAL_solve_cmd += f"-g --nsigma {nsigma} "
+            LOCAL_solve_cmd += f"--downsample {str(downsample)} "
+            # LOCAL_solve_cmd += f"--scale-units app app -L {pixscale*0.95:.03f} -H {pixscale*1.05:.03f} "
+            # LOCAL_solve_cmd += f"--ra {ra} --dec {dec} "
+            LOCAL_solve_cmd += f"--no-plots {str(fpath)} "
+            print(LOCAL_solve_cmd)
+            os.system(LOCAL_solve_cmd)
 
             if fpath.exists() and (fpath.parent/f'{fpath.stem}.new').exists():
                 #print(str(fpath))
                 shutil.move(str(fpath.parent/f'{fpath.stem}.new'), str(fpath))
                 print(str(fpath.parent/f'{fpath.stem}.new'), str(fpath))
                 #print(f"{str(fpath)} is removed...")
+        
+            SOLVE, ASTAP, LOCAL = checkPSolve(fpath)
+            print("SOLVE:", SOLVE, "ASTAP:", ASTAP, "LOCAL:", LOCAL)
+            if not SOLVE :
+                if tryLOCAL == True : 
+                    print(f"LOCAL : traagain downsample X 2:\n   {fpath.parent/fpath} ")
+                    LOCAL_solve_cmd = f"solve-field -O --cpulimit {cpulimit} "
+                    LOCAL_solve_cmd += f"-g --nsigma {nsigma} "
+                    LOCAL_solve_cmd += f"--downsample {str(downsample*2)} "
+                    LOCAL_solve_cmd += f"--scale-units app app -L {pixscale*0.95:.03f} -H {pixscale*1.05:.03f} "
+                    # LOCAL_solve_cmd += f"--ra {ra} --dec {dec} "
+                    LOCAL_solve_cmd += f"--no-plots {str(fpath)} "
+                    print(LOCAL_solve_cmd)
+                    os.system(LOCAL_solve_cmd)
+
+                    if fpath.exists() and (fpath.parent/f'{fpath.stem}.new').exists():
+                        #print(str(fpath))
+                        shutil.move(str(fpath.parent/f'{fpath.stem}.new'), str(fpath))
+                        print(str(fpath.parent/f'{fpath.stem}.new'), str(fpath))
+                        #print(f"{str(fpath)} is removed...")
+            else : 
+                return 0 
     else : 
         return 0 
      
     SOLVE, ASTAP, LOCAL = checkPSolve(fpath)
     print("SOLVE:", SOLVE, "ASTAP:", ASTAP, "LOCAL:", LOCAL)
-    if not SOLVE :
-        if tryLOCAL == True : 
-            print(f"Trying to solve using LOCAL with variables again :\n  {fpath.parent/fpath.name} ")
-            # solve-field -O -g --cpulimit 15 --nsigma 15 --downsample 4 -u app -L 0.6 -U 0.63 --no-plots
-            print(f"solve-field -O --cpulimit {cpulimit} -g --nsigma {nsigma} --downsample {str(downsample)} -u app -L {pixscale*0.95:.03f} -H {pixscale*1.05:.03f} --ra {ra} --dec {dec} --no-plots {str(fpath)}")
-            os.system(f"solve-field -O --cpulimit {cpulimit} -g --nsigma {nsigma} --downsample {str(downsample)} -u app -L {pixscale*0.95:.03f} -H {pixscale*1.05:.03f} --ra {ra} --dec {dec} --no-plots {str(fpath)}")
-
-            # with subprocess.Popen(['solve-field', 
-            #                     '-O', #--overwrite: overwrite output files if they already exist
-            #                     '-g', #--guess-scale: try to guess the image scale from the FITS headers
-            #                     '--cpulimit', f'{cpulimit}',  #will make it give up after 30 seconds.
-            #                     '--nsigma', f'{nsigma}',
-            #                     '--downsample', f'{str(downsample)}',
-            #                     '-u', 'app', #'--scale-units', 'arcsecperpix', #pixel scale
-            #                     '-L', f'{pixscale*0.95:.03f}', '-H', f'{pixscale*1.05:.03f}',   
-            #                     '--ra', f'{ra}', '--dec', f'{dec}',
-            #                     # '-N', f'{fpath.parent / fpath.stem}.new', #--new-fits <filename>: output filename of the new FITS file containingthe WCS header; "none" to not create this file
-            #                     # '-N', f'{fpath}', #--new-fits <filename>: output filename of the new FITS file containingthe WCS header; "none" to not create this file
-            #                     #-p', 
-            #                     '--no-plots',#: don't create any plots of the results
-            #                     #'-D', str(SOLVEDDIR),
-            #                     str(fpath)
-            #                     ], 
-            #                     stdout=subprocess.PIPE) as proc :
-            #     print(proc.stdout.read())
-
-        if fpath.exists() and (fpath.parent/f'{fpath.stem}.new').exists():
-            #print(str(fpath))
-            shutil.move(str(fpath.parent/f'{fpath.stem}.new'), str(fpath))
-            print(str(fpath.parent/f'{fpath.stem}.new'), str(fpath))
-            #print(f"{str(fpath)} is removed...")
-    else :
-        return 0
-        
-    SOLVE, ASTAP, LOCAL = checkPSolve(fpath)
-    print("SOLVE:", SOLVE, "ASTAP:", ASTAP, "LOCAL:", LOCAL)
 
     if not SOLVE :
         if tryASTROMETRYNET == True : 
-            print(f"Trying to solve using astrometry:\n  {fpath.parent/fpath.name} ")
+            print(f"Trying to solve using astrometry:\n  {fpath} ")
             from astroquery.astrometry_net import AstrometryNet
             ast = AstrometryNet()
             # ger from nova.astrometry.net
@@ -1129,16 +945,6 @@ def KevinSolver(fpath,
 
     SOLVE, ASTAP, LOCAL = checkPSolve(fpath)
     print("SOLVE:", SOLVE, "ASTAP:", ASTAP, "LOCAL:", LOCAL)
-    
-    # if not SOLVE and makeLOCALsh == True : 
-    #     print(f"Adding to sh:\n   {fpath.name} ")
-    #     makingAstrometrySH(fpath, 
-    #                     # solved_dir = None,
-    #                     downsample = 1,
-    #                     pixscale = pixscale,
-    #                     # SOLVE = False, 
-    #                     cpulimit = 30,
-    #                     )
 
     if not SOLVE :
         if makeLOCALsh == True :
@@ -1162,205 +968,6 @@ def KevinSolver(fpath,
 
     return 0
         
-
-
-# #%%
-# #########################################
-# # LOCALPSolver
-# #########################################
-# def LOCALPSolver(fpath, 
-#                     solved_dir = None,
-#                     downsample = 4,
-#                     pixscale = None,
-#                     cpulimit = 30,
-#                     nsigma = 15,
-#                     **kwargs
-#                     ):
-#     """
-#     Parameters
-#     ----------
-#     fpath : path-like
-#         The path to the original FITS file.
-
-#     solved dir: string
-#         The directory where the output file
-
-#     pixscale : int
-
-#     """
-#     fpath = Path(fpath)
-
-#     if pixscale is None :
-#         hdul = fits.open(fpath)
-#         if 'PIXSCALE' in hdul[0].header:
-#             pixscale = hdul[0].header['PIXSCALE']
-#         else : 
-#             pixscale = calPixScale(hdul[0].header['FOCALLEN'], hdul[0].header['XPIXSZ'])
-#         hdul.close()
-#     print(f"pixscale: {pixscale:.03f}, L: {pixscale*0.97:.03f}, U: {pixscale*1.03:.03f}")
-    
-#     # solve command.
-#     # solve-field fullname.fit -O --cpulimit 120 --nsigma 15 -u app -L 1.2 -U 1.3 -N new_filename.fits -p --no-plots -D output_directory {0}
-#     with subprocess.Popen(['solve-field', 
-#                                 '-O', #--overwrite: overwrite output files if they already exist
-#                                 '-g', #--guess-scale: try to guess the image scale from the FITS headers
-#                                 '--cpulimit', f'{cpulimit}',  #will make it give up after 30 seconds.
-#                                 '--nsigma', f'{nsigma}',
-#                                 '--downsample', f'{str(downsample)}',
-#                                 '-u', 'app', #'--scale-units', 'arcsecperpix', #pixel scale
-#                                 '-L', f'{pixscale*0.95:.03f}', 
-#                                 '-U', f'{pixscale*1.05:.03f}',   
-#                                 # '-N', f'{fpath.parent / fpath.stem}.new', #--new-fits <filename>: output filename of the new FITS file containingthe WCS header; "none" to not create this file
-#                                 # '-N', f'{fpath}', #--new-fits <filename>: output filename of the new FITS file containingthe WCS header; "none" to not create this file
-#                                 #-p', 
-#                                 '--no-plots',#: don't create any plots of the results
-#                                 #'-D', str(SOLVEDDIR),
-#                                 str(fpath)
-#                                 ], 
-#                                 stdout=subprocess.PIPE) as proc :
-#         print(proc.stdout.read())
-
-#     if fpath.exists() and (fpath.parent/f'{fpath.stem}.new').exists():
-#         #print(str(fpath))
-#         shutil.move(str(fpath.parent/f'{fpath.stem}.new'), str(fpath))
-#         print(str(fpath.parent/f'{fpath.stem}.new'), str(fpath))
-#         #print(f"{str(fpath)} is removed...")
-
-# #%%
-# #########################################
-# #ASTAPPSolver
-# #########################################
-# def ASTAPSolver(fpath, 
-#                     solved_dir = None,
-#                     downsample = 4,
-#                     pixscale = None,
-#                     **kwargs
-#                     ):
-#     """
-#     Parameters
-#     ----------
-#     fpath : path-like
-#         The path to the original FITS file.
-
-#     solved dir: string
-#         The directory where the output file
-
-#     pixscale : int
-
-#     """
-#     fpath = Path(fpath)
-
-#     if pixscale is None :
-#         hdul = fits.open(fpath)
-#         if 'PIXSCALE' in hdul[0].header:
-#             pixscale = hdul[0].header['PIXSCALE']
-#         else : 
-#             pixscale = calPixScale(hdul[0].header['FOCALLEN'], hdul[0].header['XPIXSZ'])
-#         hdul.close()
-#     print(f"pixscale: {pixscale:.03f}, L: {pixscale*0.97:.03f}, U: {pixscale*1.03:.03f}")
-
-    
-#     #try :
-#     #https://www.hnsky.org/astap.htm#astap_command_line
-#     with subprocess.Popen(['astap', 
-#                         '-f', str(fpath), 
-#                         # '-o', 
-#                         # '-fov',
-#                         '-z', f'{str(downsample)}',
-#                         # '-wcs',
-#                         '-analyse2',
-#                         '-update',],
-#                         stdout=subprocess.PIPE) as proc :
-#         print(proc.stdout.read())
-    
-
-
-# #%%
-# #########################################
-# #AstrometrynetSolver
-# #########################################
-# def AstrometrynetSolver(fpath, 
-#                     solved_dir = None,
-#                     downsample = 4,
-#                     pixscale = None,
-#                     solve_timeout = 600,
-#                     submission_id = None,
-#                     ast = AstrometryNet(),
-#                     ast_api_key = 'bldvwzzuvktnwfph',
-#                     **kwargs
-#                     ):
-#     ''' Gives the new path of the FITS file from header.
-#     Parameters
-#     ----------
-#     DOINGDIR: pathlike
-#         The path to the original .
-#     summary : dataframe
-        
-#     Returns
-#     -------
-    
-#     '''
-#     ast = ast
-
-#     # ger from nova.astrometry.net
-#     ast.api_key = ast_api_key #must changed...
-
-#     fpath = Path(fpath)
-#     print(fpath)
-#     hdul = fits.open(fpath)
-
-#     if 'PIXSCALE' in hdul[0].header:
-#         PIXc = hdul[0].header['PIXSCALE']
-#     else : 
-#         PIXc = calPixScale(hdul[0].header['FOCALLEN'], 
-#                                             hdul[0].header['XPIXSZ'],
-#                                             hdul[0].header['XBINNING'])
-#     print("PIXc : ", PIXc)
-#     hdul.close()
-
-#     SOLVE, ASTAP, LOCAL = checkPSolve(fpath)
-#     print("SOLVE:", SOLVE, "ASTAP:", ASTAP, "LOCAL:", LOCAL)
-
-#     if SOLVE :
-#         print(f"{fpath.name} is already solved...")
-#     else :             
-#         try_again = True                
-            
-#         while try_again:
-#             try:
-#                 if not submission_id:
-#                     wcs_header = ast.solve_from_image(str(fpath),
-#                                         force_image_upload=True,
-#                                         solve_timeout = solve_timeout,
-#                                         submission_id=submission_id)
-#                 else:
-#                     wcs_header = ast.monitor_submission(submission_id,
-#                                                         solve_timeout = solve_timeout)
-#             except TimeoutError as e:
-#                 submission_id = e.args[1]
-#             else:
-#                 # got a result, so terminate
-#                 try_again = False
-
-#         if not wcs_header:
-#             # Code to execute when solve fails
-#             print("fits file solving failure...")
-
-#         else:
-#             # Code to execute when solve succeeds
-#             print("fits file solved successfully...")
-
-#             with fits.open(str(fpath), mode='update') as hdul:
-#                 for card in wcs_header :
-#                     try: 
-#                         print(card, wcs_header[card], wcs_header.comments[card])
-#                         hdul[0].header.set(card, wcs_header[card], wcs_header.comments[card])
-#                     except : 
-#                         print(card)
-#                 hdul.flush
-
-#             print(str(fpath)+" is created...")
-#     return 0
 
 #%%
 #########################################
@@ -1486,66 +1093,6 @@ def checkPSolve(fpath,
 
 #     return SOLVE
 
-# #%%
-# #########################################
-# # makingAstrometrySH
-# #########################################
-# def makingAstrometrySH(fpath, 
-#                         solved_dir = None,
-#                         downsample = 4,
-#                         pixscale = None,
-#                         SOLVE = False, 
-#                         cpulimit = 30,
-#                         nsigma = 15,
-#                         **kwargs
-#                         ): 
-#     """
-#     Parameters
-#     ----------
-#     fpath : path-like
-#         The path to the original FITS file.
-
-#     solved dir: string
-#         The directory where the output file
-
-#     pixscale : int
-
-#     """
-#     fpath = Path(fpath)
-#     solve_sh = ""
-    
-#     if pixscale is None :
-#         hdul = fits.open(fpath)
-#         if 'PIXSCALE' in hdul[0].header:
-#             pixscale = hdul[0].header['PIXSCALE']
-#         else : 
-#             pixscale = calPixScale(hdul[0].header['FOCALLEN'], 
-#                                         hdul[0].header['XPIXSZ'],
-#                                         hdul[0].header['XBINNING'])
-#         hdul.close()
-#     print(f"pixscale: {pixscale:.03f}, L: {pixscale*0.97:.03f}, U: {pixscale*1.03:.03f}")
-    
-#     # try :
-#     SOLVE, ASTAP, LOCAL = checkPSolve(fpath)
-#     print("SOLVE:", SOLVE, "ASTAP:", ASTAP, "LOCAL:", LOCAL)
-#     if not SOLVE : 
-#         #solve-field -O -g --cpulimit 15 --nsigma 15 --downsample 4 -u app -L 0.6 -U 0.63 --no-plots
-#         #solve-field -O -g --cpulimit 15 --nsigma 15 --downsample 4 -u app -L 0.6 -U 0.63 --no-plots
-#         solve_sh += f"solve-field -O -g --cpulimit {cpulimit} --nsigma {nsigma} --downsample {downsample} -u app -L {pixscale*0.95:.03f} -U {pixscale*1.05:.03f} --no-plots {str(fpath)}\n"
-#         solve_sh += f"mv {fpath.parent/fpath.stem}.new {str(fpath)}\n"
-#         solve_sh += f"rm {fpath.parent/fpath.stem}-indx.xyls\n"
-#         solve_sh += f"rm {fpath.parent/fpath.stem}-indx.axy\n"
-#         solve_sh += f"rm {fpath.parent/fpath.stem}.rdls\n"
-#         solve_sh += f"rm {fpath.parent/fpath.stem}.corr\n"
-#         solve_sh += f"rm {fpath.parent/fpath.stem}.solved\n"
-#         solve_sh += f"rm {fpath.parent/fpath.stem}.match\n"
-#         solve_sh += f"rm {fpath.parent/fpath.stem}.axy\n"
-#         solve_sh += f"rm {fpath.parent/fpath.stem}.wcs\n"
-#         print("result:", solve_sh)
-
-#         with open(f"__{datetime.now().strftime('%Y%m%d')}_todo_astrometry_solve.sh", 'a') as f:
-#             f.write(solve_sh) 
-#     return solve_sh
 
 #%%        
 # =============================================================================
@@ -1831,37 +1378,131 @@ def combine_BDF(BDFDIR,
                 # print("flat_fits", flat_fits)
 
                 if len(flat_fits) > 0 : 
-                # Say dark frames have header OBJECT = "calib" && "IMAGE-TYP" = "DARK"
-                    flat_comb_norm = yfu.group_combine(
-                                flat_fits.tolist(),
-                                type_key = ["IMAGETYP"],
-                                type_val = ["FLAT"],
-                                group_key = ["FILTER"],
-                                fmt = "master_flat_{:s}_norm.fits",  # output file name format
-                                scale="med_sc", #norm
-                                scale_to_0th=False, #norm
-                                outdir = MASTERDIR,  # output directory (will automatically be made if not exist)
-                                combine = "med",
-                                memlimit = 2.e+10,
-                                verbose=True,
-                            )
-
-                # Say dark frames have header OBJECT = "calib" && "IMAGE-TYP" = "DARK"
-                    flat_comb = yfu.group_combine(
-                                flat_fits.tolist(),
-                                type_key = ["IMAGETYP"],
-                                type_val = ["FLAT"],
-                                group_key = ["FILTER"],
-                                fmt = "master_flat_{:s}.fits",  # output file name format
-                                #scale="med_sc", #norm
-                                #scale_to_0th=False, #norm
-                                outdir = MASTERDIR,  # output directory (will automatically be made if not exist)
-                                combine = "med",
-                                memlimit = 2.e+10,
-                                verbose=True,
-                            )
+                    try : 
+                        # Say dark frames have header OBJECT = "calib" && "IMAGE-TYP" = "DARK"
+                        flat_comb = yfu.group_combine(
+                                        flat_fits.tolist(),
+                                        type_key = ["IMAGETYP"],
+                                        type_val = ["FLAT"],
+                                        group_key = ["FILTER"],
+                                        fmt = "master_flat_{:s}.fits",  # output file name format
+                                        scale="med_sc", #norm
+                                        scale_to_0th=False, #norm
+                                        outdir = MASTERDIR,  # output directory (will automatically be made if not exist)
+                                        combine = "med",
+                                        memlimit = 2.e+10,
+                                        verbose=True,
+                                    )
+                    except : 
+                        # Say dark frames have header OBJECT = "calib" && "IMAGE-TYP" = "DARK"
+                        flat_comb = yfu.group_combine(
+                                    flat_fits.tolist(),
+                                    type_key = ["IMAGETYP"],
+                                    type_val = ["FLAT"],
+                                    group_key = ["FILTER"],
+                                    fmt = "master_flat_{:s}.fits",  # output file name format
+                                    #scale="med_sc", #norm
+                                    #scale_to_0th=False, #norm
+                                    outdir = MASTERDIR,  # output directory (will automatically be made if not exist)
+                                    combine = "med",
+                                    memlimit = 2.e+10,
+                                    verbose=True,
+                                )
 
     return 0
+
+
+#%%
+#########################################
+# count_Num_stars
+#########################################
+def count_Num_stars(fpath, 
+                    FWHM = 6,
+                    **kwargs
+                    ):
+    """
+    Parameters
+    ----------
+    fpath : path-like
+        The path to the original FITS file.
+
+    """
+    fpath = Path(fpath)
+    hdul = fits.open(fpath)
+
+    ## thres
+    # thresh = detect_threshold(data=hdul[0].data, nsigma=3)
+    # thresh = thresh[0][0]
+    # print('detect_threshold', thresh)
+
+    avg, med, std = sigma_clipped_stats(hdul[0].data)  # by default, 3-sigma 5-iteration.
+    thresh = 5. * std
+    # print('detect_threshold', thresh)
+
+    DAOfind = DAOStarFinder(
+                            fwhm = FWHM, 
+                            threshold = thresh, 
+                            # sharplo = 0.2, sharphi = 1.0,  # default values: sharplo=0.2, sharphi=1.0,
+                            # roundlo = -1.0, roundhi = 1.0,  # default values -1 and +1
+                            # sigma_radius = 1.5,           # default values 1.5
+                            # ratio = 1.0,                  # 1.0: circular gaussian
+                            exclude_border = True         # To exclude sources near edges
+                            )
+    # The DAOStarFinder object ("DAOfind") gets at least one input: the image.
+    # Then it returns the astropy table which contains the aperture photometry results:
+    DAOfound = DAOfind(hdul[0].data)
+    if DAOfound is None :
+        return 0
+    else : 
+        return len(DAOfound)
+
+
+#%%
+#########################################
+# check_fits_image
+#########################################
+def check_fits_image(fpath, 
+                    FWHM = 6,
+                    **kwargs
+                    ):
+    """
+    Parameters
+    ----------
+    fpath : path-like
+        The path to the original FITS file.
+
+    """
+
+    fpath = Path(fpath)
+    hdul = fits.open(fpath)
+
+    ## thres
+    # thresh = detect_threshold(data=hdul[0].data, nsigma=3)
+    # thresh = thresh[0][0]
+    # print('detect_threshold', thresh)
+
+    avg, med, std = sigma_clipped_stats(hdul[0].data)  # by default, 3-sigma 5-iteration.
+    thresh = 5. * std
+    # print('detect_threshold', thresh)
+
+    DAOfind = DAOStarFinder(
+                            fwhm = FWHM, 
+                            threshold = thresh, 
+                            # sharplo = 0.2, sharphi = 1.0,  # default values: sharplo=0.2, sharphi=1.0,
+                            # roundlo = -1.0, roundhi = 1.0,  # default values -1 and +1
+                            # sigma_radius = 1.5,           # default values 1.5
+                            # ratio = 1.0,                  # 1.0: circular gaussian
+                            exclude_border = True         # To exclude sources near edges
+                            )
+    # The DAOStarFinder object ("DAOfind") gets at least one input: the image.
+    # Then it returns the astropy table which contains the aperture photometry results:
+    DAOfound = DAOfind(hdul[0].data)
+    if DAOfound is None :
+        return 0
+    else : 
+        return len(DAOfound)
+
+
 
 #%%
 #########################################
@@ -1870,6 +1511,7 @@ def combine_BDF(BDFDIR,
 def solving_fits_file(DOINGDIR,
                 SOLVINGDIR = None,
                 downsample = 4,
+                count_stars= False,
                 tryagain = False,  
                 # tryASTAP = True, 
                 # tryLOCAL = True,
@@ -1884,9 +1526,13 @@ def solving_fits_file(DOINGDIR,
     else : 
         SOLVINGDIR = DOINGDIR / SOLVINGDIR
 
+    BADFITSDIR = DOINGDIR / bad_fits_dir
+    if not BADFITSDIR.exists() :
+        os.mkdir(str(BADFITSDIR))
+        print(f"{str(BADFITSDIR)} is created...")
+
     summary = yfu.make_summary(SOLVINGDIR/"*.fit*",
                                     verify_fix=True,
-                                    ignore_missing_simple=True,
                                     )
     if summary is not None :
         print("len(summary):", len(summary))
@@ -1903,22 +1549,52 @@ def solving_fits_file(DOINGDIR,
             # fpath = Path(df_light["file"][1])
             print("fpath :" ,fpath)
             # hdul = fits.open(fpath)
-
-            try : 
-                KevinSolver(fpath, 
-                            # solved_dir = None,
-                            downsample = downsample,
-                            # pixscale = None ,
-                            # cpulimit = 15,
-                            # tryASTAP = True, 
-                            # tryLOCAL = True,
-                            tryASTROMETRYNET = tryASTROMETRYNET, 
-                            makeLOCALsh = False,
+            
+            if count_stars== True :
+                try : 
+                    Num_stars = count_Num_stars(fpath, 
+                            FWHM = 6,
                             )
-            except Exception as err :
-                print("X"*60)
-                print(err)
+                    print("Num_stars :", Num_stars)
+                    if Num_stars < 3 :
+                        shutil.move(str(fpath), str(BADFITSDIR / fpath.name))
+                        print(f"{str(fpath.name)} is moved to Bad_fits...")
+                    
+                    else : 
+                        try : 
+                            KevinSolver(fpath, 
+                                        # solved_dir = None,
+                                        downsample = downsample,
+                                        # pixscale = None ,
+                                        # cpulimit = 15,
+                                        # tryASTAP = True, 
+                                        # tryLOCAL = True,
+                                        tryASTROMETRYNET = tryASTROMETRYNET, 
+                                        makeLOCALsh = False,
+                                        )
+                        except Exception as err :
+                            print("X"*60)
+                            print(err)
 
+                except :
+                    shutil.move(str(fpath), str(BADFITSDIR / fpath.name))
+                    print(f"{str(fpath.name)} is moved to Bad_fits...")
+            else : 
+                try : 
+                    KevinSolver(fpath, 
+                                # solved_dir = None,
+                                downsample = downsample,
+                                # pixscale = None ,
+                                # cpulimit = 15,
+                                # tryASTAP = True, 
+                                # tryLOCAL = True,
+                                tryASTROMETRYNET = tryASTROMETRYNET, 
+                                makeLOCALsh = False,
+                                )
+                except Exception as err :
+                    print("X"*60)
+                    print(err)
+                
     return 0
 
 #%%
@@ -1974,7 +1650,7 @@ def ccd_Reducuction (DOINGDIR,
         for _, row in df_light.iterrows():
 
             fpath = Path(row["file"])
-            fpath_age = _Python_utilities.get_file_age(fpath)
+            
             ccd = yfu.load_ccd(fpath)
             filt = ccd.header["FILTER"]
             expt = ccd.header["EXPTIME"]
@@ -1982,42 +1658,73 @@ def ccd_Reducuction (DOINGDIR,
             idx = abs(summary_master_dark['EXPTIME'] - expt).idxmin()
             # print(idx)
 
-            if (REDUCEDDIR/ fpath.name).exists() and tryagain == False and fpath_age.days < file_age :
+            if (REDUCEDDIR / fpath.name).exists() :
                 print(f"reduction file already exists...\n{fpath.name}")
-                pass
-            else :
-                try : 
-                    if not (MASTERDIR / f"master_flat_{filt.upper()}_norm.fits").exists() :
-                        print(f"{MASTERDIR}/master_flat_{filt.upper()}_norm.fits is not exists...")
-                    else :
-                        if (MASTERDIR / f"master_dark_{expt:.0f}sec.fits").exists() :
-                            print(f"Reduce with master_dark_{expt:.0f}sec.fits ...")
-
-                            red = yfu.ccdred(
-                                ccd,
-                                output=Path(f"{REDUCEDDIR/ fpath.name}"),
-                                mdarkpath=str(MASTERDIR / "master_dark_{:.0f}sec.fits".format(expt)),
-                                mflatpath=str(MASTERDIR / "master_flat_{}_norm.fits".format(filt.upper())),
-                                # flat_norm_value=1,  # 1 = skip normalization, None = normalize by mean
-                                overwrite=True,
-                                )
-                        else : 
-                            print(f"Reduce with master_dark_{summary_master_dark['EXPTIME'][idx]:.0f}sec.fits is not exists...")
-                            red = yfu.ccdred(
-                                ccd,
-                                output=Path(f"{REDUCEDDIR/ fpath.name}"),
-                                mdarkpath=str(MASTERDIR / f"master_dark_{summary_master_dark['EXPTIME'][idx]:.0f}sec.fits"),
-                                mflatpath=str(MASTERDIR / f"master_flat_{filt.upper()}_norm.fits"),
-                                dark_scale = True,
-                                exptime_dark = summary_master_dark['EXPTIME'][idx],
-                                # flat_norm_value=1,  # 1 = skip normalization, None = normalize by mean
-                                overwrite=True,
-                                )
-                        print (f"Reduce Reduce {fpath.name} +++...")
-
-                except Exception as e: 
-                    print("err:", e)
+                fpath_age = _Python_utilities.get_file_age(str(REDUCEDDIR / fpath.name))
+                if tryagain == False and fpath_age.days < file_age :
+                    print("*"*10)
                     pass
+                
+                else :
+                    try : 
+                        if not (MASTERDIR / f"master_flat_{filt.upper()}.fits").exists() :
+                            print(f"{MASTERDIR}/master_flat_{filt.upper()}.fits is not exists...")
+                        else :
+                            if (MASTERDIR / f"master_dark_{expt:.0f}sec.fits").exists() :
+                                print(f"Reduce with master_dark_{expt:.0f}sec.fits ...")
+
+                                red = yfu.ccdred(
+                                    ccd,
+                                    output=Path(f"{REDUCEDDIR/ fpath.name}"),
+                                    mdarkpath=str(MASTERDIR / "master_dark_{:.0f}sec.fits".format(expt)),
+                                    mflatpath=str(MASTERDIR / "master_flat_{}.fits".format(filt.upper())),
+                                    # flat_norm_value=1,  # 1 = skip normalization, None = normalize by mean
+                                    overwrite=True,
+                                    )
+                            else : 
+                                print(f"Reduce with master_dark_{summary_master_dark['EXPTIME'][idx]:.0f}sec.fits is not exists...")
+                                red = yfu.ccdred(
+                                    ccd,
+                                    output=Path(f"{REDUCEDDIR/ fpath.name}"),
+                                    mdarkpath=str(MASTERDIR / f"master_dark_{summary_master_dark['EXPTIME'][idx]:.0f}sec.fits"),
+                                    mflatpath=str(MASTERDIR / f"master_flat_{filt.upper()}.fits"),
+                                    dark_scale = True,
+                                    exptime_dark = summary_master_dark['EXPTIME'][idx],
+                                    # flat_norm_value=1,  # 1 = skip normalization, None = normalize by mean
+                                    overwrite=True,
+                                    )
+                            print (f"Reduce Reduce {fpath.name} +++...")
+
+                    except Exception as e: 
+                        print("err:", e)
+                        pass
+            else :
+       
+                if (MASTERDIR / f"master_dark_{expt:.0f}sec.fits").exists() :
+                    print(f"Reduce with master_dark_{expt:.0f}sec.fits ...")
+
+                    red = yfu.ccdred(
+                        ccd,
+                        output=Path(f"{REDUCEDDIR/ fpath.name}"),
+                        mdarkpath=str(MASTERDIR / "master_dark_{:.0f}sec.fits".format(expt)),
+                        mflatpath=str(MASTERDIR / "master_flat_{}_norm.fits".format(filt.upper())),
+                        # flat_norm_value=1,  # 1 = skip normalization, None = normalize by mean
+                        overwrite=True,
+                        )
+                else : 
+                    print(f"Reduce with master_dark_{summary_master_dark['EXPTIME'][idx]:.0f}sec.fits is not exists...")
+                    red = yfu.ccdred(
+                        ccd,
+                        output=Path(f"{REDUCEDDIR/ fpath.name}"),
+                        mdarkpath=str(MASTERDIR / f"master_dark_{summary_master_dark['EXPTIME'][idx]:.0f}sec.fits"),
+                        mflatpath=str(MASTERDIR / f"master_flat_{filt.upper()}_norm.fits"),
+                        dark_scale = True,
+                        exptime_dark = summary_master_dark['EXPTIME'][idx],
+                        # flat_norm_value=1,  # 1 = skip normalization, None = normalize by mean
+                        overwrite=True,
+                        )
+                print (f"Reduce Reduce {fpath.name} +++...")
+
 
     if trynightsky == True : 
         REDUCNSKYDIR = DOINGDIR / reduced_nightsky_dir
@@ -2051,426 +1758,109 @@ def ccd_Reducuction (DOINGDIR,
                         print("len(df_light_filt):", len(df_light_filt))
                         print("df_light_filt:", df_light_filt)
                     
-                        if (sMASTERDIR / f"nightskyflat-{filt}.fits").exists() and tryagain ==False :
-                            pass
-                        else :      
+                        if (sMASTERDIR / f"nightskyflat-{filt}.fits").exists() :
+                            print(f"{sMASTERDIR}/nightskyflat-{filt}.fits is already exists")
+                            fpath_age = _Python_utilities.get_file_age(sMASTERDIR / f"nightskyflat-{filt}.fits")
+                            if tryagain == False and fpath_age.days < file_age :
+                                print("*"*10)
+                                pass
+
+                            else :      
+                                File_Num = 80
+                                if len(df_light_filt["file"]) > File_Num :
+                                    combine_lst = df_light_filt["file"].tolist()[:File_Num]
+                                else : 
+                                    combine_lst = df_light_filt["file"].tolist()
+                                    try : 
+                                        ccd = yfu.imcombine(
+                                                            combine_lst, 
+                                                            combine="med",
+                                                            scale="avg", 
+                                                            scale_to_0th=False, #norm
+                                                            reject="sc", 
+                                                            sigma=2.5,
+                                                            verbose=True,
+                                                            memlimit = 2.e+11,
+                                                            )
+                                    except :
+                                        ccd = yfu.imcombine(
+                                                            combine_lst, 
+                                                            combine="med",
+                                                            scale="avg", 
+                                                            scale_to_0th=False, #norm
+                                                            # reject="sc", 
+                                                            # sigma=2.5,
+                                                            verbose=True,
+                                                            memlimit = 2.e+11,
+                                                            )
+                                    ccd.write(sMASTERDIR / f"nightskyflat-{filt}.fits", overwrite=True)
+                                    print (f"Create Create nightskyflat-{filt}.fits +++...")
+                        else : 
                             File_Num = 80
                             if len(df_light_filt["file"]) > File_Num :
                                 combine_lst = df_light_filt["file"].tolist()[:File_Num]
                             else : 
                                 combine_lst = df_light_filt["file"].tolist()
-                            if (sMASTERDIR / f"nightskyflat-{filt}_norm.fits").exists():
-                                pass
-                            else :
                                 try : 
                                     ccd = yfu.imcombine(
-                                                        combine_lst, 
-                                                        combine="med",
-                                                        scale="avg", 
-                                                        scale_to_0th=False, #norm
-                                                        reject="sc", 
-                                                        sigma=2.5,
-                                                        verbose=True,
-                                                        memlimit = 2.e+11,
-                                                        )
+                                                    combine_lst, 
+                                                    combine="med",
+                                                    scale="avg", 
+                                                    scale_to_0th=False, #norm
+                                                    reject="sc", 
+                                                    sigma=2.5,
+                                                    verbose=True,
+                                                    memlimit = 2.e+11,
+                                                    )
                                 except :
                                     ccd = yfu.imcombine(
-                                                        combine_lst, 
-                                                        combine="med",
-                                                        scale="avg", 
-                                                        scale_to_0th=False, #norm
-                                                        reject="sc", 
-                                                        # sigma=2.5,
-                                                        verbose=True,
-                                                        memlimit = 2.e+11,
-                                                        )
-                                ccd.write(sMASTERDIR / f"nightskyflat-{filt}_norm.fits", overwrite=True)
-                                print (f"Create Create nightskyflat-{filt}_norm.fits +++...")
+                                                    combine_lst, 
+                                                    combine="med",
+                                                    scale="avg", 
+                                                    scale_to_0th=False, #norm
+                                                    # reject="sc", 
+                                                    # sigma=2.5,
+                                                    verbose=True,
+                                                    memlimit = 2.e+11,
+                                                    )
+                            ccd.write(sMASTERDIR / f"nightskyflat-{filt}.fits", overwrite=True)
+                            print (f"Create Create nightskyflat-{filt}.fits +++...")
 
             for _, row in df_light.iterrows():
                 fpath = Path(row["file"])
-                fpath_age = _Python_utilities.get_file_age(fpath)
                 ccd = yfu.load_ccd(REDUCEDDIR / fpath.name)
                 filt = row["FILTER"]
-                if (REDUCNSKYDIR / fpath.name).exists() and tryagain == False and fpath_age.days < file_age:
-                    print(f"Nightsky reduction file already exists...\n{fpath.name}")
-                    pass
+                if (REDUCNSKYDIR / fpath.name).exists() :
+                    print(f"Nightsky reduction file already exists...\n{fpath}")
+                    fpath_age = _Python_utilities.get_file_age(REDUCNSKYDIR / fpath.name)
+                    if tryagain == False or fpath_age.days < file_age:
+                        print("*"*10)
+                    else :
+                        try:    
+                            ccd = yfu.ccdred(
+                                            ccd, 
+                                            mflatpath = sMASTERDIR / f"nightskyflat-{filt}.fits",
+                                            output = REDUCNSKYDIR / fpath.name
+                                            # flat_norm_value=1,  # 1 = skip normalization, None = normalize by mean
+                                        )
+                        except Exception as err: 
+                            print("Err :", err)
+                            pass 
                 else :
                     try:    
                         ccd = yfu.ccdred(
                                         ccd, 
-                                        mflatpath = sMASTERDIR / f"nightskyflat-{filt}_norm.fits",
+                                        mflatpath = sMASTERDIR / f"nightskyflat-{filt}.fits",
                                         output = REDUCNSKYDIR / fpath.name
+                                        # flat_norm_value=1,  # 1 = skip normalization, None = normalize by mean
                                     )
-                    except : 
-                        # _Python_utilities.write_log(err_log_file, "FileNotFoundError") 
+                    except Exception as err: 
+                        print("Err :", err)
                         pass
     return 0
 
+
 #%%
-#########################################
-#plot_light_curve_variables_using_csv
-#########################################
-def plot_light_curve_variables_using_csv(DOINGDIR,
-                                        READINGDIR = reduced_dir,
-                                        FWHM_INIT = 6,
-                                        Mag_target = 12.5,
-                                        ERR_Max = 0.5,
-                                        coord_deltas = np.arange(0.00001, 0.00050, 0.00001),
-                                        #  READINGDIR = _astro_utilities.reduced__nightsky_dir,
-                                         **kwarg
-                                        ) :
-    DOINGDIR = Path(DOINGDIR)
-    print("DOINGDIR", DOINGDIR)
-
-    READINGDIR = DOINGDIR / READINGDIR
-    # READINGDIR = DOINGDIR / _astro_utilities.reduced_nightsky_dir
-
-    DIFFPRESULTDIR = DOINGDIR / f"{READINGDIR.parts[-1]}_DPhot_Mag{Mag_target}"
-    DIFFPRESULTDIR = DOINGDIR / f"{READINGDIR.parts[-1]}_DPhot_Mag{Mag_target}_fw{FWHM_INIT}"
-    LIGHTCUEVEDIR = DOINGDIR / "LightCurve"
-    if not LIGHTCUEVEDIR .exists():
-        os.makedirs("{}".format(str(LIGHTCUEVEDIR )))
-        print("{} is created...".format(str(LIGHTCUEVEDIR )))
-
-    csv_in_dir = sorted(list(DIFFPRESULTDIR.glob('*result_photometry.csv')))
-    if len(csv_in_dir) == 0 : 
-        print("len(csv_in_dir):", len(csv_in_dir))
-    else : 
-        df = pd.DataFrame()
-        for fpath in csv_in_dir[:]:
-            fpath = Path(fpath)
-            print(f"starting... {fpath}")
-            df_csv = pd.read_csv(fpath)
-            df = pd.concat([df, df_csv], axis=0)
-
-        print("len(df):", len(df))
-        print("df.columns:", df.columns)
-
-        df['t_middle_dt'] = pd.to_datetime(df['t_middle'])
-        df = df.drop(columns=['Unnamed: 0'], axis=0)
-        df = df.reset_index(drop=True)
-        targ_name = DOINGDIR.parts[-1].split("_")[0]
-        targ_name = targ_name.replace("-"," ")
-        print("targ_name :", targ_name)
-
-        from astroquery.simbad import Simbad
-        result_table = Simbad.query_object(targ_name)
-        
-        if not result_table :
-            print("there is no result...")
-        else : 
-            # print(result_table.columns)
-            print("result_table :", result_table)
-
-            # type(result_table['RA'][0])
-            # result_table['RA'][0].split(" ")
-            targ_sky = SkyCoord(ra=f"{result_table['RA'][0].split(' ')[0]}h{result_table['RA'][0].split(' ')[1]}m{result_table['RA'][0].split(' ')[2]}s",
-                        dec=f"{result_table['DEC'][0].split(' ')[0]}d{result_table['DEC'][0].split(' ')[1]}m{result_table['DEC'][0].split(' ')[2]}s", frame='icrs')
-            print("targ_sky :", targ_sky)
-            for coord_delta in coord_deltas :
-                df_targ = df.loc[(df["RAJ2000"] > targ_sky.ra.value*(1-coord_delta)) \
-                                & (df["RAJ2000"] < targ_sky.ra.value*(1+coord_delta)) \
-                                & (df["DEJ2000"] > targ_sky.dec.value*(1-coord_delta))\
-                                & (df["DEJ2000"] < targ_sky.dec.value*(1+coord_delta))\
-                                & (df["merr_ann"] < ERR_Max)]
-
-                if df_targ.empty :
-                    print("df_targ is empty")
-                else : 
-                    df_targ.to_csv(f"{LIGHTCUEVEDIR}/{READINGDIR.parts[-2]}_{READINGDIR.parts[-1]}_DPhot_Mag{Mag_target}_fw{FWHM_INIT}_light_curve_{coord_delta:.05f}.csv")
-                    print(f"{READINGDIR.parts[-2]}_{READINGDIR.parts[-1]}_DPhot_Mag{Mag_target}_fw{FWHM_INIT}_light_curve_{coord_delta:.05f}.csv is created...")
-
-                    ttime = Time(df_targ["t_middle_dt"])
-
-                    fig, axs = plt.subplots(2, 1, figsize=(12, 8), 
-                            sharex=False, sharey=False, gridspec_kw=None)
-
-                    chls = ['B', 'V', 'R']
-                    for chl in chls :
-                        # if f'{chl}_magnitude' in df_targ:    
-                        df_targ_chl = df_targ.loc[df_targ["filter"] == chl].copy()
-                        if not df_targ_chl.empty :
-                            # print(df_targ_chl)
-                            # ttime = Time(df_targ_chl["t_middle_dt"])
-                            im0 = axs[0].errorbar(Time(df_targ_chl["t_middle_dt"]).mjd, 
-                                    df_targ_chl[f'{chl}_magnitude'], yerr=abs(df_targ_chl["merr_ann"]),
-                                    marker='x',
-                                    ls='none',
-                                    #ms=10,
-                                    capsize=3,
-                                    label=f'{chl}_magnitude')
-                            axs[1].errorbar(df_targ_chl["t_middle_dt"], 
-                                    df_targ_chl['flux_star'], yerr=abs(df_targ_chl["flux_err"]),
-                                    marker='x',
-                                    ls='none',
-                                    #ms=10,
-                                    capsize=3,
-                                    label=f'flux_star at {chl}')
-
-                    axs[0].invert_yaxis()
-
-                    axs[0].set(
-                        xlabel='Time (MJD)',
-                        ylabel="Magnitude",
-                        # ylim=(10.8+1, 10.8-1),
-                        # ylim=(11.25+1.2, 11.25-1.2),   
-                        # ylim=(10.75+.6, 10.75-.6),   
-                        # ylim=(10.8+.9, 10.8-.9), 
-                    )
-                    axs[0].legend()
-                    axs[0].grid(linestyle=':')
-
-                    axs[0].set_title(f"light curve of {targ_name}", fontsize=12,)
-                    axs[0].annotate(f'Coord: {targ_sky} +-{coord_delta}', fontsize=8,
-                                xy=(0, 0), xytext=(-10, -30), va='top', ha='left',
-                                xycoords='axes fraction', textcoords='offset points')
-
-                    axs[1].set(
-                        xlabel='Time (date)',
-                        ylabel="flux",
-                    ) 
-                    axs[1].legend()
-                    axs[1].grid(linestyle=':')
-
-                    axs[1].set_title(f"light curve of {targ_name}", fontsize=12,)
-                    axs[1].annotate(f'Coord: {targ_sky} +-{coord_delta}', fontsize=8,
-                                xy=(0, 0), xytext=(-10, -30), va='top', ha='left',
-                                xycoords='axes fraction', textcoords='offset points')
-
-                    plt.tight_layout()
-                    plt.savefig(f"{LIGHTCUEVEDIR}/{READINGDIR.parts[-2]}_{READINGDIR.parts[-1]}_DPhot_Mag{Mag_target}_fw{FWHM_INIT}_light_curve_{coord_delta:.05f}.png")
-
-                    # plt.show()
-                    # plt.close()
-#%%
-#########################################
-#reduceLightFrame
-#########################################
-# def reduceLightFrame(
-#         DOINGDIR,
-#         MASTERDIR,
-#         OWrite=False,
-#         tryagain = False, 
-#         **kwargs
-#         ):
-#     ''' Gives the new path of the FITS file from header.
-#     Parameters
-#     ----------
-#     DOINGDIR: pathlike
-#         The path to the original .
-#     summary : dataframe
-        
-#     Returns
-#     -------
-    
-#     '''
-#     DOINGDIR = Path(DOINGDIR)
-#     print(f"Starting: {str(DOINGDIR.parts[-1])}")
-    
-#     sMASTERDIR = DOINGDIR / master_dir
-#     REDUCEDDIR = DOINGDIR / reduced_dir
-
-#     if not sMASTERDIR.exists():
-#         os.makedirs(str(sMASTERDIR))
-#         print("{} is created...".format(str(sMASTERDIR)))
-
-#     if not REDUCEDDIR.exists():
-#         os.makedirs(str(REDUCEDDIR))
-#         print("{} is created...".format(str(REDUCEDDIR)))
-
-#     summary = yfu.make_summary(DOINGDIR/"*.fit*")
-#     if summary is not None :
-#         #print(summary)
-#         print("len(summary):", len(summary))
-#         print("summary:", summary)
-#         #print(summary["file"][0])
-
-#         df_light = summary.loc[summary["IMAGETYP"] == "LIGHT"].copy()
-#         df_light = df_light.reset_index(drop=True)
-
-#         summary_master = yfu.make_summary(MASTERDIR/"*.fit*", 
-#                            verbose = False,
-#                            )
-#         # print("summary_master", summary_master)
-
-#         summary_master_dark = summary_master.loc[summary_master["IMAGETYP"] == "DARK"].copy()
-#         summary_master_dark.reset_index(inplace=True)
-#         # print("summary_master_dark", summary_master_dark)
-
-#         if 'EXPTIME' in summary_master_dark :
-#             check_exptimes = summary_master_dark['EXPTIME'].drop_duplicates()
-#             check_exptimes = check_exptimes.reset_index(drop=True)
-#         print("check_exptimes", check_exptimes)
-
-#         for _, row in df_light.iterrows():
-
-#             fpath = Path(row["file"])
-#             ccd = yfu.load_ccd(fpath)
-#             filt = ccd.header["FILTER"]
-#             expt = ccd.header["EXPTIME"]
-
-#             idx = abs(summary_master_dark['EXPTIME'] - expt).idxmin()
-#             # print(idx)
-
-#             if (REDUCEDDIR / fpath.name).exists() and tryagain == False :
-#                 print(f"reduction file already exists...\n{fpath.name}")
-#                 pass
-#             else :
-#                 try : 
-#                     if not (MASTERDIR / f"master_flat_{filt.upper()}_norm.fits").exists() :
-#                         print(f"{MASTERDIR}/master_flat_{filt.upper()}_norm.fits is not exists...")
-#                     else :
-#                         if (MASTERDIR / f"master_dark_{expt:.0f}sec.fits").exists() :
-#                             print(f"Reduce with master_dark_{expt:.0f}sec.fits ...")
-
-#                             red = yfu.ccdred(
-#                                 ccd,
-#                                 output=Path(f"{REDUCEDDIR/ fpath.name}"),
-#                                 mdarkpath=str(MASTERDIR / "master_dark_{:.0f}sec.fits".format(expt)),
-#                                 mflatpath=str(MASTERDIR / "master_flat_{}_norm.fits".format(filt.upper())),
-#                                 # flat_norm_value=1,  # 1 = skip normalization, None = normalize by mean
-#                                 overwrite=True,
-#                                 )
-#                         else : 
-#                             print(f"Reduce with master_dark_{summary_master_dark['EXPTIME'][idx]:.0f}sec.fits is not exists...")
-#                             red = yfu.ccdred(
-#                                 ccd,
-#                                 output=Path(f"{REDUCEDDIR/ fpath.name}"),
-#                                 mdarkpath=str(MASTERDIR / f"master_dark_{summary_master_dark['EXPTIME'][idx]:.0f}sec.fits"),
-#                                 mflatpath=str(MASTERDIR / f"master_flat_{filt.upper()}_norm.fits"),
-#                                 dark_scale = True,
-#                                 exptime_dark = summary_master_dark['EXPTIME'][idx],
-#                                 # flat_norm_value=1,  # 1 = skip normalization, None = normalize by mean
-#                                 overwrite=True,
-#                                 )
-#                         print (f"Reduce Reduce {fpath.name} +++...")
-
-#                 except Exception as e: 
-#                     print("err:", e)
-#                     pass
-
-#     return 0
-
-# #%%
-# #########################################
-# #makeNightskyflatReduceLightFrame
-# #########################################
-# def makeNightskyflatReduceLightFrame(
-#         DOINGDIR,
-#         MASTERDIR,
-#         tryagain = False, 
-#         OWrite = False,
-#         **kwargs
-#         ):
-#     ''' Gives the new path of the FITS file from header.
-#     Parameters
-#     ----------
-#     DOINGDIR: pathlike
-#         The path to the original .
-#     summary : dataframe
-        
-#     Returns
-#     -------
-    
-#     '''
-#     DOINGDIR = Path(DOINGDIR)
-#     print (DOINGDIR.parts[-1])
-#     sMASTERDIR = DOINGDIR / master_dir
-#     REDUCEDDIR = DOINGDIR / reduced_dir
-#     REDUCNSKYDIR = DOINGDIR / reduced_nightsky_dir
-
-#     # if not MASTERDIR.exists():
-#     # shutil.copytree(MASTERDIR, MASTERDIR, dirs_exist_ok=True)
-
-#     if not sMASTERDIR.exists():
-#         os.makedirs(str(sMASTERDIR))
-#         print("{} is created...".format(str(sMASTERDIR)))
-
-#     if not REDUCNSKYDIR.exists():
-#         os.makedirs("{}".format(str(REDUCNSKYDIR)))
-#         print("{} is created...".format(str(REDUCNSKYDIR)))
-    
-#     summary = yfu.make_summary(REDUCEDDIR /"*.fit*")
-#     if summary is not None :
-#         print("len(summary):", len(summary))
-#         print("summary:", summary)
-#         #print(summary["file"][0])   
-
-#         df_light = summary.loc[summary["IMAGETYP"] == "LIGHT"].copy()
-#         df_light = df_light.reset_index(drop=True)
-
-#         if 'FILTER' in df_light :
-#             check_filters = df_light['FILTER'].drop_duplicates()
-#             check_filters = check_filters.reset_index(drop=True)
-#         print("check_filters", check_filters)
-
-#         for filt in check_filters:
-#         #for filt in ["V"]:
-#             df_light_filt = df_light.loc[df_light["FILTER"] == filt].copy()
-            
-#             if df_light_filt.empty:
-#                 print(f"The dataframe(df_light_filt) {filt} is empty")
-#                 pass
-#             else:
-
-#                 print("len(df_light_filt):", len(df_light_filt))
-#                 print("df_light_filt:", df_light_filt)
-            
-#                 if (sMASTERDIR / f"nightskyflat-{filt}.fits").exists() and tryagain == False :
-#                     pass
-#                 else :      
-#                     File_Num = 80
-#                     if len(df_light_filt["file"]) > File_Num :
-#                         combine_lst = df_light_filt["file"].tolist()[:File_Num]
-#                     else : 
-#                         combine_lst = df_light_filt["file"].tolist()
-#                     if (sMASTERDIR / f"nightskyflat-{filt}_norm.fits").exists():
-#                         pass
-#                     else :
-#                         try : 
-#                             ccd = yfu.imcombine(
-#                                                 combine_lst, 
-#                                                 combine="med",
-#                                                 scale="avg", 
-#                                                 scale_to_0th=False, #norm
-#                                                 reject="sc", 
-#                                                 sigma=2.5,
-#                                                 verbose=True,
-#                                                 memlimit = 2.e+11,
-#                                                 )
-#                         except :
-#                             ccd = yfu.imcombine(
-#                                                 combine_lst, 
-#                                                 combine="med",
-#                                                 scale="avg", 
-#                                                 scale_to_0th=False, #norm
-#                                                 reject="sc", 
-#                                                 # sigma=2.5,
-#                                                 verbose=True,
-#                                                 memlimit = 2.e+11,
-#                                                 )
-#                         ccd.write(sMASTERDIR / f"nightskyflat-{filt}_norm.fits", overwrite=True)
-#                         print (f"Create Create nightskyflat-{filt}_norm.fits +++...")
-
-#         for _, row in df_light.iterrows():
-#             fpath = Path(row["file"])
-#             ccd = yfu.load_ccd(REDUCEDDIR / fpath.name)
-#             filt = row["FILTER"]
-#             if (REDUCNSKYDIR / fpath.name).exists() and tryagain == false:
-#                     print(f"Nightsky reduction file already exists...\n{fpath.name}")
-#                     pass
-#             else :
-#                 try:    
-#                     ccd = yfu.ccdred(
-#                                     ccd, 
-#                                     mflatpath = sMASTERDIR / f"nightskyflat-{filt}_norm.fits",
-#                                     output = REDUCNSKYDIR / fpath.name
-#                                 )
-#                 except : 
-#                     # _Python_utilities.write_log(err_log_file, "FileNotFoundError") 
-#                     pass
-#     return 0
 #%%    
 # #########################################
 # mag_inst
@@ -2482,107 +1872,7 @@ def mag_inst(flux, ferr):
 
 def linf(x, a, b):
     return a + b*x
-#%%
-# #%%
-# #########################################
-# #solvingAstrometrynet
-# #########################################
-# def solvingAstrometrynet(        
-#         DOINGDIR,
-#         OWrite=False,
-#         **kwargs
-#         ):
-#     ''' Gives the new path of the FITS file from header.
-#     Parameters
-#     ----------
-#     DOINGDIR: pathlike
-#         The path to the original .
-#     summary : dataframe
-        
-#     Returns
-#     -------
-    
-#     '''
-#     ast = AstrometryNet()
 
-#     # ger from nova.astrometry.net
-#     ast.api_key = 'bldvwzzuvktnwfph' #must changed...
-#     DOINGDIR = Path(DOINGDIR)
-#     print("DOINGDIR", DOINGDIR)
-#     if "RiLA600_STX-16803_" in str(DOINGDIR.parts[-2]) :
-#         DOINGDIR = DOINGDIR / reduced_nightsky_dir
-#     if "GSON300_STF-8300M_" in str(DOINGDIR.parts[-2]) :
-#         DOINGDIR = DOINGDIR / reduced_dir
-    
-#     summary = yfu.make_summary(DOINGDIR/"*.fit*")
-#     if summary is not None :
-#         print("len(summary):", len(summary))
-#         print("summary:", summary)
-#         #print(summary["file"][0])  
-#         df_light = summary.loc[summary["IMAGETYP"] == "LIGHT"].copy()
-#         df_light = df_light.reset_index(drop=True)
-#         print("df_light:\n{}".format(df_light))
-
-#         for _, row  in df_light.iterrows():
-#             fpath = Path(row["file"])
-#             print(fpath)
-#             hdul = fits.open(fpath)
-
-#             submission_id = None
-#             solve_timeout = 600
-
-#             if 'PIXSCALE' in hdul[0].header:
-#                 PIXc = hdul[0].header['PIXSCALE']
-#             else : 
-#                 PIXc = calPixScale(hdul[0].header['FOCALLEN'], 
-#                                                     hdul[0].header['XPIXSZ'],
-#                                                     hdul[0].header['XBINNING'])
-#             print("PIXc : ", PIXc)
-#             hdul.close()
-
-#             SOLVE, ASTAP, LOCAL = checkPSolve(fpath)
-#             print("SOLVE:", SOLVE, "ASTAP:", ASTAP, "LOCAL:", LOCAL)
-
-#             if SOLVE :
-#                 print(f"{fpath.name} is already solved...")
-#             else :             
-#                 try_again = True                
-                    
-#                 while try_again:
-#                     try:
-#                         if not submission_id:
-#                             wcs_header = ast.solve_from_image(str(fpath),
-#                                                 force_image_upload=True,
-#                                                 solve_timeout = solve_timeout,
-#                                                 submission_id=submission_id)
-#                         else:
-#                             wcs_header = ast.monitor_submission(submission_id,
-#                                                                 solve_timeout = solve_timeout)
-#                     except TimeoutError as e:
-#                         submission_id = e.args[1]
-#                     else:
-#                         # got a result, so terminate
-#                         try_again = False
-
-#                 if not wcs_header:
-#                     # Code to execute when solve fails
-#                     print("fits file solving failure...")
-
-#                 else:
-#                     # Code to execute when solve succeeds
-#                     print("fits file solved successfully...")
-
-#                     with fits.open(str(fpath), mode='update') as hdul:
-#                         for card in wcs_header :
-#                             try: 
-#                                 print(card, wcs_header[card], wcs_header.comments[card])
-#                                 hdul[0].header.set(card, wcs_header[card], wcs_header.comments[card])
-#                             except : 
-#                                 print(card)
-#                         hdul.flush
-
-#                     print(str(fpath)+" is created...")
-#     return 0
 
 #%%
 #########################################
@@ -2643,14 +1933,19 @@ def diff_Photometry_PS1 (DOINGDIR,
         for _, row  in df_light.iterrows():
             try:
                 fpath = Path(row["file"])
-                fpath_age = _Python_utilities.get_file_age(fpath)
 
-                if (DIFFPRESULTDIR/f"{fpath.stem}_result_photometry.csv").exists() and tryagain == False and fpath_age.days < file_age:
-                    print("*"*10)
+                if (DIFFPRESULTDIR/f"{fpath.stem}_result_photometry.csv").exists() :
                     print(f"{fpath.stem}_result_photometry.csv is already exist...")
-                else :
+                    fpath_age = _Python_utilities.get_file_age(DIFFPRESULTDIR/f"{fpath.stem}_result_photometry.csv")
+                    print("fpath_age :", fpath_age)
+                    if (tryagain == False or fpath_age.days < file_age):
+                        print("*"*10)
+                        return 0
+                else : 
+                    print(f"{fpath.stem}_result_photometry.csv is being reprocess...")
                     print("*"*20)
-                    print(f"Starting {fpath.name}...")
+                    # print(f"Starting {fpath.name}...")
+                    print(f"Starting {fpath}...")
                     hdul = fits.open(fpath)
                     ccd = yfu.load_ccd(fpath)
                     flt = hdul[0].header["filter"]
@@ -3210,9 +2505,320 @@ def diff_Photometry_PS1 (DOINGDIR,
                         plt.close()
 
             except Exception as err: 
-                print (f'Error messgae .......\n{err}')
-                # _Python_utilities.write_log(err_log_file, err)
+                print("Err :", err)
+                pass 
     return 0
+
+#%%
+#########################################
+#plot_light_curve_variables_using_csv
+#########################################
+def plot_light_curve_variables_using_csv(DOINGDIR,
+                                        READINGDIR = reduced_dir,
+                                        FWHM_INIT = 6,
+                                        Mag_target = 12.5,
+                                        ERR_Max = 0.5,
+                                        coord_deltas = np.arange(0.00001, 0.00050, 0.00001),
+                                        #  READINGDIR = _astro_utilities.reduced__nightsky_dir,
+                                         **kwarg
+                                        ) :
+    DOINGDIR = Path(DOINGDIR)
+    print("DOINGDIR", DOINGDIR)
+
+    READINGDIR = DOINGDIR / READINGDIR
+    # READINGDIR = DOINGDIR / _astro_utilities.reduced_nightsky_dir
+
+    DIFFPRESULTDIR = DOINGDIR / f"{READINGDIR.parts[-1]}_DPhot_Mag{Mag_target}"
+    DIFFPRESULTDIR = DOINGDIR / f"{READINGDIR.parts[-1]}_DPhot_Mag{Mag_target}_fw{FWHM_INIT}"
+    LIGHTCUEVEDIR = DOINGDIR / "LightCurve"
+    if not LIGHTCUEVEDIR .exists():
+        os.makedirs("{}".format(str(LIGHTCUEVEDIR )))
+        print("{} is created...".format(str(LIGHTCUEVEDIR )))
+
+    csv_in_dir = sorted(list(DIFFPRESULTDIR.glob('*result_photometry.csv')))
+    if len(csv_in_dir) == 0 : 
+        print("len(csv_in_dir):", len(csv_in_dir))
+    else : 
+        try: 
+            df = pd.DataFrame()
+            for fpath in csv_in_dir[:]:
+                fpath = Path(fpath)
+                print(f"starting... {fpath}")
+                df_csv = pd.read_csv(fpath)
+                df = pd.concat([df, df_csv], axis=0)
+
+            print("len(df):", len(df))
+            print("df.columns:", df.columns)
+
+            df['t_middle_dt'] = pd.to_datetime(df['t_middle'])
+            df = df.drop(columns=['Unnamed: 0'], axis=0)
+            df = df.reset_index(drop=True)
+            targ_name = DOINGDIR.parts[-1].split("_")[0]
+            targ_name = targ_name.replace("-"," ")
+            print("targ_name :", targ_name)
+
+            from astroquery.simbad import Simbad
+            result_table = Simbad.query_object(targ_name)
+            
+            if not result_table :
+                print("there is no result...")
+            else : 
+                # print(result_table.columns)
+                print("result_table :", result_table)
+
+                # type(result_table['RA'][0])
+                # result_table['RA'][0].split(" ")
+                targ_sky = SkyCoord(ra=f"{result_table['RA'][0].split(' ')[0]}h{result_table['RA'][0].split(' ')[1]}m{result_table['RA'][0].split(' ')[2]}s",
+                            dec=f"{result_table['DEC'][0].split(' ')[0]}d{result_table['DEC'][0].split(' ')[1]}m{result_table['DEC'][0].split(' ')[2]}s", frame='icrs')
+                print("targ_sky :", targ_sky)
+                for coord_delta in coord_deltas :
+                    df_targ = df.loc[(df["RAJ2000"] > targ_sky.ra.value*(1-coord_delta)) \
+                                    & (df["RAJ2000"] < targ_sky.ra.value*(1+coord_delta)) \
+                                    & (df["DEJ2000"] > targ_sky.dec.value*(1-coord_delta))\
+                                    & (df["DEJ2000"] < targ_sky.dec.value*(1+coord_delta))\
+                                    & (df["merr_ann"] < ERR_Max)]
+
+                    if df_targ.empty :
+                        print("df_targ is empty")
+                    else : 
+                        df_targ.to_csv(f"{LIGHTCUEVEDIR}/{READINGDIR.parts[-2]}_{READINGDIR.parts[-1]}_DPhot_Mag{Mag_target}_fw{FWHM_INIT}_light_curve_{coord_delta:.05f}.csv")
+                        print(f"{READINGDIR.parts[-2]}_{READINGDIR.parts[-1]}_DPhot_Mag{Mag_target}_fw{FWHM_INIT}_light_curve_{coord_delta:.05f}.csv is created...")
+
+                        check_filters = df_targ['filter'].drop_duplicates()
+                        check_filters.reset_index(drop=True)
+                        # print("check_filters)", check_filters)
+
+                        ttime = Time(df_targ["t_middle_dt"])
+
+                        fig, axs = plt.subplots(2, 1, figsize=(12, 8), 
+                                sharex=False, sharey=False, gridspec_kw=None)
+
+                        for chl in check_filters :
+                            # if f'{chl}_magnitude' in df_targ:    
+                            df_targ_chl = df_targ.loc[df_targ["filter"] == chl].copy()
+                            if not df_targ_chl.empty :
+                                # print(df_targ_chl)
+                                # ttime = Time(df_targ_chl["t_middle_dt"])
+                                im0 = axs[0].errorbar(Time(df_targ_chl["t_middle_dt"]).mjd, 
+                                        df_targ_chl[f'{chl}_magnitude'], yerr=abs(df_targ_chl["merr_ann"]),
+                                        marker='x',
+                                        ls='none',
+                                        #ms=10,
+                                        capsize=3,
+                                        label=f'{chl}_magnitude')
+                                axs[1].errorbar(df_targ_chl["t_middle_dt"], 
+                                        df_targ_chl['flux_star'], yerr=abs(df_targ_chl["flux_err"]),
+                                        marker='x',
+                                        ls='none',
+                                        #ms=10,
+                                        capsize=3,
+                                        label=f'flux_star at {chl}')
+
+                        axs[0].invert_yaxis()
+
+                        axs[0].set(
+                            xlabel='Time (MJD)',
+                            ylabel="Magnitude",
+                            # ylim=(10.8+1, 10.8-1),
+                            # ylim=(11.25+1.2, 11.25-1.2),   
+                            # ylim=(10.75+.6, 10.75-.6),   
+                            # ylim=(10.8+.9, 10.8-.9), 
+                        )
+                        axs[0].legend()
+                        axs[0].grid(linestyle=':')
+
+                        axs[0].set_title(f"light curve of {targ_name}", fontsize=12,)
+                        axs[0].annotate(f'Coord: {targ_sky} +-{coord_delta}', fontsize=8,
+                                    xy=(0, 0), xytext=(-10, -30), va='top', ha='left',
+                                    xycoords='axes fraction', textcoords='offset points')
+
+                        axs[1].set(
+                            xlabel='Time (date)',
+                            ylabel="flux",
+                        ) 
+                        axs[1].legend()
+                        axs[1].grid(linestyle=':')
+
+                        axs[1].set_title(f"light curve of {targ_name}", fontsize=12,)
+                        axs[1].annotate(f'Coord: {targ_sky} +-{coord_delta}', fontsize=8,
+                                    xy=(0, 0), xytext=(-10, -30), va='top', ha='left',
+                                    xycoords='axes fraction', textcoords='offset points')
+
+                        plt.tight_layout()
+                        plt.savefig(f"{LIGHTCUEVEDIR}/{READINGDIR.parts[-2]}_{READINGDIR.parts[-1]}_DPhot_Mag{Mag_target}_fw{FWHM_INIT}_light_curve_{coord_delta:.05f}.png")
+
+                        # plt.show()
+                        # plt.close()
+        except Exception as err: 
+            print("Err :", err)
+            pass 
+        
+    return 0
+
+#%%
+#########################################
+#plot_light_curve_Asteroids_using_csv
+#########################################
+def plot_light_curve_asteroids_using_csv(DOINGDIR,
+                                        READINGDIR = reduced_dir,
+                                        FWHM_INIT = 6,
+                                        Mag_target = 12.5,
+                                        ERR_Max = 0.5,
+                                        coord_deltas = np.arange(0.00001, 0.00050, 0.00001),
+                                        # READINGDIR = reduced__nightsky_dir,
+                                        LOCATION = dict(lon=127.005, lat=37.308889, elevation=101),
+                                        **kwarg
+                                        ) :
+    DOINGDIR = Path(DOINGDIR)
+    print("DOINGDIR", DOINGDIR)
+
+    READINGDIR = DOINGDIR / READINGDIR
+    # READINGDIR = DOINGDIR / _astro_utilities.reduced_nightsky_dir
+
+    # DIFFPRESULTDIR = DOINGDIR / f"{READINGDIR.parts[-1]}_DPhot_Mag{Mag_target}"
+    DIFFPRESULTDIR = DOINGDIR / f"{READINGDIR.parts[-1]}_DPhot_Mag{Mag_target}_fw{FWHM_INIT}"
+    LIGHTCUEVEDIR = DOINGDIR / "LightCurve"
+    if not LIGHTCUEVEDIR .exists():
+        os.makedirs("{}".format(str(LIGHTCUEVEDIR )))
+        print("{} is created...".format(str(LIGHTCUEVEDIR )))
+
+    csv_in_dir = sorted(list(DIFFPRESULTDIR.glob('*result_photometry.csv')))
+    if len(csv_in_dir) == 0 : 
+        print("len(csv_in_dir):", len(csv_in_dir))
+    else : 
+        df = pd.DataFrame()
+        for fpath in csv_in_dir[:]:
+            fpath = Path(fpath)
+            print(f"starting... {fpath}")
+            df_csv = pd.read_csv(fpath)
+            df = pd.concat([df, df_csv], axis=0)
+
+        print("len(df):", len(df))
+        print("df.columns:", df.columns)
+
+        df['t_middle_dt'] = pd.to_datetime(df['t_middle'])
+        df = df.drop(columns=['Unnamed: 0'], axis=0)
+        df = df.reset_index(drop=True)
+
+        targ_name = DOINGDIR.parts[-1].split("_")[0]
+        targ_name = targ_name.replace("-"," ")
+        targ_name = ''.join([i for i in targ_name  if not i.isdigit()])
+        print("targ_name :", targ_name)
+
+        check_ttimes = df[['t_middle_dt']].drop_duplicates()
+        check_ttimes = check_ttimes.reset_index(drop=True)
+        check_ttimes
+
+        try : 
+            df_targ = pd.DataFrame()
+            for idx, row in check_ttimes.iterrows() :
+                print(idx, row)
+                targ_ttime = Time(row['t_middle_dt'])
+
+                obj = Horizons(id=targ_name, location=LOCATION, epochs=targ_ttime.jd)
+                result_table = obj.ephemerides()
+                print("result_table : {}".format(result_table ))
+
+                pos_sky = SkyCoord(result_table ["RA"][0], result_table ["DEC"][0], unit='deg')
+                print("pos_sky: {}".format(pos_sky))
+
+                if not result_table :
+                    print("there is no result...")
+                else : 
+                    # print(result_table.columns)
+                    print("result_table :", result_table)
+
+                    # type(result_table['RA'][0])
+                    # result_table['RA'][0].split(" ")
+                    # targ_sky = SkyCoord(ra=f"{result_table['RA'][0].split(' ')[0]}h{result_table['RA'][0].split(' ')[1]}m{result_table['RA'][0].split(" ")[2]}s",
+                    #                dec=f"{result_table['DEC'][0].split(' ')[0]}d{result_table['DEC'][0].split(' ')[1]}m{result_table['DEC'][0].split(" ")[2]}s", frame='icrs')
+                    targ_sky = pos_sky
+                    print("targ_sky :", targ_sky)
+
+                    for coord_delta in coord_deltas :
+                        df_one = df.loc[(df["RAJ2000"] > targ_sky.ra.value*(1-coord_delta)) \
+                                        & (df["RAJ2000"] < targ_sky.ra.value*(1+coord_delta)) \
+                                        & (df["DEJ2000"] > targ_sky.dec.value*(1-coord_delta))\
+                                        & (df["DEJ2000"] < targ_sky.dec.value*(1+coord_delta))\
+                                        & (df['t_middle_dt'] == row['t_middle_dt'])]
+                        print("df_one :", df_one)
+                        df_targ = pd.concat([df_targ, df_one], axis=0)
+
+                        if df_targ.empty :
+                            print("df_targ is empty")
+                        else : 
+                            df_targ.to_csv(f"{LIGHTCUEVEDIR}/{READINGDIR.parts[-2]}_{READINGDIR.parts[-1]}_light_curve_{coord_delta}.csv")
+                            print(f"{READINGDIR.parts[-2]}_{READINGDIR.parts[-1]}_light_curve_{coord_delta}.csv is created...")
+                            
+                            check_filters = df_targ['filter'].drop_duplicates()
+                            check_filters.reset_index(drop=True)
+                            # print("check_filters)", check_filters)
+
+                            ttime = Time(df_targ["t_middle_dt"])
+
+                            fig, axs = plt.subplots(2, 1, figsize=(12, 8), 
+                                    sharex=False, sharey=False, gridspec_kw=None)
+
+                            for chl in check_filters :
+                                # if f'{chl}_magnitude' in df_targ:    
+                                df_targ_chl = df_targ.loc[df_targ["filter"] == chl].copy()
+                                if not df_targ_chl.empty :
+                                    # print(df_targ_chl)
+                                    # ttime = Time(df_targ_chl["t_middle_dt"])
+                                    im0 = axs[0].errorbar(Time(df_targ_chl["t_middle_dt"]).mjd, 
+                                            df_targ_chl[f'{chl}_magnitude'], yerr=abs(df_targ_chl["merr_ann"]),
+                                            marker='x',
+                                            ls='none',
+                                            #ms=10,
+                                            capsize=3,
+                                            label=f'{chl}_magnitude')
+                                    axs[1].errorbar(df_targ_chl["t_middle_dt"], 
+                                            df_targ_chl['flux_star'], yerr=abs(df_targ_chl["flux_err"]),
+                                            marker='x',
+                                            ls='none',
+                                            #ms=10,
+                                            capsize=3,
+                                            label=f'flux_star at {chl}')
+
+                            axs[0].invert_yaxis()
+
+                            axs[0].set(
+                                xlabel='Time (MJD)',
+                                ylabel="Magnitude",
+                                # ylim=(10.8+1, 10.8-1),
+                                # ylim=(11.25+1.2, 11.25-1.2),   
+                                # ylim=(10.75+.6, 10.75-.6),   
+                                # ylim=(10.8+.9, 10.8-.9), 
+                            )
+                            axs[0].legend()
+                            axs[0].grid(linestyle=':')
+
+                            axs[0].set_title(f"light curve of {targ_name}", fontsize=12,)
+                            axs[0].annotate(f'Coord: {targ_sky} +-{coord_delta}', fontsize=8,
+                                        xy=(0, 0), xytext=(-10, -30), va='top', ha='left',
+                                        xycoords='axes fraction', textcoords='offset points')
+
+                            axs[1].set(
+                                xlabel='Time (date)',
+                                ylabel="flux",
+                            ) 
+                            axs[1].legend()
+                            axs[1].grid(linestyle=':')
+
+                            axs[1].set_title(f"light curve of {targ_name}", fontsize=12,)
+                            axs[1].annotate(f'Coord: {targ_sky} +-{coord_delta}', fontsize=8,
+                                        xy=(0, 0), xytext=(-10, -30), va='top', ha='left',
+                                        xycoords='axes fraction', textcoords='offset points')
+
+                            plt.tight_layout()
+                            plt.savefig(f"{LIGHTCUEVEDIR}/{READINGDIR.parts[-2]}_{READINGDIR.parts[-1]}_DPhot_Mag{Mag_target}_fw{FWHM_INIT}_light_curve_{coord_delta:.05f}.png")
+
+                            # plt.show()
+                            # plt.close()
+        except Exception as err: 
+            print("Err :", err)
+            pass 
+            
 #%%
 #########################################
 #checkAsteroids
