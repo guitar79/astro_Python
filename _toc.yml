@@ -7,16 +7,31 @@ parts:
   - caption: Introduction
     numbered: True
     chapters:
-    - file: 00_00_computer_and_network.ipynb
+    - file: 00_01_computer_and_network.ipynb
       title: 천문대 컴퓨터 및 네트워트 구성
-    - file: 01_01_management_fits_file_GSHSOBS
-      title: 관측 파일(fits) 관리
-    # - file: 01_01_computer_basic.ipynb
-    #   title: 컴퓨터 기초
+    - file: 00_02_Python_for_photometry.ipynb
+      title: Python for photometry
 
+  - caption: Manage fits file 
+    numbered: True
+    chapters:
+    - file: 01_01_update_fits_header.ipynb
+      title: Fits file header update 
+    - file: 01_02_move_fits_files_using_keyword.ipynb
+      title: Move fits files using keyword
 
-  # - caption: Manage fits file 
-  #   numbered: True
-  #   chapters:
-  #   - file: 01_01_management_fits_file_GSHSOBS.ipynb
-      # title: fits file header update 
+  - caption: Preprocessing
+    numbered: True
+    chapters:
+    - file: 02_01_combine_master_files_in_samefolder.ipynb
+      title: Combine fits file header update 
+    - file: 02_02_check_stars_using_DAOFinder.ipynb
+      title: Check stars using_DAOFinder
+    - file: 02_03_solving_fits_file.ipynb
+      title: Plate solving
+    - file: 02_05_reduce_light_frame_using_master_files_ys.ipynb
+      title: Reduce light frame
+
+      
+
+      

@@ -4,27 +4,17 @@
 Created on Thu Nov 22 01:00:19 2018
 @author: guitar79@naver.com
 
-이 파일은 BASEDIR 폴더 안에 있는 모든 fit 파일에 대해서 
-fits header에 있는 정보를 바탕으로  
-destination_BASEDIR_name 안에 규칙적으로 폴더를 만들어서 저장합니다. 
-
 """
 #%%
 from glob import glob
-from pathlib import Path, PosixPath, WindowsPath
+from pathlib import Path
 import os
-from astropy.time import Time
-from datetime import datetime, timedelta
-from astropy.io import fits
 import shutil 
-
 import ysfitsutilpy as yfu
-import ysphotutilpy as ypu
-#import ysvisutilpy as yvu
 
 import _astro_utilities
 import _Python_utilities
-
+#%%
 #######################################################
 # for log file
 log_dir = "logs/"
@@ -35,23 +25,26 @@ print ("err_log_file: {}".format(err_log_file))
 if not os.path.exists('{0}'.format(log_dir)):
     os.makedirs('{0}'.format(log_dir))
 #######################################################
-
+#%%
 #######################################################
-# read all files in base directory for processing
-BASEDIR = Path(r"r:\OBS_data")
-# BASEDIR = Path(r"O:")
-# BASEDIR = Path("/mnt/Rdata/ASTRO_data") 
-#BASEDIR = Path("/Volumes/OBS_data")
+# Set directory variables.
+#######################################################
 
-DOINGDIR = ( BASEDIR/ _astro_utilities.CCD_NEW_dir)
-DOINGDIR = ( BASEDIR/ _astro_utilities.CCD_NEWUP_dir)
-                
-DOINGDIRs = sorted(_Python_utilities.getFullnameListOfallsubDirs(str(DOINGDIR)))
-#print ("DOINGDIRs: ", format(DOINGDIRs))
+# BASEDIR = Path(r"r:\OBS_data")   # for windows
+BASEDIR = Path("/mnt/Rdata/ASTRO_data")  # for ubuntu
+# BASEDIR = Path("/Volumes/OBS_data")  # for mac OS
+ 
+DOINGDIR = BASEDIR/ _astro_utilities.CCD_NEWUP_dir
+
+DOINGDIRs = sorted(_Python_utilities.getFullnameListOfallsubDirs(DOINGDIR))
+print ("DOINGDIRs: ", format(DOINGDIRs))
 print ("len(DOINGDIRs): ", format(len(DOINGDIRs)))
+#######################################################   
 
+#%%
 fnameKEYs = ["OBJECT", "IMAGETYP", "FILTER", "DATE-OBS", 
             "EXPOSURE", "OPTIC", "CCDNAME", "CCD-TEMP", "XBINNING"]
+Owrite = False
 
 #%%
 for DOINGDIR in DOINGDIRs[:] : 
@@ -88,51 +81,28 @@ for DOINGDIR in DOINGDIRs[:] :
                         if KEY == "XBINNING" : 
                             new_fname += str(row[KEY])+"bin"+suffix
                 
-                    print(new_fname)
-                        
+                    print(new_fname)                      
                     new_folder = _astro_utilities.get_new_foldername_from_filename(new_fname)
                     #print("new_folder: ", new_folder)
                     new_fpath =  BASEDIR /_astro_utilities.A3_CCD_obs_raw_dir / new_folder / new_fname
                     print("new_fpath: ", new_fpath)
 
                     if not new_fpath.parents[0].exists():
-                        os.makedirs('{0}'.format(str(new_fpath.parents[0])))
-                        print('{0} is created'.format(str(new_fpath.parts[-2])))  
+                        os.makedirs(f'{new_fpath.parents[0]}')
+                        print(f'{new_fpath.parts[-2]} is created')  
                 
                     if new_fpath.exists() :
+                        print(f'{new_fpath} is already exist')
                         duplicate_fpath = BASEDIR / _astro_utilities.CCD_duplicate_dir / new_fpath.name
-                        #os.rename(str(new_fpath), str(duplicate_fpath))
-                        shutil.move(str(new_fpath), str(duplicate_fpath))
-                        print (f"move duplicate file to {str(duplicate_fpath)}")
-                    shutil.move(str(fpath), str(new_fpath))
-                    print(f"move {str(fpath.name)} to {str(new_fpath)}")
-
-
-                    # new_fpath =  BASEDIR /_astro_utilities.A3_CCD_obs_raw_dir / new_folder / new_fname
-                    # new_fpath_fit =  BASEDIR /_astro_utilities.A3_CCD_obs_raw_dir / new_folder / f'{new_fpath.stem}.fit'
-                    # new_fpath_fits =  BASEDIR /_astro_utilities.A3_CCD_obs_raw_dir / new_folder / f'{new_fpath.stem}.fits'
-                    # print("new_fpath: ", new_fpath)
-
-                    # if not new_fpath_fit.parents[0].exists():
-                    #     os.makedirs('{0}'.format(str(new_fpath_fit.parents[0])))
-                    #     print('{0} is created'.format(str(new_fpath_fit.parts[-2])))  
-                
-                    # if new_fpath_fit.exists() and new_fpath.suffix == '.fits':
-                    #     duplicate_fpath = BASEDIR / _astro_utilities.CCD_duplicate_dir / new_fpath_fit.name
-                    #     #os.rename(str(new_fpath), str(duplicate_fpath))
-                    #     shutil.move(str(new_fpath_fit), str(duplicate_fpath))
-                    #     print (f"move duplicate file to {str(duplicate_fpath)}")
-                    # if new_fpath_fits.exists() and new_fpath.suffix == '.fits':
-                    #     duplicate_fpath = BASEDIR / _astro_utilities.CCD_duplicate_dir / new_fpath.name
-                    #     #os.rename(str(new_fpath), str(duplicate_fpath))
-                    #     shutil.move(str(fpath), str(duplicate_fpath))
-                    #     print (f"move duplicate file to {str(duplicate_fpath)}")
-                    # else : 
-                    #     #os.rename(str(fpath), str(new_fpath))
-                    #     shutil.move(str(fpath), str(new_fpath))
-                    #     print(f"move {str(fpath.name)} to {str(new_fpath)}")
-                    # shutil.move(str(fpath), str(new_fpath))
-                    # print(f"move {str(fpath.name)} to {str(new_fpath)}")
+                        if Owrite == False:
+                            shutil.move(fpath, duplicate_fpath)
+                            print(f'{fpath.parts[-1]} is move to duplicate folder...')
+                        else :
+                            shutil.move(str(fpath), str(new_fpath))
+                            print(f"move {str(fpath.name)} to {str(new_fpath)}")
+                    else : 
+                        shutil.move(str(fpath), str(new_fpath))
+                        print(f"move {str(fpath.name)} to {str(new_fpath)}")
                     
                 except Exception as err:
                     print("X"*30, f'\n{err}')

@@ -100,7 +100,7 @@ matplotlib.use('Agg')
 #####################################################################
 # Observed location
 LOCATION = dict(lon=127.005, lat=37.308889, elevation=101)
-Suwon = location = EarthLocation(lon=127.005 * u.deg, 
+Suwon =  EarthLocation(lon=127.005 * u.deg, 
                                  lat=37.308889 * u.deg, 
                                  height=101 * u.m)
 observatory_code = "P64"

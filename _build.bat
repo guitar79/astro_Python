@@ -1,5 +1,5 @@
 ::# build book html
-::jupyter-book clean ./ --all
+jupyter-book clean ./ --all
 :: jupyter-book build ./
 
 ::# build book pdf

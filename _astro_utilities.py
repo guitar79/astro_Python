@@ -387,6 +387,7 @@ def KevinFitsUpdater(
             "XBINNING", "YBINNING", "FLIPSTAT", "EXPTIME", "EXPOSURE"],
     imgtype_update=False,
     fil_update=False,
+    verbose = True,
     **kwargs
     ):
     '''
@@ -402,25 +403,32 @@ def KevinFitsUpdater(
 
     foldername_el = fpath.parts[-2].split('_')
     fname_el = fpath.parts[-1].split('_')
-    print("foldername_el", foldername_el)
-    print("fname_el", fname_el)
+    if verbose == True :
+        print("foldername_el", foldername_el)
+        print("fname_el", fname_el)
     object_name = foldername_el[0].replace(" ","")
-    print("object_name", object_name)
+    if verbose == True :
+        print("object_name", object_name)
     image_type = foldername_el[1]
-    print("image_type", image_type)
+    if verbose == True :
+        print("image_type", image_type)
     filter_name = fname_el[2].upper()
-    print("filter_name", filter_name)
+    if verbose == True :
+        print("filter_name", filter_name)
     optic_name = foldername_el[5]
-    print("optic_name", optic_name)
+    if verbose == True :
+        print("optic_name", optic_name)
     ccd_name = foldername_el[6]
-    print("ccd_name", ccd_name)
+    if verbose == True :
+        print("ccd_name", ccd_name)
     with fits.open(str(fpath), mode="append") as hdul :
         for checkKEY in checkKEYs: 
             if not checkKEY in hdul[0].header :
                 hdul[0].header.append(checkKEY, 
                                 '', 
                                 f"The keyword '{checkKEY}' is added.") 
-            print(f"{checkKEY}: ", hdul[0].header[checkKEY])
+            if verbose == True :
+                print(f"{checkKEY}: ", hdul[0].header[checkKEY])
 
         hdul.flush()  # changes are written back to original.fits
 
@@ -430,7 +438,8 @@ def KevinFitsUpdater(
         ###########################
         #### "OBJECT"
         hdul[0].header["OBJECT"] = object_name   #delete upper()
-        print(f"The 'OBJECT' is set {object_name}")
+        if verbose == True :
+            print(f"The 'OBJECT' is set {object_name}")
 
         ###########################
         #### "FILTER"
@@ -482,60 +491,74 @@ def KevinFitsUpdater(
                 CCDNAME = ccd_name
         else :
             CCDNAME = ccd_name
-        print("CCDNAME", CCDNAME)
+        if verbose == True :
+            print("CCDNAME", CCDNAME)
 
         hdul[0].header["CCDNAME"] = CCDNAME
-        print(f"The 'CCDNAME' is set {hdul[0].header['CCDNAME']}...")
+        if verbose == True :
+            print(f"The 'CCDNAME' is set {hdul[0].header['CCDNAME']}...")
 
         ###########################
         #### 'DATE-OBS'
         if len(hdul[0].header['DATE-OBS']) == 10 \
             and 'TIME-OBS' in hdul[0].header : 
             hdul[0].header['DATE-OBS'] += 'T' + hdul[0].header['TIME-OBS']
-            print(f"The 'DATE-OBS' is set {hdul[0].header['DATE-OBS']}")
+            if verbose == True :
+                print(f"The 'DATE-OBS' is set {hdul[0].header['DATE-OBS']}")
         
         ###########################
         #### 'IMAGETYP'
         if imgtype_update == True :
             hdul[0].header["IMAGETYP"] = image_type.upper()
-            print(f"The 'IMAGETYP' is set {hdul[0].header['IMAGETYP']}")
+            if verbose == True :
+                print(f"The 'IMAGETYP' is set {hdul[0].header['IMAGETYP']}")
         if not "IMAGETYP" in hdul[0].header :
             hdul[0].header["IMAGETYP"] = image_type  
         elif "ze" in hdul[0].header["IMAGETYP"].lower() \
                 or "bi" in hdul[0].header["IMAGETYP"].lower() :
             hdul[0].header["IMAGETYP"] = "BIAS"
-            print(f"The 'IMAGETYP' is set {hdul[0].header['IMAGETYP']}")
+            if verbose == True :
+                print(f"The 'IMAGETYP' is set {hdul[0].header['IMAGETYP']}")
             hdul[0].header["OBJECT"] = "-"
-            print(f"The 'OBJECT' is set {hdul[0].header['OBJECT']}")
+            if verbose == True :
+                print(f"The 'OBJECT' is set {hdul[0].header['OBJECT']}")
         elif "da" in hdul[0].header["IMAGETYP"].lower() :
             hdul[0].header["IMAGETYP"] = "DARK"
-            print(f"The 'IMAGETYP' is set {hdul[0].header['IMAGETYP']}")
+            if verbose == True :
+                print(f"The 'IMAGETYP' is set {hdul[0].header['IMAGETYP']}")
             hdul[0].header["OBJECT"] = "-"
-            print(f"The 'OBJECT' is set {hdul[0].header['OBJECT']}")
+            if verbose == True :
+                print(f"The 'OBJECT' is set {hdul[0].header['OBJECT']}")
         elif "fl" in hdul[0].header["IMAGETYP"].lower() :
             hdul[0].header["IMAGETYP"] = "FLAT"
-            print(f"The 'IMAGETYP' is set {hdul[0].header['IMAGETYP']}")
+            if verbose == True :
+                print(f"The 'IMAGETYP' is set {hdul[0].header['IMAGETYP']}")
             hdul[0].header["OBJECT"] = "-"
-            print(f"The 'OBJECT' is set {hdul[0].header['OBJECT']}")
+            if verbose == True :
+                print(f"The 'OBJECT' is set {hdul[0].header['OBJECT']}")
         elif "obj" in hdul[0].header["IMAGETYP"].lower() \
                 or "lig" in hdul[0].header["IMAGETYP"].lower() :
             hdul[0].header["IMAGETYP"] = "LIGHT"
-            print(f"The 'IMAGETYP' is set {hdul[0].header['IMAGETYP']}")
+            if verbose == True :
+                print(f"The 'IMAGETYP' is set {hdul[0].header['IMAGETYP']}")
 
         if "BIAS" in hdul[0].header["IMAGETYP"] \
             or "DARK" in hdul[0].header["IMAGETYP"] :
             for _KEY in ['FILTER', 'OPTIC', 'FOCALLEN', 'APATURE', 'PIXSCALE',] :
                 hdul[0].header[_KEY] = "-"
-                print(f"The '{_KEY}' is set {hdul[0].header[_KEY]}")
+                if verbose == True :
+                    print(f"The '{_KEY}' is set {hdul[0].header[_KEY]}")
 
         if "FLAT" in hdul[0].header["IMAGETYP"] \
             or "LIGHT" in hdul[0].header["IMAGETYP"] :
             if not "OPTIC" in hdul[0].header :
                 hdul[0].header["OPTIC"] = optic_name
-                print(f"The 'OPTIC' is set {hdul[0].header['OPTIC']}")
+                if verbose == True :
+                    print(f"The 'OPTIC' is set {hdul[0].header['OPTIC']}")
             elif  hdul[0].header["OPTIC"] != optic_name :
                 hdul[0].header["OPTIC"] = optic_name
-                print(f"The 'OPTIC' is set {hdul[0].header['OPTIC']}")
+                if verbose == True :
+                    print(f"The 'OPTIC' is set {hdul[0].header['OPTIC']}")
             if not "FOCALLEN" in hdul[0].header :
                 hdul[0].header["FOCALLEN"] = OPTICDIC[hdul[0].header['OPTIC']]['FOCALLEN']
             if not "APATURE" in hdul[0].header :
@@ -545,12 +568,15 @@ def KevinFitsUpdater(
                 hdul[0].header["FILTER"] = filter_name
             if hdul[0].header["FILTER"] != filter_name and fil_update==True :
                 hdul[0].header["FILTER"] = filter_name
-            print(f"FILTER is set {hdul[0].header['FILTER']}")
+            if verbose == True :
+                print(f"FILTER is set {hdul[0].header['FILTER']}")
 
             hdul[0].header['FOCALLEN'] = OPTICDIC[hdul[0].header['OPTIC']]['FOCALLEN']
-            print(f"The 'FOCALLEN' is set {hdul[0].header['FOCALLEN']}...")
+            if verbose == True :
+                print(f"The 'FOCALLEN' is set {hdul[0].header['FOCALLEN']}...")
             hdul[0].header['FOCRATIO'] = OPTICDIC[hdul[0].header['OPTIC']]["FOCALLEN"]/OPTICDIC[hdul[0].header['OPTIC']]["APATURE"]
-            print(f"The 'FOCRATIO' is set {hdul[0].header['FOCRATIO']}...")
+            if verbose == True :
+                print(f"The 'FOCRATIO' is set {hdul[0].header['FOCRATIO']}...")
 
             if not "PIXSCALE" in hdul[0].header :
                 hdul[0].header["PIXSCALE"] = calPixScale(hdul[0].header['FOCALLEN'], 
@@ -560,13 +586,12 @@ def KevinFitsUpdater(
                                                             hdul[0].header['XPIXSZ'],
                                                             hdul[0].header['XBINNING'],)
         
-        ###########################
-        #### 
+        ##########################
         if (not 'TELESCOP' in hdul[0].header):
             hdul[0].header['TELESCOP'] = "-"
-            print(f"The 'TELESCOP' is set {hdul[0].header['TELESCOP']}...")
-        ###########################
-        #### 
+            if verbose == True :
+                print(f"The 'TELESCOP' is set {hdul[0].header['TELESCOP']}...")
+        ##########################
         if (not 'XBINNING' in hdul[0].header)\
             and (hdul[0].header["CCDNAME"] == "STX-16803") :
             if hdul[0].header['NAXIS1'] == 4096 \
@@ -588,7 +613,8 @@ def KevinFitsUpdater(
                 hdul[0].header['TELESCOP'] = "-"
         hdul[0].header['XBINNING'] = int(hdul[0].header['XBINNING'])
         hdul[0].header['YBINNING'] = int(hdul[0].header['YBINNING'])
-        print(f"The 'XBINNING', 'YBINNING' are set {hdul[0].header['XBINNING']}, \
+        if verbose == True :
+            print(f"The 'XBINNING', 'YBINNING' are set {hdul[0].header['XBINNING']}, \
                 {hdul[0].header['YBINNING']},...")
 
         ###########################
@@ -597,8 +623,9 @@ def KevinFitsUpdater(
                 and CCDNAME == 'STX-16803' :
             hdul[0].header['XPIXSZ'] = 9 * hdul[0].header['XBINNING']
             hdul[0].header['YPIXSZ'] = 9 * hdul[0].header['YBINNING']
-            print(f"The 'XPIXSZ' and 'YPIXSZ' are set {9 * hdul[0].header['XBINNING']} \
-                and {9 * hdul[0].header['YBINNING']}...")
+            if verbose == True :
+                print(f"The 'XPIXSZ' and 'YPIXSZ' are set {9 * hdul[0].header['XBINNING']} \
+                    and {9 * hdul[0].header['YBINNING']}...")
         #hdul[0].header['GAIN'] = GAINDIC[CCDNAME]
         #hdul[0].header['GAIN'] = CCDDIC[hdul[0].header['CCDNAME']]['GAIN']
         #print(f"The 'GAIN' is set {hdul[0].header['GAIN']}...")
@@ -613,36 +640,44 @@ def KevinFitsUpdater(
         ####     
         if not "CCD-TEMP" in hdul[0].header :
             hdul[0].header['CCD-TEMP'] = 'N'
-            print(f"The 'CCD-TEMP' is set {hdul[0].header['CCD-TEMP']}...")
+            if verbose == True :
+                print(f"The 'CCD-TEMP' is set {hdul[0].header['CCD-TEMP']}...")
 
         ###########################
         #### 
         if "EXPOSURE" in hdul[0].header :
             if not "EXPTIME" in hdul[0].header :
                 hdul[0].header["EXPTIME"] = hdul[0].header["EXPOSURE"]
-                print(f"The 'EXPTIME' is set {hdul[0].header['EXPOSURE']}...")
+                if verbose == True :
+                    print(f"The 'EXPTIME' is set {hdul[0].header['EXPOSURE']}...")
         elif "EXPTIME" in hdul[0].header :
             hdul[0].header["EXPOSURE"] = hdul[0].header["EXPTIME"]
-            print(f"The 'EXPOSURE' is set {hdul[0].header['EXPTIME']}...")
+            if verbose == True :
+                print(f"The 'EXPOSURE' is set {hdul[0].header['EXPTIME']}...")
         else :
             hdul[0].header["EXPTIME"] = 'N'
             hdul[0].header["EXPOSURE"] = 'N'
-            print(f"The 'EXPTIME' and 'EXPOSURE' are set 'N'...")
+            if verbose == True :
+                print(f"The 'EXPTIME' and 'EXPOSURE' are set 'N'...")
 
         ###########################
         #### 
         
-        print(hdul[0].header['OPTIC']+'_'+hdul[0].header['CCDNAME'])
+        if verbose == True :
+            print(hdul[0].header['OPTIC']+'_'+hdul[0].header['CCDNAME'])
                
         hdul[0].header['FLIPSTAT'] = " "
-        print(f"The 'FLIPSTAT' is set {hdul[0].header['FLIPSTAT']}...")
+        if verbose == True :
+            print(f"The 'FLIPSTAT' is set {hdul[0].header['FLIPSTAT']}...")
         
         for checkKEY in checkKEYs: 
-            print(f"{checkKEY}: ", hdul[0].header[checkKEY])
+            if verbose == True :
+                print(f"{checkKEY}: ", hdul[0].header[checkKEY])
 
         hdul.flush()  # changes are written back to original.fits
-        print('*'*30)
-        print(f"The header of {fpath.name} is updated..")
+        if verbose == True :
+            print('*'*30)
+            print(f"The header of {fpath.name} is updated..")
 
     return hdul
 
@@ -732,6 +767,7 @@ def KevinSolver(fpath,
                     tryLOCAL = True,
                     tryASTROMETRYNET = True,
                     makeLOCALsh = False,
+                    verbose = True,
                     **kwargs
                     ):
     """
@@ -752,11 +788,13 @@ def KevinSolver(fpath,
     if fpath.exists() and (fpath.parent/f'{fpath.stem}.new').exists():
         #print(str(fpath))
         shutil.move(str(fpath.parent/f'{fpath.stem}.new'), str(fpath))
-        print(str(fpath.parent/f'{fpath.stem}.new'), str(fpath))
-        #print(f"{str(fpath)} is removed...")
+        if verbose == True :
+            print(str(fpath.parent/f'{fpath.stem}.new'), str(fpath))
+            #print(f"{str(fpath)} is removed...")
 
     SOLVE, ASTAP, LOCAL = checkPSolve(fpath)
-    print("SOLVE:", SOLVE, "ASTAP:", ASTAP, "LOCAL:", LOCAL)
+    if verbose == True :
+        print("SOLVE:", SOLVE, "ASTAP:", ASTAP, "LOCAL:", LOCAL)
     if not SOLVE :
         hdul = fits.open(fpath)
         
@@ -771,10 +809,12 @@ def KevinSolver(fpath,
                                             hdul[0].header['XPIXSZ'],
                                             hdul[0].header['XBINNING'])
 
-        print(f"pixscale: {pixscale:.03f}, L: {pixscale*0.97:.03f}, U: {pixscale*1.03:.03f}")
+        if verbose == True :
+            print(f"pixscale: {pixscale:.03f}, L: {pixscale*0.97:.03f}, U: {pixscale*1.03:.03f}")
         vfov = pixscale * hdul[0].header['NAXIS1']/3600    
         hfov = pixscale * hdul[0].header['NAXIS2']/3600
-        print("vfov , hfov  :", vfov , hfov )
+        if verbose == True :
+            print("vfov , hfov  :", vfov , hfov )
         
         # if cpulimit == None :
         #     cpulimit = 15  
@@ -813,26 +853,29 @@ def KevinSolver(fpath,
         # trying plate solving using ASTAP twice...
 
         if tryASTAP == True : 
-            
             print(f"Trying to solve using ASTAP:\n   {fpath.parent/fpath} ") 
             ASTAP_solve_cmd = f"astap -f {str(fpath)} "
             ASTAP_solve_cmd = f"-z {str(downsample)} "
             # ASTAP_solve_cmd = f"-z {str(downsample*2)} "
             ASTAP_solve_cmd = f"--wcs -analyse2 -update "
-            print(ASTAP_solve_cmd)
+            if verbose == True :
+                print(ASTAP_solve_cmd)
             os.system(ASTAP_solve_cmd)
             # print(f"astap -f {str(fpath)} -z {str(downsample*2)} -wcs -analyse2 -update")     
             # os.system(f"astap -f {str(fpath)} -z {str(downsample*2)} -wcs -analyse2 -update")
 
             SOLVE, ASTAP, LOCAL = checkPSolve(fpath)
-            print("SOLVE:", SOLVE, "ASTAP:", ASTAP, "LOCAL:", LOCAL)
+            if verbose == True :
+                print("SOLVE:", SOLVE, "ASTAP:", ASTAP, "LOCAL:", LOCAL)
             if not SOLVE :
-                print(f"ASTAP : trying again downsample X 2 :\n   {fpath.parent/fpath} ")  
+                if verbose == True :
+                    print(f"ASTAP : trying again downsample X 2 :\n   {fpath.parent/fpath} ")  
                 ASTAP_solve_cmd = f"astap -f {str(fpath)} "
                 ASTAP_solve_cmd = f"-z {str(downsample*2)} "
                 # ASTAP_solve_cmd = f"-z {str(downsample*2)} "
                 ASTAP_solve_cmd = f"--wcs -analyse2 -update "
-                print(ASTAP_solve_cmd)
+                if verbose == True :
+                    print(ASTAP_solve_cmd)
                 os.system(ASTAP_solve_cmd)    
             else : 
                 return 0
@@ -843,7 +886,8 @@ def KevinSolver(fpath,
     ###### LOCAL SOLVER
     ######################################
     SOLVE, ASTAP, LOCAL = checkPSolve(fpath)
-    print("SOLVE:", SOLVE, "ASTAP:", ASTAP, "LOCAL:", LOCAL)
+    if verbose == True :
+        print("SOLVE:", SOLVE, "ASTAP:", ASTAP, "LOCAL:", LOCAL)
     if not SOLVE :
         if tryLOCAL == True : 
             print(f"Trying to solve using LOCAL:\n   {fpath.parent/fpath} ")
@@ -853,17 +897,20 @@ def KevinSolver(fpath,
             # LOCAL_solve_cmd += f"--scale-units app app -L {pixscale*0.95:.03f} -H {pixscale*1.05:.03f} "
             # LOCAL_solve_cmd += f"--ra {ra} --dec {dec} "
             LOCAL_solve_cmd += f"--no-plots {str(fpath)} "
-            print(LOCAL_solve_cmd)
+            if verbose == True :
+                print(LOCAL_solve_cmd)
             os.system(LOCAL_solve_cmd)
 
             if fpath.exists() and (fpath.parent/f'{fpath.stem}.new').exists():
                 #print(str(fpath))
                 shutil.move(str(fpath.parent/f'{fpath.stem}.new'), str(fpath))
-                print(str(fpath.parent/f'{fpath.stem}.new'), str(fpath))
+                if verbose == True :
+                    print(str(fpath.parent/f'{fpath.stem}.new'), str(fpath))
                 #print(f"{str(fpath)} is removed...")
         
             SOLVE, ASTAP, LOCAL = checkPSolve(fpath)
-            print("SOLVE:", SOLVE, "ASTAP:", ASTAP, "LOCAL:", LOCAL)
+            if verbose == True :
+                print("SOLVE:", SOLVE, "ASTAP:", ASTAP, "LOCAL:", LOCAL)
             if not SOLVE :
                 if tryLOCAL == True : 
                     print(f"LOCAL : traagain downsample X 2:\n   {fpath.parent/fpath} ")
@@ -873,13 +920,15 @@ def KevinSolver(fpath,
                     LOCAL_solve_cmd += f"--scale-units app app -L {pixscale*0.95:.03f} -H {pixscale*1.05:.03f} "
                     # LOCAL_solve_cmd += f"--ra {ra} --dec {dec} "
                     LOCAL_solve_cmd += f"--no-plots {str(fpath)} "
-                    print(LOCAL_solve_cmd)
+                    if verbose == True :
+                        print(LOCAL_solve_cmd)
                     os.system(LOCAL_solve_cmd)
 
                     if fpath.exists() and (fpath.parent/f'{fpath.stem}.new').exists():
                         #print(str(fpath))
                         shutil.move(str(fpath.parent/f'{fpath.stem}.new'), str(fpath))
-                        print(str(fpath.parent/f'{fpath.stem}.new'), str(fpath))
+                        if verbose == True :
+                            print(str(fpath.parent/f'{fpath.stem}.new'), str(fpath))
                         #print(f"{str(fpath)} is removed...")
             else : 
                 return 0 
@@ -887,7 +936,8 @@ def KevinSolver(fpath,
         return 0 
      
     SOLVE, ASTAP, LOCAL = checkPSolve(fpath)
-    print("SOLVE:", SOLVE, "ASTAP:", ASTAP, "LOCAL:", LOCAL)
+    if verbose == True :
+        print("SOLVE:", SOLVE, "ASTAP:", ASTAP, "LOCAL:", LOCAL)
 
     if not SOLVE :
         if tryASTROMETRYNET == True : 
@@ -920,22 +970,27 @@ def KevinSolver(fpath,
 
                 if not wcs_header:
                     # Code to execute when solve fails
-                    print("fits file solving failure...")
+                    if verbose == True :
+                        print("fits file solving failure...")
 
                 else:
                     # Code to execute when solve succeeds
-                    print("fits file solved successfully...")
+                    if verbose == True :
+                        print("fits file solved successfully...")
 
                     with fits.open(str(fpath), mode='update') as hdul:
                         for card in wcs_header :
                             try: 
-                                print(card, wcs_header[card], wcs_header.comments[card])
+                                if verbose == True :
+                                    print(card, wcs_header[card], wcs_header.comments[card])
                                 hdul[0].header.set(card, wcs_header[card], wcs_header.comments[card])
                             except : 
-                                print(card)
+                                if verbose == True :
+                                    print(card)
                         hdul.flush
 
-                    print(str(fpath)+" is created...")
+                    if verbose == True :
+                        print(str(fpath)+" is created...")
             
             except Exception as err: 
                 print("Err :", err)
@@ -944,7 +999,8 @@ def KevinSolver(fpath,
         return 0
 
     SOLVE, ASTAP, LOCAL = checkPSolve(fpath)
-    print("SOLVE:", SOLVE, "ASTAP:", ASTAP, "LOCAL:", LOCAL)
+    if verbose == True :
+        print("SOLVE:", SOLVE, "ASTAP:", ASTAP, "LOCAL:", LOCAL)
 
     if not SOLVE :
         if makeLOCALsh == True :
@@ -1104,7 +1160,7 @@ def get_RADEC_offset(hdul,
     ----------
     hdul : fits file
     """
-    Suwon = location = EarthLocation(lon=127.005 * u.deg, lat=37.308889 * u.deg, height=101 * u.m)
+    Suwon =  EarthLocation(lon=127.005 * u.deg, lat=37.308889 * u.deg, height=101 * u.m)
     #print('Starting get_new_foldername ...\n{0}'.format(filename))   
     w = WCS(hdul[0].header)
     t_obs = Time(hdul[0].header["DATE-OBS"]) + hdul[0].header["EXPOSURE"] * u.s / 2  # middle of observation time
@@ -2843,7 +2899,7 @@ def checkAsteroids(DOINGDIR,
 
     # Observed location
     LOCATION = dict(lon=127.005, lat=37.308889, elevation=101)
-    Suwon = location = EarthLocation(lon=127.005 * u.deg, 
+    Suwon =  EarthLocation(lon=127.005 * u.deg, 
                                     lat=37.308889 * u.deg, 
                                     height=101 * u.m)
     observatory_code = "P64"
