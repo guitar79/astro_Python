@@ -1,8 +1,6 @@
-# -*- coding: utf-8 -*-
 """
 Created on Thu Nov 22 01:00:19 2018
 @author: user
-
 """
 #%%
 import os

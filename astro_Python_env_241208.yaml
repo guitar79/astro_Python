@@ -259,4 +259,4 @@ dependencies:
       - websockets==10.4
       - xarray==2024.11.0
       - zipp==3.21.0
-prefix: /home/guitar79/anaconda3/envs/astro_Python_env
+prefix: c:\users\user\anaconda3\envs\astro_Python_env

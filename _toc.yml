@@ -2,7 +2,7 @@
 # Learn more at https://jupyterbook.org/customize/toc.html
 
 format: jb-book
-root: 00_00_intro.md
+root: book/00_00_intro.md
 parts: 
   - caption: Introduction
     numbered: True
@@ -15,10 +15,10 @@ parts:
   - caption: Manage fits file 
     numbered: True
     chapters:
-    - file: 01_01_update_fits_header.ipynb
-      title: Fits file header update 
-    - file: 01_02_move_fits_files_using_keyword.ipynb
-      title: Move fits files using keyword
+    - file: 01_01_update_fits_header_and_classfy_fits_files.ipynb
+      title: update fits header and classfy fits files using keyword 
+    # - file: 01_02_move_fits_files_using_keyword.ipynb
+    #   title: Move fits files using keyword
 
   - caption: Preprocessing
     numbered: True
@@ -32,6 +32,37 @@ parts:
     - file: 02_05_reduce_light_frame_using_master_files_ys.ipynb
       title: Reduce light frame
 
+# [OA-01]02_computer_basic.ipynb
+# [OA-01]03_Starting_Python.ipynb
+# [OA-01]04_Python_programming.ipynb
+# [OA-02]05_Python_modules.ipynb
+# [OA-02]11_Numpy_module.ipynb
+# [OA-02]12_pandas.ipynb
+# [OA-02]13_matplotlib_basic.ipynb
+# [OA-02]21_calculate_physical_quantities.ipynb
+# [OA-02]22_Astronomical_Time.ipynb
+# [OA-02]23_Astronomical_Coordinate_Systems.ipynb
+# [OA-02]23_Astronomical_Coordinate_Systems.ipynb의 사본
+# [OA-04]31_fits_handling_and_plate_solving.ipynb
+# [OA-04]31_fits_handling_and_plate_solving.ipynb의 사본
+# [OA-05]32_preprocessing_fits_files.ipynb
+# [OA-05]32_preprocessing_fits_files.ipynb의 사본
+# [OA-05]33_preprocessing_fits_files_ysfitsutilpy.ipynb
+# [OA-06]34_PSF_and_3D_plot.ipynb
+# [OA-06]34_PSF_and_3D_plot.ipynb의 사본
+# [OA-06]35_aperture_photometry_ys.ipynb
+# [OA-06]35_aperture_photometry_ys.ipynb의 사본
+# [OA-07]36_differential_photometry_ys.ipynb
+# [OA-07]36_differential_photometry_ys.ipynb의 사본
+# [OA-11]37_plot_light_curve_using_each_csv.ipynb
+# [OA-11]37_plot_light_curve_using_each_csv.ipynb의 사본
+# [OA-12]51_make_observation_plan_asteroids.ipynb
+# [OA-12]52_check_asteroids_using_skybot.ipynb
+# [OA-12]52_check_asteroids_using_skybot.ipynb의 사본
+# [OA-13]53_differential_photometry_of_asteroid_ys.ipynb
+# [OA-13]55_plot_light_curve_of_asteroid_using_each_csv.ipynb
+# [OA-13]61_Identify_sunspot_in_SDO_HMII_image.ipynb
+# [OA-14]99_수강후 느낀점 쓰기-관측천문학.ipynb
       
 
       

@@ -7,21 +7,13 @@ Created on Thu Nov 22 01:00:19 2018
 #%%
 from glob import glob
 from pathlib import Path
-from datetime import datetime, timedelta
 import os
-import numpy as np
 import matplotlib.pyplot as plt
 from astropy.io import fits
-import astropy.units as u
-from astropy.stats import sigma_clip
-from ccdproc import combine, ccd_process, CCDData
-
 import ysfitsutilpy as yfu
 
 import _astro_utilities
 import _Python_utilities
-
-plt.rcParams.update({'figure.max_open_warning': 0})
 
 import warnings
 warnings.filterwarnings('ignore')
@@ -37,39 +29,11 @@ print ("err_log_file: {}".format(err_log_file))
 if not os.path.exists('{0}'.format(log_dir)):
     os.makedirs('{0}'.format(log_dir))
 #######################################################
+
 #%%
-#######################################################
-from multiprocessing import Process, Queue
-class Multiprocessor():
-    def __init__(self):
-        self.processes = []
-        self.queue = Queue()
-
-    @staticmethod
-    def _wrapper(func, queue, args, kwargs):
-        ret = func(*args, **kwargs)
-        queue.put(ret)
-
-    def restart(self):
-        self.processes = []
-        self.queue = Queue()
-
-    def run(self, func, *args, **kwargs):
-        args2 = [func, self.queue, args, kwargs]
-        p = Process(target=self._wrapper, args=args2)
-        self.processes.append(p)
-        p.start()
-
-    def wait(self):
-        rets = []
-        for p in self.processes:
-            ret = self.queue.get()
-            rets.append(ret)
-        for p in self.processes:
-            p.join()
-        return rets
-########################################################%%
-#%%
+verbose = False     
+Owrite = False  
+tryagain = False 
 #######################################################
 BASEDIR = Path("/mnt/Rdata/ASTRO_data")  
 
@@ -100,17 +64,21 @@ TODODIR = PROJECDIR / "-_-_-_2017-05_-_RiLA600_STX-16803_-_2bin"
 # TODODIR = PROJECDIR / "-_-_-_2024-05_TEC140_ASI183MMPro_-_1bin"
 
 DOINGDIRs = sorted(_Python_utilities.getFullnameListOfsubDirs(TODODIR))
-print ("DOINGDIRs: ", format(DOINGDIRs))
-print ("len(DOINGDIRs): ", format(len(DOINGDIRs)))
+if verbose == True :
+    print ("DOINGDIRs: ", format(DOINGDIRs))
+    print ("len(DOINGDIRs): ", format(len(DOINGDIRs)))
 
 try : 
     BDFDIR = [x for x in DOINGDIRs if "CAL-BDF" in str(x)]
-    print ("BDFDIR: ", format(BDFDIR))
+    if verbose == True :
+        print ("BDFDIR: ", format(BDFDIR))
     MASTERDIR = Path(BDFDIR[0]) / _astro_utilities.master_dir
     if not MASTERDIR.exists():
         os.makedirs("{}".format(str(MASTERDIR)))
-        print("{} is created...".format(str(MASTERDIR)))
-    print ("MASTERDIR: ", format(MASTERDIR))
+        if verbose == True :
+            print("{} is created...".format(str(MASTERDIR)))
+    if verbose == True :
+        print ("MASTERDIR: ", format(MASTERDIR))
 except : 
     pass
 
@@ -126,27 +94,30 @@ DOINGDIRs = sorted([x for x in DOINGDIRs if "_LIGHT_" in str(x)])
 # DOINGDIRs = [x for x in DOINGDIRs if remove not in x]
 # remove = 'FLAT'
 # DOINGDIRs = [x for x in DOINGDIRs if remove not in x]
-print ("DOINGDIRs: ", DOINGDIRs)
-print ("len(DOINGDIRs): ", len(DOINGDIRs))
+if verbose == True :
+    print ("DOINGDIRs: ", DOINGDIRs)
+    print ("len(DOINGDIRs): ", len(DOINGDIRs))
 #######################################################
 #%%
-tryagain = False
-
 DOINGDIR = Path(BDFDIR[0])
-print(f"Starting: {str(DOINGDIR.parts[-1])}")
+if verbose == True :
+    print(f"Starting: {str(DOINGDIR.parts[-1])}")
 
 MASTERDIR = DOINGDIR / _astro_utilities.master_dir
 
 summary = yfu.make_summary(DOINGDIR/"*.fit*", 
-                            verbose = False,
+                                verify_fix=True,
+                                ignore_missing_simple=True,
                             )
 if summary is None :
-    print(f"summary is None...")
+    if verbose == True :
+        print(f"summary is None...")
 else :
-    #print(summary)
-    print("len(summary):", len(summary))
-    print("summary:", summary)
-    #print(summary["file"][0])
+    if verbose == True :
+        #print(summary)
+        print("len(summary):", len(summary))
+        print("summary:", summary)
+        #print(summary["file"][0])
 
 # check_filters = summary['FILTER'].drop_duplicates()
 # check_filters = check_filters.reset_index(drop=True)

@@ -3,8 +3,6 @@
 Created on Thu Nov 22 01:00:19 2018
 @author: user
 
-이 파일은 관측 자료를 전처리 해준다.
-
 """
 #%%
 from glob import glob

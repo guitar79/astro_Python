@@ -31,7 +31,7 @@ conda env create -f astro_Python_env.yaml
 conda env update --file astro_Python_env_241208.yaml
 
 ## .yaml 파일로 가상환경 업데이트(deactivate 되어있을 때)
-conda env update --astro_Python_env envname --file astro_Python_env.yaml
+conda env update --astro_Python_env --file astro_Python_env.yaml
 
 ## 가상환경 제거하기
 conda remove -n astro_Python_env --all

@@ -51,7 +51,7 @@ DOINGDIRs = sorted(_Python_utilities.getFullnameListOfallsubDirs(DOINGDIR))
 print ("len(DOINGDIRs): ", format(len(DOINGDIRs)))
 #######################################################
 
-Suwon =  EarthLocation(lon=127.005 * u.deg, lat=37.308889 * u.deg, height=101 * u.m) 
+Suwon = location = EarthLocation(lon=127.005 * u.deg, lat=37.308889 * u.deg, height=101 * u.m) 
 
 #%%
 summary_all = pd.DataFrame()

@@ -1,6 +1,6 @@
 ::# build book html
 jupyter-book clean ./ --all
-:: jupyter-book build ./
+::jupyter-book build ./
 
 ::# build book pdf
 ::#https://jupyterbook.org/en/stable/advanced/pdf.html
