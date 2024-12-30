@@ -56,6 +56,8 @@ if not os.path.exists('{0}'.format(log_dir)):
     os.makedirs('{0}'.format(log_dir))
 #######################################################
 #%%
+verbose = True # False
+tryagain = False
 #######################################################
 BASEDIR = Path("/mnt/Rdata/ASTRO_data")  
 
@@ -91,12 +93,14 @@ PROJECDIR = BASEDIR / "C5-Test"
 TODODIR = PROJECDIR / "-_-_-_-_GSON300_STF-8300M_-_1bin"
 
 DOINGDIRs = sorted(_Python_utilities.getFullnameListOfsubDirs(TODODIR))
-print ("DOINGDIRs: ", format(DOINGDIRs))
-print ("len(DOINGDIRs): ", format(len(DOINGDIRs)))
+if verbose == True :
+    print ("DOINGDIRs: ", format(DOINGDIRs))
+    print ("len(DOINGDIRs): ", format(len(DOINGDIRs)))
 
 try : 
     BDFDIR = [x for x in DOINGDIRs if "CAL-BDF" in str(x)]
-    print ("BDFDIR: ", format(BDFDIR))
+    if verbose == True :
+        print ("BDFDIR: ", format(BDFDIR))
     BDFDIR = Path(BDFDIR[0])    
 except : 
     BDFDIR = TODODIR
@@ -114,8 +118,9 @@ DOINGDIRs = sorted([x for x in DOINGDIRs if "_LIGHT_" in str(x)])
 # DOINGDIRs = [x for x in DOINGDIRs if remove not in x]
 # remove = 'FLAT'
 # DOINGDIRs = [x for x in DOINGDIRs if remove not in x]
-print ("DOINGDIRs: ", DOINGDIRs)
-print ("len(DOINGDIRs): ", len(DOINGDIRs))
+if verbose == True :
+    print ("DOINGDIRs: ", DOINGDIRs)
+    print ("len(DOINGDIRs): ", len(DOINGDIRs))
 #######################################################
 
 
@@ -145,29 +150,34 @@ R_OUT = 6 * FWHM_INIT  # Outer radius of annulus
 #%%
 for DOINGDIR in DOINGDIRs[:] :
     DOINGDIR = Path(DOINGDIR)
-    print("DOINGDIR", DOINGDIR)
+    if verbose == True :
+        print("DOINGDIR", DOINGDIR)
     DAOFINDERDIR = DOINGDIR / _astro_utilities.DAOfinder_result_dir
     if not DAOFINDERDIR.exists():
         os.makedirs("{}".format(str(DAOFINDERDIR)))
-        print("{} is created...".format(str(DAOFINDERDIR)))
+        if verbose == True :
+            print("{} is created...".format(str(DAOFINDERDIR)))
     
     summary = yfu.make_summary(DOINGDIR/"*.fit*",
                                     verify_fix=True,
                                     ignore_missing_simple=True,
                                     )
     if summary is not None :
-        print("len(summary):", len(summary))
-        print("summary:", summary)
-        #print(summary["file"][0])  
+        if verbose == True :
+            print("len(summary):", len(summary))
+            print("summary:", summary)
+            #print(summary["file"][0])  
         df_light = summary.loc[summary["IMAGETYP"] == "LIGHT"].copy()
         df_light = df_light.reset_index(drop=True)
-        print("df_light:\n{}".format(df_light))
-        df_light
+        if verbose == True :
+            print("df_light:\n{}".format(df_light))
+            print("df_light :", df_light)
 
         for _, row  in df_light.iterrows():
             fpath = Path(row["file"])
             # fpath = Path(df_light["file"][1])
-            print("fpath :" ,fpath)
+            if verbose == True :
+                print("fpath :" ,fpath)
             hdul = fits.open(fpath)
 
             if hdul[0].header['CCDNAME'] == 'STF-8300M' :
@@ -205,16 +215,20 @@ for DOINGDIR in DOINGDIRs[:] :
             DAOfound = DAOfind(hdul[0].data)
 
             if DAOfound is None :
-                print("DAOfound : No star was found...")    
+                if verbose == True :
+                    print("DAOfound : No star was found...")    
             else : 
-                print("DAOfound :", DAOfound)
-                print("len(DAOfound) :",len(DAOfound))
-                print(DAOfound.colnames)
+                if verbose == True :
+                    print("DAOfound :", DAOfound)
+                    print("len(DAOfound) :",len(DAOfound))
+                    print(DAOfound.colnames)
 
                 df_DAO = DAOfound.to_pandas()
-                print(type(df_DAO))
+                if verbose == True :
+                    print(type(df_DAO))
                 df_DAO.to_csv(f"{DAOFINDERDIR}/{fpath.stem}_DAOfinder_fwhm_{FWHM}.csv")
-                print("df_DAO.describe :", df_DAO.describe)
+                if verbose == True :
+                    print("df_DAO.describe :", df_DAO.describe)
 
                 #########
                 pos = np.transpose((DAOfound['xcentroid'], DAOfound['ycentroid']))

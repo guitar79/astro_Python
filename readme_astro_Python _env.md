@@ -15,9 +15,9 @@ conda activate astro_Python_env
 conda deactivate
 
 ## install module
-conda install -c conda-forge jupyter-book
-conda install astropy pymysql
-pip install opencv-python astroquery sep
+conda install -c conda-forge jupyter-book pyppeteer
+conda install astropy pymysql sep
+pip install opencv-python 
 pip install ysfitsutilpy ysphotutilpy chardet ccdproc xarray
 pip install photutils==1.12
 

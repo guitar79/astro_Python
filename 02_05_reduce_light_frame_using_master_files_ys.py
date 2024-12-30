@@ -35,6 +35,11 @@ if not os.path.exists('{0}'.format(log_dir)):
     os.makedirs('{0}'.format(log_dir))
 #######################################################
 #%%
+verbose = True # False
+tryagain = False
+file_age = 365
+trynightsky = True
+OWrite = True
 #######################################################
 BASEDIR = Path("/mnt/Rdata/ASTRO_data")  
 
@@ -65,16 +70,19 @@ TODODIR = PROJECDIR / "-_-_-_2017-05_-_RiLA600_STX-16803_-_2bin"
 # TODODIR = PROJECDIR / "-_-_-_2024-05_TEC140_ASI183MMPro_-_1bin"
 
 DOINGDIRs = sorted(_Python_utilities.getFullnameListOfsubDirs(TODODIR))
-print ("DOINGDIRs: ", format(DOINGDIRs))
-print ("len(DOINGDIRs): ", format(len(DOINGDIRs)))
+if verbose == True :
+    print ("DOINGDIRs: ", format(DOINGDIRs))
+    print ("len(DOINGDIRs): ", format(len(DOINGDIRs)))
 
 try : 
     BDFDIR = [x for x in DOINGDIRs if "CAL-BDF" in str(x)]
-    print ("BDFDIR: ", format(BDFDIR))
+    if verbose == True :
+        print ("BDFDIR: ", format(BDFDIR))
     MASTERDIR = Path(BDFDIR[0]) / _astro_utilities.master_dir
     if not MASTERDIR.exists():
         os.makedirs("{}".format(str(MASTERDIR)))
-        print("{} is created...".format(str(MASTERDIR)))
+        if verbose == True :
+            print("{} is created...".format(str(MASTERDIR)))
     print ("MASTERDIR: ", format(MASTERDIR))
 except : 
     pass
@@ -91,17 +99,11 @@ DOINGDIRs = sorted([x for x in DOINGDIRs if "_LIGHT_" in str(x)])
 # DOINGDIRs = [x for x in DOINGDIRs if remove not in x]
 # remove = 'FLAT'
 # DOINGDIRs = [x for x in DOINGDIRs if remove not in x]
-
-print ("DOINGDIRs: ", DOINGDIRs)
-print ("len(DOINGDIRs): ", len(DOINGDIRs))
+if verbose == True :
+    print ("DOINGDIRs: ", DOINGDIRs)
+    print ("len(DOINGDIRs): ", len(DOINGDIRs))
 #######################################################
-
-verbose = False  
 #%%
-tryagain = False
-trynightsky = True
-OWrite = True
-
 for DOINGDIR in DOINGDIRs[:] :
     DOINGDIR = Path(DOINGDIR)
     if verbose == True :
@@ -262,7 +264,7 @@ for DOINGDIR in DOINGDIRs[:] :
                                                         scale_to_0th=False, #norm
                                                         reject="sc", 
                                                         sigma=2.5,
-                                                        verbose=True,
+                                                        verbose=verbose,
                                                         memlimit = 2.e+11,
                                                         )
                                 except :
@@ -273,7 +275,7 @@ for DOINGDIR in DOINGDIRs[:] :
                                                         scale_to_0th=False, #norm
                                                         reject="sc", 
                                                         # sigma=2.5,
-                                                        verbose=True,
+                                                        verbose=verbose,
                                                         memlimit = 2.e+11,
                                                         )
                                 ccd.write(sMASTERDIR / f"nightskyflat-{filt}_norm.fits", overwrite=True)

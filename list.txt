@@ -1,3 +1,0 @@
-display_fits_using_WCS_and_find_the_center_of_asteroid.ipynb
-Exotic Notebook.ipynb
-

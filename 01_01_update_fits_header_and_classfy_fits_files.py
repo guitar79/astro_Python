@@ -22,7 +22,7 @@ if not os.path.exists('{0}'.format(log_dir)):
     os.makedirs('{0}'.format(log_dir))
 #######################################################
 #%%
-verbose = False     
+verbose = True # False     
 Owrite = False   
 #######################################################
 # Set directory variables.
@@ -36,28 +36,23 @@ DOINGDIR = BASEDIR/ _astro_utilities.CCD_NEW_dir
 
 DOINGDIRs = sorted(_Python_utilities.getFullnameListOfallsubDirs(DOINGDIR))
 print ("DOINGDIRs: ", format(DOINGDIRs))
-print ("len(DOINGDIRs): ", format(len(DOINGDIRs)))
-#######################################################            
-
-
-#%%
-fnameKEYs = ["OBJECT", "IMAGETYP", "FILTER", "DATE-OBS", 
-            "EXPOSURE", "OPTIC", "CCDNAME", "CCD-TEMP", "XBINNING"]
+print ("len(DOINGDIRs): ", format(len(DOINGDIRs)))     
  
 #######################################################  
 #%%
-for DOINGDIR in DOINGDIRs[:1] :
+for DOINGDIR in DOINGDIRs[:] :
     DOINGDIR = Path(DOINGDIR)
-    NEWUPDIR = DOINGDIR.parents[2] /_astro_utilities.CCD_NEWUP_dir
     if verbose == True : 
         print("DOINGDIR", DOINGDIR)
         print(f"Starting: {str(DOINGDIR.parts[-1])}")
-    summary = yfu.make_summary(DOINGDIR/"*.fit*",
-                                verify_fix=True,
-                                ignore_missing_simple=True,
-                                )
-    if summary is not None : 
-        try:
+    # NEWUPDIR = DOINGDIR.parents[1] /_astro_utilities.CCD_NEWUP_dir
+    try : 
+        summary = yfu.make_summary(DOINGDIR/"*.fit*",
+                                    verify_fix=True,
+                                    ignore_missing_simple=True,
+                                    )
+        if summary is not None : 
+
             if verbose == True : 
                 print("summary: ", summary)
                 print("len(summary)", len(summary))
@@ -75,38 +70,15 @@ for DOINGDIR in DOINGDIRs[:1] :
                                                 #             "XBINNING", "YBINNING", "FLIPSTAT", "EXPTIME", "EXPOSURE"],
                                                 # imgtype_update=True,
                                                 # fil_update=False,
-                                                verbose = False, 
+                                                verbose = verbose, 
                                                 )
                 if verbose == True :
                     print("hdul: ", hdul)
-            
-            shutil.move(str(DOINGDIR), str(NEWUPDIR / DOINGDIR.stem))
-            if verbose == True :
-                print(str(DOINGDIR), str(NEWUPDIR / DOINGDIR.stem))
 
-        except Exception as err :
-            print("X"*60)
-            print(err)
-            pass
+                new_fname = ""
+                suffix = ".fit"
 
-    print(f"Starting: {str(NEWUPDIR.parts[-1])}") 
-    summary = yfu.make_summary(NEWUPDIR/"*.fit*",    
-                                verify_fix=True,
-                                ignore_missing_simple=True,
-                                )
-    if summary is not None : 
-        if verbose == True :
-            print("summary: ", summary)
-            print("len(summary)", len(summary))
-    
-        for _, row in summary.iterrows():
-            fpath = Path(row["file"])
-            if verbose == True :
-                print (f"starting {fpath.name}...")
-            new_fname = ""
-            suffix = ".fit"
-            try:
-                for KEY in fnameKEYs :
+                for KEY in _astro_utilities.fnameKEYs :
                     if KEY in ["OBJECT", "IMAGETYP", "FILTER", 
                         "OPTIC", "CCDNAME"] :
                         new_fname += str(row[KEY])+"_"
@@ -154,18 +126,18 @@ for DOINGDIR in DOINGDIRs[:1] :
                     shutil.move(str(fpath), str(new_fpath))
                     if verbose == True :
                         print(f"move {str(fpath.name)} to {str(new_fpath)}")
-                
-            except Exception as err:
-                print("X"*30, f'\n{err}')
-                #_Python_utilities.write_log(err_log_file, err)
-                pass
+
+    except Exception as err :
+        print("X"*60)
+        print(err)
+        pass
 
 #%%   
 #############################################################################
 #Check and delete empty folder....
 #############################################################################
 for i in range(4):
-    DOINGDIR = ( BASEDIR/ _astro_utilities.CCD_NEWUP_dir)         
+    DOINGDIR = ( BASEDIR/ _astro_utilities.CCD_NEW_dir)         
     DOINGDIRs = sorted(_Python_utilities.getFullnameListOfallsubDirs(DOINGDIR))
     if verbose == True :
         print ("DOINGDIRs: ", format(DOINGDIRs))
