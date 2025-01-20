@@ -138,6 +138,6 @@ for DOINGDIR in DOINGDIRs :
                                                 )
         except Exception as err :
             print("X"*60)
-            _Python_utilities.write_log(err_log_file, err)
+            _Python_utilities.write_log(err_log_file, str(err), verbose=verbose)
         
 # os.popen(f"sh __{datetime.now().strftime('%Y%m%d')}_todo_astrometry_solve.sh")

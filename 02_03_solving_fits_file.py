@@ -37,7 +37,9 @@ if not os.path.exists('{0}'.format(log_dir)):
 #%%
 verbose = True # False
 tryagain = False
-trynightsky = True
+trynightsky = False
+file_age = 365
+downsample = 4
 
 #################################################
 BASEDIR = Path("/mnt/Rdata/ASTRO_data")  
@@ -75,32 +77,33 @@ PROJECDIR = BASEDIR / "A3_CCD_obs_raw/STF-8300M_1bin/"
 TODODIR = PROJECDIR / "LIGHT_FS60CB/"
 TODODIR = PROJECDIR / "LIGHT_FSQ106ED-x73"
 TODODIR = PROJECDIR / "LIGHT_GSON300"
-TODODIR = PROJECDIR / "LIGHT_OON300"
-TODODIR = PROJECDIR / "LIGHT_RILA600"
-TODODIR = PROJECDIR / "LIGHT_SVX80T-x80"
-TODODIR = PROJECDIR / "LIGHT_TEC140"
-TODODIR = PROJECDIR / "LIGHT_TMB130ss"
-TODODIR = PROJECDIR / "LIGHT_TMB130ss-x75"
+# TODODIR = PROJECDIR / "LIGHT_OON300"
+# TODODIR = PROJECDIR / "LIGHT_RILA600"
+# TODODIR = PROJECDIR / "LIGHT_SVX80T-x80"
+# TODODIR = PROJECDIR / "LIGHT_TEC140"
+# TODODIR = PROJECDIR / "LIGHT_TMB130ss"
+# TODODIR = PROJECDIR / "LIGHT_TMB130ss-x75"
 
-PROJECDIR = BASEDIR / "A3_CCD_obs_raw/QSI683ws_1bin/"
-TODODIR = PROJECDIR / "LIGHT_FSQ106ED-x73"
-TODODIR = PROJECDIR / "LIGHT_GSON300"
-TODODIR = PROJECDIR / "LIGHT_RILA600"
-TODODIR = PROJECDIR / "LIGHT_SVX80T"
-TODODIR = PROJECDIR / "LIGHT_SVX80T-x80"
-TODODIR = PROJECDIR / "LIGHT_TMB130ss-x75"
+# PROJECDIR = BASEDIR / "A3_CCD_obs_raw/QSI683ws_1bin/"
+# TODODIR = PROJECDIR / "LIGHT_FSQ106ED-x73"
+# TODODIR = PROJECDIR / "LIGHT_GSON300"
+# TODODIR = PROJECDIR / "LIGHT_RILA600"
+# TODODIR = PROJECDIR / "LIGHT_SVX80T"
+# TODODIR = PROJECDIR / "LIGHT_SVX80T-x80"
+# TODODIR = PROJECDIR / "LIGHT_TMB130ss-x75"
 
-PROJECDIR = BASEDIR / "A3_CCD_obs_raw/STL-11000M_1bin/"
-TODODIR = PROJECDIR / "LIGHT_FSQ106ED"
-TODODIR = PROJECDIR / "LIGHT_FSQ106ED-x72"
-TODODIR = PROJECDIR / "LIGHT_TEC140-x75"
-TODODIR = PROJECDIR / "LIGHT_TMB130ss"
-TODODIR = PROJECDIR / "LIGHT_TMB130ss-x75"
+# PROJECDIR = BASEDIR / "A3_CCD_obs_raw/STL-11000M_1bin/"
+# TODODIR = PROJECDIR / "LIGHT_FSQ106ED"
+# TODODIR = PROJECDIR / "LIGHT_FSQ106ED-x72"
+# TODODIR = PROJECDIR / "LIGHT_TEC140-x75"
+# TODODIR = PROJECDIR / "LIGHT_TMB130ss"
+# TODODIR = PROJECDIR / "LIGHT_TMB130ss-x75"
 
-PROJECDIR = BASEDIR / "A3_CCD_obs_raw/STX-16803_1bin/"
-TODODIR = PROJECDIR / "LIGHT_RILA600"
+# PROJECDIR = BASEDIR / "A3_CCD_obs_raw/STX-16803_1bin/"
+# TODODIR = PROJECDIR / "LIGHT_RILA600"
 
 PROJECDIR = BASEDIR / "A3_CCD_obs_raw/STX-16803_2bin/"
+PROJECDIR = BASEDIR / "A3_CCD_obs_raw/ASI6200MMPro_3bin/"
 TODODIR = PROJECDIR / "LIGHT_RILA600"
                
 DOINGDIRs = sorted(_Python_utilities.getFullnameListOfsubDirs(TODODIR))
@@ -119,15 +122,17 @@ try :
             print("{} is created...".format(str(MASTERDIR)))
     if verbose == True :
         print ("MASTERDIR: ", format(MASTERDIR))
-except : 
+except Exception as err :
+    print("X"*60)
+    _Python_utilities.write_log(err_log_file, str(err), verbose=verbose)
     pass
 
 DOINGDIRs = sorted([x for x in DOINGDIRs if "_LIGHT_" in str(x)])
 # print ("DOINGDIRs: ", format(DOINGDIRs))
 # print ("len(DOINGDIRs): ", format(len(DOINGDIRs)))
 
-# filter_str = '127JOHANNA_LIGHT_-_2023-11-17_-_GSON300_STF-8300M_-_1bin'
-# DOINGDIRs = [x for x in DOINGDIRs if filter_str in str(x)]
+filter_str = '2025-01-1'
+DOINGDIRs = [x for x in DOINGDIRs if filter_str in str(x)]
 # remove = 'BIAS'
 # DOINGDIRs = [x for x in DOINGDIRs if remove not in x]
 # remove = 'DARK'
@@ -139,17 +144,22 @@ if verbose == True :
     print ("len(DOINGDIRs): ", len(DOINGDIRs))
 
 #%%
-
-file_age = 80
-downsample = 4
-
-#%%
 for DOINGDIR in DOINGDIRs[:] :
-    _astro_utilities.solving_fits_file(DOINGDIR,
-                downsample = downsample,
+    try : 
+        DOINGDIR = Path(DOINGDIR)
+        if verbose == True :
+            print(f"Starting: {str(DOINGDIR.parts[-1])}")
+        _astro_utilities.solving_fits_file(DOINGDIR,
+                # downsample = downsample,
                 count_stars= False,
                 tryagain = tryagain,
                 file_age = 80,
-                tryASTROMETRYNET = False,
+                # tryASTAP = False, # default True
+                # tryLOCAL = False,  # default True
+                # tryASTROMETRYNET = True,   # default False
                 verbose = verbose
                 )    
+    except Exception as err :
+        print("X"*60)
+        _Python_utilities.write_log(err_log_file, str(err), verbose=verbose)
+        pass

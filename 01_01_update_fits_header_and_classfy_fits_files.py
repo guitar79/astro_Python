@@ -23,20 +23,20 @@ if not os.path.exists('{0}'.format(log_dir)):
 #######################################################
 #%%
 verbose = True # False     
-Owrite = False   
+Overwrite = False   
 #######################################################
 # Set directory variables.
 #######################################################
-
-BASEDIR = Path(r'S:\\')   # for windows
 BASEDIR = Path("/mnt/Rdata/ASTRO_data")  # for ubuntu
+# BASEDIR = Path(r'R:\\ASTRO_data')   # for windows
 # BASEDIR = Path("/Volumes/OBS_data")  # for mac OS
  
 DOINGDIR = BASEDIR/ _astro_utilities.CCD_NEW_dir
 
 DOINGDIRs = sorted(_Python_utilities.getFullnameListOfallsubDirs(DOINGDIR))
-print ("DOINGDIRs: ", format(DOINGDIRs))
-print ("len(DOINGDIRs): ", format(len(DOINGDIRs)))     
+if verbose == True :
+    print ("DOINGDIRs: ", format(DOINGDIRs))
+    print ("len(DOINGDIRs): ", format(len(DOINGDIRs)))     
  
 #######################################################  
 #%%
@@ -45,8 +45,44 @@ for DOINGDIR in DOINGDIRs[:] :
     if verbose == True : 
         print("DOINGDIR", DOINGDIR)
         print(f"Starting: {str(DOINGDIR.parts[-1])}")
-    # NEWUPDIR = DOINGDIR.parents[1] /_astro_utilities.CCD_NEWUP_dir
-    try : 
+
+    try :
+        summary = yfu.make_summary(DOINGDIR/"*.fit*",
+                                verify_fix=True,
+                                ignore_missing_simple=True,)
+       
+        if summary is not None : 
+
+            if verbose == True : 
+                print("summary: ", summary)
+                print("len(summary)", len(summary))
+
+            for _, row in summary.iterrows():
+            
+                fpath = Path(row["file"])
+                if verbose == True : 
+                    print (row["file"])   # 파일명 출력
+                
+                hdul = _astro_utilities.KevinFitsUpdater(fpath,
+                                                # imgtype_update=True, # default False
+                                                # fil_update=True, # default False
+                                                verbose = verbose, 
+                                                )
+                if verbose == True :
+                    print("hdul: ", hdul)
+            
+    except Exception as err :
+        print("X"*60)
+        _Python_utilities.write_log(err_log_file, str(err), verbose=verbose)
+        pass
+
+for DOINGDIR in DOINGDIRs[:] :
+    DOINGDIR = Path(DOINGDIR)
+    if verbose == True : 
+        print("DOINGDIR", DOINGDIR)
+        print(f"Starting: {str(DOINGDIR.parts[-1])}")
+
+    try :
         summary = yfu.make_summary(DOINGDIR/"*.fit*",
                                     verify_fix=True,
                                     ignore_missing_simple=True,
@@ -58,23 +94,8 @@ for DOINGDIR in DOINGDIRs[:] :
                 print("len(summary)", len(summary))
 
             for _, row in summary.iterrows():
-                if verbose == True : 
-                    print (row["file"])   # 파일명 출력
-                fpath = Path(row["file"])
             
-                hdul = _astro_utilities.KevinFitsUpdater(fpath,
-                                                # checkKEYs = ["OBJECT", "TELESCOP", "OPTIC", "CCDNAME", 'FILTER',
-                                                #             #"GAIN", "EGAIN", "RDNOISE", 
-                                                #             "PIXSCALE", "FOCALLEN", "APATURE", "CCD-TEMP",
-                                                #             'XPIXSZ', 'YPIXSZ',
-                                                #             "XBINNING", "YBINNING", "FLIPSTAT", "EXPTIME", "EXPOSURE"],
-                                                # imgtype_update=True,
-                                                # fil_update=False,
-                                                verbose = verbose, 
-                                                )
-                if verbose == True :
-                    print("hdul: ", hdul)
-
+                fpath = Path(row["file"])
                 new_fname = ""
                 suffix = ".fit"
 
@@ -85,6 +106,7 @@ for DOINGDIR in DOINGDIRs[:] :
                     
                     if KEY == "DATE-OBS" : 
                         new_fname += row[KEY][:19].replace("T","-").replace(":","-")+"_"
+
 
                     if KEY == "EXPOSURE" : 
                         new_fname += str(int(row[KEY]))+"sec_"
@@ -99,10 +121,10 @@ for DOINGDIR in DOINGDIRs[:] :
                 if verbose == True :
                     print(new_fname)                      
                 new_folder = _astro_utilities.get_new_foldername_from_filename(new_fname)
+                new_fpath =  BASEDIR /_astro_utilities.CCD_obs_raw_dir / new_folder / new_fname
+                
                 if verbose == True :
                     print("new_folder: ", new_folder)
-                new_fpath =  BASEDIR /_astro_utilities.A3_CCD_obs_raw_dir / new_folder / new_fname
-                if verbose == True :
                     print("new_fpath: ", new_fpath)
 
                 if not new_fpath.parents[0].exists():
@@ -114,14 +136,14 @@ for DOINGDIR in DOINGDIRs[:] :
                     if verbose == True :
                         print(f'{new_fpath} is already exist')
                     duplicate_fpath = BASEDIR / _astro_utilities.CCD_duplicate_dir / new_fpath.name
-                    if Owrite == False:
-                        shutil.move(fpath, duplicate_fpath)
-                        if verbose == True :
-                            print(f'{fpath.parts[-1]} is move to duplicate folder...')
-                    else :
+                    if Overwrite == True:
                         shutil.move(str(fpath), str(new_fpath))
                         if verbose == True :
                             print(f"move {str(fpath.name)} to {str(new_fpath)}")
+                    else :
+                        shutil.move(fpath, duplicate_fpath)
+                        if verbose == True :
+                            print(f'{fpath.parts[-1]} is move to duplicate folder...')
                 else : 
                     shutil.move(str(fpath), str(new_fpath))
                     if verbose == True :
@@ -129,8 +151,9 @@ for DOINGDIR in DOINGDIRs[:] :
 
     except Exception as err :
         print("X"*60)
-        print(err)
+        _Python_utilities.write_log(err_log_file, str(err), verbose=verbose)
         pass
+
 
 #%%   
 #############################################################################

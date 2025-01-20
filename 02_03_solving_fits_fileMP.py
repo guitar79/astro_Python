@@ -68,7 +68,7 @@ class Multiprocessor():
         for p in self.processes:
             p.join()
         return rets
-########################################################%%
+########################################################
 #%%
 #######################################################
 BASEDIR = Path("/mnt/Rdata/ASTRO_data")  
@@ -102,6 +102,10 @@ TODODIR = PROJECDIR / "-_-_-_2017-05_-_RiLA600_STX-16803_-_2bin"
 # PROJECDIR = BASEDIR / "A3_CCD_obs_raw" / "QSI683ws_1bin"
 # TODODIR = PROJECDIR / "LIGHT_FSQ106ED-x73"
 
+PROJECDIR = BASEDIR / "A3_CCD_obs_raw/STX-16803_2bin/"
+PROJECDIR = BASEDIR / "A3_CCD_obs_raw/ASI6200MMPro_3bin/"
+TODODIR = PROJECDIR / "LIGHT_RILA600"
+
 DOINGDIRs = sorted(_Python_utilities.getFullnameListOfsubDirs(TODODIR))
 print ("DOINGDIRs: ", format(DOINGDIRs))
 print ("len(DOINGDIRs): ", format(len(DOINGDIRs)))
@@ -121,8 +125,8 @@ DOINGDIRs = sorted([x for x in DOINGDIRs if "_LIGHT_" in str(x)])
 # print ("DOINGDIRs: ", format(DOINGDIRs))
 # print ("len(DOINGDIRs): ", format(len(DOINGDIRs)))
 
-# filter_str = 'BL'
-# DOINGDIRs = [x for x in DOINGDIRs if filter_str in str(x)]
+filter_str = '2025-01-1'
+DOINGDIRs = [x for x in DOINGDIRs if filter_str in str(x)]
 # remove = 'BIAS'
 # DOINGDIRs = [x for x in DOINGDIRs if remove not in x]
 # remove = 'DARK'
@@ -133,7 +137,7 @@ print ("DOINGDIRs: ", DOINGDIRs)
 print ("len(DOINGDIRs): ", len(DOINGDIRs))
 #######################################################
 
-for DOINGDIR in DOINGDIRs[6:] :
+for DOINGDIR in DOINGDIRs[:] :
     DOINGDIR = Path(DOINGDIR)
     print("DOINGDIR", DOINGDIR)
     SOLVINGDIR = DOINGDIR / _astro_utilities.reduced_dir

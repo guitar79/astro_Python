@@ -49,6 +49,7 @@ import warnings
 warnings.filterwarnings('ignore')
 
 #%%
+
 #######################################################
 # for log file
 log_dir = "logs/"
@@ -60,6 +61,13 @@ if not os.path.exists('{0}'.format(log_dir)):
     os.makedirs('{0}'.format(log_dir))
 #######################################################
 #%%
+count_stars = False
+verbose = True
+tryagain = False
+trynightsky = False
+tryASTROMETRYNET = True
+file_age = 365
+downsample = 4
 #######################################################
 BASEDIR = Path("/mnt/Rdata/ASTRO_data")  
 
@@ -101,7 +109,9 @@ try :
         os.makedirs("{}".format(str(MASTERDIR)))
         print("{} is created...".format(str(MASTERDIR)))
     print ("MASTERDIR: ", format(MASTERDIR))
-except : 
+except Exception as err :
+    print("X"*60)
+    _Python_utilities.write_log(err_log_file, str(err), verbose=verbose)
     pass
 
 DOINGDIRs = sorted([x for x in DOINGDIRs if "_LIGHT_" in str(x)])
@@ -122,7 +132,7 @@ print ("len(DOINGDIRs): ", len(DOINGDIRs))
 #####################################################################
 # Observed location
 LOCATION = dict(lon=127.005, lat=37.308889, elevation=101)
-Suwon =  EarthLocation(lon=127.005 * u.deg, 
+GSHS =  EarthLocation(lon=127.005 * u.deg, 
                                  lat=37.308889 * u.deg, 
                                  height=101 * u.m)
 observatory_code = "P64"
@@ -145,7 +155,7 @@ Mag_High = 15
 
 Mag_target = 12.5
 Mag_delta = 2
-ERR_Max = 0.5
+ERR_Minimum = 0.5
 
 ### TT-ARI
 # Mag_Low = 10
@@ -153,7 +163,7 @@ ERR_Max = 0.5
 
 # Mag_target = 11
 # Mag_delta = 2
-# ERR_Max = 0.5
+# ERR_Minimum = 0.5
 #######################################################
 
 #%%
@@ -396,7 +406,7 @@ for DOINGDIR in DOINGDIRs[:] :
                         df_phot_stars_na = df_phot_stars.dropna()
                         print(len(df_phot_stars_na))
 
-                        df_phot_stars_na = df_phot_stars[df_phot_stars["merr"] < ERR_Max]
+                        df_phot_stars_na = df_phot_stars[df_phot_stars["merr"] < ERR_Minimum]
                         # phot_stars_na = phot_stars_na.set_index('id', drop=True)
                         df_phot_stars_na = df_phot_stars_na.reset_index(drop=True)
                         print(len(df_phot_stars_na))
@@ -692,7 +702,7 @@ for DOINGDIR in DOINGDIRs[:] :
                         
                         df_apphot_sub = df_apphot.dropna()
                         print(len(df_apphot_sub))
-                        df_apphot_sub = df_apphot_sub.loc[(df_apphot_sub["merr_ann"] < ERR_Max)]
+                        df_apphot_sub = df_apphot_sub.loc[(df_apphot_sub["merr_ann"] < ERR_Minimum)]
                         df_apphot_sub
 
                         #%%
@@ -749,6 +759,7 @@ for DOINGDIR in DOINGDIRs[:] :
                         # plt.show()
                         plt.close()
 
-            except Exception as err: 
-                print ('Error messgae .......')
-                #_Python_utilities.write_log(err_log_file, err)
+            except Exception as err :
+                print("X"*60)
+                _Python_utilities.write_log(err_log_file, str(err), verbose=verbose)
+                pass

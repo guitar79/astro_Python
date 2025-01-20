@@ -83,7 +83,7 @@ for dirName in BASEDIRs :
     try :
         fullnames.extend(_Python_utilities.getFullnameListOfallFiles("{}".format(dirName)))
     except Exception as err :
-        #_Python_utilities.write_log(err_log_file, err)
+        #_Python_utilities.write_log(err_log_file, str(err), verbose=verbose)
         print(err)
         continue
 fullnames = sorted(fullnames)
@@ -126,6 +126,6 @@ for fullname in fullnames :
                 cur.execute(qry)
                 conn.commit()
             except Exception as err :
-                #_Python_utilities.write_log(err_log_file, err)
+                #_Python_utilities.write_log(err_log_file, str(err), verbose=verbose)
                 print("err with {}".format(fullname))
                 continue

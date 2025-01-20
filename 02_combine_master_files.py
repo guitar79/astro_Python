@@ -32,7 +32,6 @@ if not os.path.exists('{0}'.format(log_dir)):
 
 #%%
 verbose = False     
-Owrite = False  
 tryagain = False 
 #######################################################
 BASEDIR = Path("/mnt/Rdata/ASTRO_data")  

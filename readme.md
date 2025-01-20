@@ -43,6 +43,13 @@ find '/mnt/Rdata/ASTRO_data/2024-OA/_측광과제-교사참고/1반/23067신 재
 
 find '/mnt/Rdata/ASTRO_data/C1-Variable/-_-_-_2022-01_-_RiLA600_STX-16803_-_2bin/AH-CAM_LIGHT_-_2022-01-23_-_RiLA600_STX-16803_-_2bin' -type f -name '*.fit' -exec solve-field -O --downsample 4 --cpulimit 20 "{}" \;
 
+find '/mnt/Rdata/ASTRO_data/C3-EXO/-_-_-_2024-11_-_RiLA600_ASI6200MMPro_-_3bin/Kelt-1b_LIGHT_-_2024-11-23_-_RiLA600_ASI6200MMPro_-_3bin/' -type f -name '*.fit' -exec solve-field -O --downsample 4 --cpulimit 20 "{}" \;
+
+find '/mnt/Rdata/ASTRO_data/C3-EXO/-_-_-_2024-11_-_GSON300_STF-8300M_-_1bin/WASP-180Ab_LIGHT_-_2025-01-02_-_GSON300_STF-8300M_-_1bin' -type f -name '*.fit' -exec solve-field -O --downsample 4 --cpulimit 20 --nsigma 15 "{}" \;
+
+find '/mnt/Rdata/ASTRO_data/C3-EXO/-_-_-_2024-11_-_RiLA600_ASI6200MMPro_-_3bin/HAT-P-61b_LIGHT_-_2025-01-02_-_RiLA600_ASI6200MMPro_-_3bin/' -type f -name '*.fit' -exec solve-field -O --downsample 4 --cpulimit 20 --nsigma 15 "{}" \;
+
+
 find '/mnt/Rdata/ASTRO_data/C5-Test/-_-_-_-_GSON300_STF-8300M_-_1bin' -type f -name '*.fit' -exec solve-field -O --downsample 4 --nsigma 15 --cpulimit 20 "{}" \;
 
 find '/mnt/Rdata/ASTRO_data/C5-Test/-_-_-_-_GSON300_STF-8300M_-_1bin' -type f -name '*.fit' -exec astap -f "{}" -wcs -analyse2 -update \;
@@ -61,11 +68,13 @@ find /mnt/Rdata/ASTRO_data/C2-Asteroid/ -type f \( -name '*.wcs' -o -name '*.rdl
 find /mnt/Rdata/ASTRO_data/C3-EXO/ -type f \( -name '*.wcs' -o -name '*.rdls' -o -name '*.asy' -o -name '*.corr' -o -name '*.match' -o -name '*.soled' -o -name '*.axy' -o -name '*PS1_query.png' \) -delete
 
 yrmn = "2017-05" ;
-find /mnt/Rdata/ASTRO_data/A3_CCD_obs_raw/STX-16803_2bin/Cal -type f -name '-_BIAS*${yrmn}*.fit*' -exec cp "{}" '/mnt/Rdata/ASTRO_data/C1-Variable/-_-_-_2021-10_-_RiLA600_STX-16803_-_2bin/CAL-BDF_-_-_${yrmn}_-_RiLA600_STX-16803_-_2bin/' \;
+find /mnt/Rdata/ASTRO_data/A3_CCD_obs_raw/ASI6200MMPro_3bin/Cal -type f -name '-_BIAS*2024-11*.fit*' -exec cp "{}" '/mnt/Rdata/ASTRO_data/C3-EXO/-_-_-_2024-11_-_RiLA600_ASI6200MMPro_-_3bin/-_CAL-BDF_-_2024-11_-_GSON300_STF-8300M_-_3bin/' \;
 
 find /mnt/Rdata/ASTRO_data/A3_CCD_obs_raw/STX-16803_2bin/Cal -type f -name '-_BIAS*2017-05*.fit*' -exec cp "{}" '/mnt/Rdata/ASTRO_data/C1-Variable/-_-_-_2017-05_-_RiLA600_STX-16803_-_2bin/CAL-BDF_-_-_2017-05_-_RiLA600_STX-16803_-_2bin/' \;
 
 find /mnt/Rdata/ASTRO_data/A3_CCD_obs_raw/STX-16803_2bin/Cal -type f -name '-_DARK*2021-10*.fit*' -exec cp "{}" '/mnt/Rdata/ASTRO_data/C1-Variable/-_-_-_2021-10_-_RiLA600_STX-16803_-_2bin/CAL-BDF_-_-_2021-10_-_RiLA600_STX-16803_-_2bin/' \;
+
+find /mnt/Rdata/ASTRO_data/A3_CCD_obs_raw/STX-16803_2bin/Cal_RiLA600  -type f -name '-_FLAT*2021-10*.fit*' -exec cp "{}" '/mnt/Rdata/ASTRO_data/C1-Variable/-_-_-_2021-10_-_RiLA600_STX-16803_-_2bin/CAL-BDF_-_-_2021-10_-_RiLA600_STX-16803_-_2bin/' \;
 
 find /mnt/Rdata/ASTRO_data/A3_CCD_obs_raw/STX-16803_2bin/Cal_RiLA600  -type f -name '-_FLAT*2021-10*.fit*' -exec cp "{}" '/mnt/Rdata/ASTRO_data/C1-Variable/-_-_-_2021-10_-_RiLA600_STX-16803_-_2bin/CAL-BDF_-_-_2021-10_-_RiLA600_STX-16803_-_2bin/' \;
 

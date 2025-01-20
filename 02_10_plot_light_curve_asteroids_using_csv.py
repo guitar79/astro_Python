@@ -126,7 +126,7 @@ Mag_High = 15
 
 Mag_target = 12.5
 Mag_delta = 2
-ERR_Max = 0.5
+ERR_Minimum = 0.5
 
 coord_delta = 0.00001
 coord_delta = 0.0005
@@ -283,5 +283,5 @@ for DOINGDIR in DOINGDIRs[:] :
 
 # except Exception as err: 
 #     print ('Error messgae .......')
-#     #_Python_utilities.write_log(err_log_file, err)
+#     #_Python_utilities.write_log(err_log_file, str(err), verbose=verbose)
 # %%

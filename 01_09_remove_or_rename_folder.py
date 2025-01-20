@@ -89,11 +89,9 @@ for DOINGDIR in DOINGDIRs[:] :
     
     try :
         _astro_utilities.reduceLightFrame(DOINGDIR, MASTERDIR,
-                                        OWrite=False, 
                                         )
         
         _astro_utilities.makeNightskyflatReduceLightFrame(DOINGDIR, MASTERDIR,
-                                        OWrite=False,
                                         )
         _astro_utilities.solvingLightFrame(DOINGDIR,
                                         )

@@ -127,7 +127,7 @@ Mag_High = 15
 
 Mag_target = 12.5
 Mag_delta = 2
-ERR_Max = 0.5
+ERR_Minimum = 0.5
 
 coord_delta = 0.00001
 coord_delta = 0.00003
@@ -189,15 +189,17 @@ for DOINGDIR in DOINGDIRs[:] :
 
             # type(result_table['RA'][0])
             # result_table['RA'][0].split(" ")
-            targ_sky = SkyCoord(ra=f"{result_table['RA'][0].split(' ')[0]}h{result_table['RA'][0].split(' ')[1]}m{result_table['RA'][0].split(' ')[2]}s",
-                        dec=f"{result_table['DEC'][0].split(' ')[0]}d{result_table['DEC'][0].split(' ')[1]}m{result_table['DEC'][0].split(' ')[2]}s", frame='icrs')
+            targ_sky = SkyCoord(ra=result_table['RA'][0],
+                                dec=result_table['DEC'][0], 
+                                unit=(u.hourangle, u.degree),
+                                frame='icrs')
             print("targ_sky :", targ_sky)
             for coord_delta in coord_deltas :
                 df_targ = df.loc[(df["RAJ2000"] > targ_sky.ra.value*(1-coord_delta)) \
                                 & (df["RAJ2000"] < targ_sky.ra.value*(1+coord_delta)) \
                                 & (df["DEJ2000"] > targ_sky.dec.value*(1-coord_delta))\
                                 & (df["DEJ2000"] < targ_sky.dec.value*(1+coord_delta))\
-                                & (df["merr_ann"] < ERR_Max)]
+                                & (df["merr_ann"] < ERR_Minimum)]
 
                 if df_targ.empty :
                     print("df_targ is empty")
@@ -274,5 +276,5 @@ for DOINGDIR in DOINGDIRs[:] :
 
 # except Exception as err: 
 #     print ('Error messgae .......')
-#     #_Python_utilities.write_log(err_log_file, err)
+#     #_Python_utilities.write_log(err_log_file, str(err), verbose=verbose)
 # %%

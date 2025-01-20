@@ -220,5 +220,5 @@ for DOINGDIR in DOINGDIRs[:] :
                     plt.close()
 
                 except Exception as err:
-                    _Python_utilities.write_log(err_log_file, err)
+                    _Python_utilities.write_log(err_log_file, str(err), verbose=verbose)
                     #print('{0} with {1} '.format(err, fpath.name))

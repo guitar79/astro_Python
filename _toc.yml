@@ -2,44 +2,31 @@
 # Learn more at https://jupyterbook.org/customize/toc.html
 
 format: jb-book
-root: 00_00_intro.md
+root: 000_00_00_intro.md
 parts: 
   - caption: Introduction
     numbered: True
     chapters:
-    - file: 00_01_computer_and_network.ipynb
+    - file: 000_00_01_computer_and_network.ipynb
       title: 천문대 컴퓨터 및 네트워트 구성
-    - file: 00_02_Python_for_photometry.ipynb
+    - file: 000_00_02_Python_for_photometry.ipynb
       title: Python for photometry
-
-  - caption: Manage fits file 
-    numbered: True
-    chapters:
-    - file: 01_01_update_fits_header_and_classfy_fits_files.ipynb
-      title: update fits header and classfy fits files using keyword 
-
-  - caption: Preprocessing
-    numbered: True
-    chapters:
-    - file: 02_01_combine_master_files_in_samefolder.ipynb
-      title: Combine fits file header update 
-    # - file: 00_21_calculate_physical_quantities.ipynb
-    - file: 02_03_solving_fits_file.ipynb
-      title: Plate solving
-    - file: 02_05_reduce_light_frame_using_master_files_ys.ipynb
-      title: Preprocessing CCD data 
-    # - file: 00_33_preprocessing_fits_files_ysfitsutilpy.ipynb
-    #   title: Preprocessing CCD data 
-    # - file: 02_02_check_stars_using_DAOFinder.ipynb
-    #   title: Check stars using_DAOFinder
-    # - file: 00_22_Astronomical_Time.ipynb
-    # - file: 00_23_Astronomical_Coordinate_Systems.ipynb
 
   - caption: Photometry
     numbered: True
     chapters:
-    - file: 00_31_fits_handling_and_plate_solving.ipynb
-    - file: 00_34_PSF_and_3D_plot.ipynb
-    - file: 00_35_aperture_photometry_ys.ipynb
-    - file: 00_36_differential_photometry_ys.ipynb
-    - file: 00_37_plot_light_curve_using_each_csv.ipynb
+    - file: 000_01_01_update_fits_header_and_classfy_fits_files.ipynb
+      title: Update fits header and classfy fits files using keyword 
+    - file: 000_02_00_CCD_Photometry.ipynb
+      title: CCD differential photometry 
+
+    # - file: 000_02_01_combine_master_files_in_samefolder.ipynb
+    #   title: Combine fits file header update 
+    # - file: 000_02_03_solving_fits_file.ipynb
+    #   title: Plate solving
+    # - file: 000_02_05_reduce_light_frame_using_master_files_ys.ipynb
+    #   title: Reduce CCD data CCD data
+    # - file: 000_02_53_differential_photometry_of_asteroid_ys.ipynb 
+    #   title: Plot light curve
+    # - file: 000_02_37_plot_light_curve_using_each_csv.ipynb
+    #   title: Differential photometry 

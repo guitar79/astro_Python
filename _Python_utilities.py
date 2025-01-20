@@ -32,11 +32,14 @@ def mkdir(fpath, mode=0o777, exist_ok=True):
 # =============================================================================
 # creat log.format(fullname, , )=======================================================
 
-def write_log(log_file, log_str):
+def write_log(log_file, log_str,
+              verbose = False,
+            **kwarg):
     timestamp = datetime.now()
     timestamp = timestamp.strftime(r'%Y-%m-%d %H:%M:%S')
     msg = '[' + timestamp + '] ' + log_str
-    print(msg)
+    if verbose == True :
+        print(msg)
     with open(log_file, 'a') as f:
         f.write(msg + '\n')
 
@@ -68,7 +71,9 @@ def print_working_time(cht_start_time):
 # =============================================================================
 #     
 # =============================================================================
-def get_file_age(file_path):
+def get_file_age(file_path,
+                 verbose=False,
+                 **wargs):
     """
     파일이 생성된 후 지난 시간을 계산하는 함수
 
@@ -88,6 +93,8 @@ def get_file_age(file_path):
     # 현재 시간과의 차이 계산
     now = datetime.now()
     delta = now - mtime_datetime
+    if verbose == True :
+        print(f"{delta} days passed since {file_path} was created.")
 
     return delta
 
@@ -109,7 +116,9 @@ def nearest_ind(items, pivot) :
 # =============================================================================
 #     
 # =============================================================================
-def removeAllEmptyDirs(fpath):
+def removeAllEmptyDirs(fpath,
+                       verbose = False,
+                       **wargs):
     """
     Parameters
     ----------
@@ -121,19 +130,22 @@ def removeAllEmptyDirs(fpath):
     del_N = 0
     for i in range(10) : 
         fullnames = getFullnameListOfallsubDirs(fpath)
-        #print ("fullnames: {}".format(fullnames))
-        print ("{} directories were found... ".format(len(fullnames)))
+        if verbose == True :
+            print ("fullnames: {}".format(fullnames))
+            print ("{} directories were found... ".format(len(fullnames)))
         
         for fullname in fullnames[:] :
             # Check is empty..
-            print('Check directory {} is empty or not...'.format(fullname))
+            if verbose == True : 
+                print('Check directory {} is empty or not...'.format(fullname))
             if len(os.listdir(fullname)) == 0 :
                 # Delete..
                 shutil.rmtree(r"{}".format(fullname)) 
                 del_N =+1
-                print ("rmtree {}\n".format(fullname))
-    
-    return print("Total {} directories deleted...".format(del_N))
+                if verbose == True : 
+                    print ("rmtree {}\n".format(fullname))
+                    print("Total {} directories deleted...".format(del_N))
+    return 0
 
 #%%
 # =============================================================================

@@ -39,7 +39,6 @@ verbose = True # False
 tryagain = False
 file_age = 365
 trynightsky = True
-OWrite = True
 #######################################################
 BASEDIR = Path("/mnt/Rdata/ASTRO_data")  
 
@@ -60,11 +59,15 @@ TODODIR = PROJECDIR / "-_-_-_2017-05_-_RiLA600_STX-16803_-_2bin"
 # TODODIR = PROJECDIR / "-_-_-_2023-_-_RiLA600_STX-16803_-_1bin"
 # TODODIR = PROJECDIR / "-_-_-_2023-_-_RiLA600_STX-16803_-_2bin"
 
-# PROJECDIR = BASEDIR / "C3-EXO"
+PROJECDIR = BASEDIR / "C3-EXO"
 # TODODIR = PROJECDIR / "-_-_-_2024-05_-_GSON300_STF-8300M_-_1bin"
 # TODODIR = PROJECDIR / "-_-_-_2024-05_-_RiLA600_STX-16803_-_1bin"
 # TODODIR = PROJECDIR / "-_-_-_2024-06_-_GSON300_STF-8300M_-_1bin"
 # TODODIR = PROJECDIR / "-_-_-_2024-06_-_RiLA600_STX-16803_-_2bin"
+# TODODIR = PROJECDIR / "-_-_-_2024-09_-_GSON300_STF-8300M_-_1bin"
+# TODODIR = PROJECDIR / "-_-_-_2024-09_-_RiLA600_ASI6200MMPro_-_2bin"
+TODODIR = PROJECDIR / "-_-_-_2024-11_-_GSON300_STF-8300M_-_1bin"
+TODODIR = PROJECDIR / "-_-_-_2024-11_-_RiLA600_ASI6200MMPro_-_3bin"
 
 # PROJECDIR = BASEDIR / "C4-Spectra"
 # TODODIR = PROJECDIR / "-_-_-_2024-05_TEC140_ASI183MMPro_-_1bin"
@@ -83,8 +86,11 @@ try :
         os.makedirs("{}".format(str(MASTERDIR)))
         if verbose == True :
             print("{} is created...".format(str(MASTERDIR)))
-    print ("MASTERDIR: ", format(MASTERDIR))
-except : 
+            print ("MASTERDIR: ", format(MASTERDIR))
+except Exception as err :
+    if verbose == True : 
+        print("X"*60)
+    _Python_utilities.write_log(err_log_file, str(err), verbose=verbose)
     pass
 
 DOINGDIRs = sorted([x for x in DOINGDIRs if "_LIGHT_" in str(x)])
@@ -104,13 +110,13 @@ if verbose == True :
     print ("len(DOINGDIRs): ", len(DOINGDIRs))
 #######################################################
 #%%
-for DOINGDIR in DOINGDIRs[:] :
+for DOINGDIR in DOINGDIRs[1:2] :
     DOINGDIR = Path(DOINGDIR)
     if verbose == True :
         print(f"Starting: {str(DOINGDIR.parts[-1])}")
     
-    sMASTERDIR = DOINGDIR / _astro_utilities.master_dir
     REDUCEDDIR = DOINGDIR / _astro_utilities.reduced_dir
+    sMASTERDIR = DOINGDIR / _astro_utilities.master_dir
     REDUC_nightsky = DOINGDIR / _astro_utilities.reduced_nightsky_dir
 
     if not sMASTERDIR.exists():
@@ -123,12 +129,11 @@ for DOINGDIR in DOINGDIRs[:] :
         if verbose == True :
             print("{} is created...".format(str(REDUCEDDIR)))
 
-    if not REDUC_nightsky.exists():
-        os.makedirs("{}".format(str(REDUC_nightsky)))
-        if verbose == True :
-            print("{} is created...".format(str(REDUC_nightsky)))
-
-    summary = yfu.make_summary(DOINGDIR/"*.fit*")
+    summary = yfu.make_summary(DOINGDIR/"*.fit*",
+                                verify_fix=True,
+                                ignore_missing_simple=True,
+                                verbose = verbose,
+                                )
     if summary is not None :
         if verbose == True :
             #print(summary)
@@ -167,47 +172,108 @@ for DOINGDIR in DOINGDIRs[:] :
             if verbose == True :
                 print(idx)
 
-            if (REDUCEDDIR / fpath.name).exists() and tryagain == False :
+            if (REDUCEDDIR / fpath.name).exists() :
                 if verbose == True :
-                    print(f"reduction file already exists...\n{fpath.name}")
-                pass
-            else :
-                try : 
-                    if not (MASTERDIR / f"master_flat_{filt.upper()}_norm.fits").exists() :
-                        if verbose == True :
-                            print(f"{MASTERDIR}/master_flat_{filt.upper()}_norm.fits is not exists...")
-                    else :
-                        if (MASTERDIR / f"master_dark_{expt:.0f}sec.fits").exists() :
-                            if verbose == True :
-                                print(f"Reduce with master_dark_{expt:.0f}sec.fits ...")
-
-                            red = yfu.ccdred(
-                                ccd,
-                                output=Path(f"{REDUCEDDIR/ fpath.name}"),
-                                mdarkpath=str(MASTERDIR / "master_dark_{:.0f}sec.fits".format(expt)),
-                                mflatpath=str(MASTERDIR / "master_flat_{}_norm.fits".format(filt.upper())),
-                                # flat_norm_value=1,  # 1 = skip normalization, None = normalize by mean
-                                overwrite=True,
-                                )
-                        else : 
-                            if verbose == True :
-                                print(f"Reduce with master_dark_{summary_master_dark['EXPTIME'][idx]:.0f}sec.fits is not exists...")
-                            red = yfu.ccdred(
-                                ccd,
-                                output=Path(f"{REDUCEDDIR/ fpath.name}"),
-                                mdarkpath=str(MASTERDIR / f"master_dark_{summary_master_dark['EXPTIME'][idx]:.0f}sec.fits"),
-                                mflatpath=str(MASTERDIR / f"master_flat_{filt.upper()}_norm.fits"),
-                                dark_scale = True,
-                                exptime_dark = summary_master_dark['EXPTIME'][idx],
-                                # flat_norm_value=1,  # 1 = skip normalization, None = normalize by mean
-                                overwrite=True,
-                                )
-                        if verbose == True :
-                            print (f"Reduce Reduce {fpath.name} +++...")
-
-                except Exception as e: 
-                    print("err:", e)
+                    print(f"The reduction file already exists...\n{fpath.name}")
+                fpath_age = _Python_utilities.get_file_age(str(REDUCEDDIR / fpath.name))
+                if tryagain == False and fpath_age.days < file_age :
+                    if verbose == True :
+                        print("*"*10)
+                        print(f"The reduction file is younger than {file_age} days...\n{fpath.name}")
                     pass
+                
+                else :
+                    try : 
+                        if not (MASTERDIR / f"master_flat_{filt.upper()}.fits").exists() :
+                            if verbose == True :
+                                print(f"{MASTERDIR}/master_flat_{filt.upper()}.fits is not exists...")
+                        else :
+                            if (MASTERDIR / f"master_dark_{expt:.0f}sec.fits").exists() :
+                                if verbose == True :
+                                    print(f"Trying Reduction with master_dark_{expt:.0f}sec.fits ...")
+
+                                red = yfu.ccdred(
+                                    ccd,
+                                    output=Path(f"{REDUCEDDIR/ fpath.name}"),
+                                    mdarkpath=str(MASTERDIR / "master_dark_{:.0f}sec.fits".format(expt)),
+                                    mflatpath=str(MASTERDIR / "master_flat_{}.fits".format(filt.upper())),
+                                    # flat_norm_value=1,  # 1 = skip normalization, None = normalize by mean
+                                    overwrite=True,
+                                    )
+                            else : 
+                                if verbose == True :
+                                    print(f"Trying Reduction with master_dark_{summary_master_dark['EXPTIME'][idx]:.0f}sec.fits is not exists...")
+                                red = yfu.ccdred(
+                                    ccd,
+                                    output=Path(f"{REDUCEDDIR/ fpath.name}"),
+                                    mdarkpath=str(MASTERDIR / f"master_dark_{summary_master_dark['EXPTIME'][idx]:.0f}sec.fits"),
+                                    mflatpath=str(MASTERDIR / f"master_flat_{filt.upper()}.fits"),
+                                    dark_scale = True,
+                                    exptime_dark = summary_master_dark['EXPTIME'][idx],
+                                    # flat_norm_value=1,  # 1 = skip normalization, None = normalize by mean
+                                    overwrite=True,
+                                    )
+                            if verbose == True :
+                                print (f"Reduce Reduce {fpath.name} +++...")
+
+                    except Exception as err: 
+                        if verbose == True :
+                            print("X"*60)
+                        _Python_utilities.write_log(err_log_file, str(err), verbose=verbose)
+                        pass
+            else :
+       
+                if (MASTERDIR / f"master_dark_{expt:.0f}sec.fits").exists() :
+                    if verbose == True :
+                        print(f"Reduce with master_dark_{expt:.0f}sec.fits ...")
+                    try :
+                        red = yfu.ccdred(
+                            ccd,
+                            output=Path(f"{REDUCEDDIR/ fpath.name}"),
+                            mdarkpath=str(MASTERDIR / "master_dark_{:.0f}sec.fits".format(expt)),
+                            mflatpath=str(MASTERDIR / "master_flat_{}_norm.fits".format(filt.upper())),
+                            # flat_norm_value=1,  # 1 = skip normalization, None = normalize by mean
+                            overwrite=True,
+                            )
+                    except : 
+                        red = yfu.ccdred(
+                            ccd,
+                            output=Path(f"{REDUCEDDIR/ fpath.name}"),
+                            mdarkpath=str(MASTERDIR / "master_dark_{:.0f}sec.fits".format(expt)),
+                            mflatpath=str(MASTERDIR / "master_flat_{}.fits".format(filt.upper())),
+                            # flat_norm_value=1,  # 1 = skip normalization, None = normalize by mean
+                            overwrite=True,
+                            )
+                else : 
+                    if verbose == True :
+                        print(f"Reduce with master_dark_{summary_master_dark['EXPTIME'][idx]:.0f}sec.fits is not exists...")
+                    try : 
+                        red = yfu.ccdred(
+                            ccd,
+                            output=Path(f"{REDUCEDDIR/ fpath.name}"),
+                            mdarkpath=str(MASTERDIR / f"master_dark_{summary_master_dark['EXPTIME'][idx]:.0f}sec.fits"),
+                            mflatpath=str(MASTERDIR / f"master_flat_{filt.upper()}_norm.fits"),
+                            dark_scale = True,
+                            exptime_dark = summary_master_dark['EXPTIME'][idx],
+                            # flat_norm_value=1,  # 1 = skip normalization, None = normalize by mean
+                            overwrite=True,
+                            )
+                    except :
+                        red = yfu.ccdred(
+                            ccd,
+                            output=Path(f"{REDUCEDDIR/ fpath.name}"),
+                            mdarkpath=str(MASTERDIR / f"master_dark_{summary_master_dark['EXPTIME'][idx]:.0f}sec.fits"),
+                            mflatpath=str(MASTERDIR / f"master_flat_{filt.upper()}.fits"),
+                            dark_scale = True,
+                            exptime_dark = summary_master_dark['EXPTIME'][idx],
+                            # flat_norm_value=1,  # 1 = skip normalization, None = normalize by mean
+                            overwrite=True,
+                            )
+                        
+                if verbose == True :
+                    print (f"Reduce Reduce {fpath.name} +++...")
+
+
 
     if trynightsky == True : 
         REDUCNSKYDIR = DOINGDIR / _astro_utilities.reduced_nightsky_dir
@@ -245,17 +311,25 @@ for DOINGDIR in DOINGDIRs[:] :
                             print("len(df_light_filt):", len(df_light_filt))
                             print("df_light_filt:", df_light_filt)
                     
-                        if (sMASTERDIR / f"nightskyflat-{filt}.fits").exists() and tryagain == False :
-                            pass
-                        else :      
-                            File_Num = 80
-                            if len(df_light_filt["file"]) > File_Num :
-                                combine_lst = df_light_filt["file"].tolist()[:File_Num]
-                            else : 
-                                combine_lst = df_light_filt["file"].tolist()
-                            if (sMASTERDIR / f"nightskyflat-{filt}_norm.fits").exists():
+                        if (sMASTERDIR / f"nightskyflat-{filt}.fits").exists() :
+                            if verbose == True :
+                                print(f"{sMASTERDIR}/nightskyflat-{filt}.fits is already exists")
+                            fpath_age = _Python_utilities.get_file_age(sMASTERDIR / f"nightskyflat-{filt}.fits")
+                            if tryagain == False and fpath_age.days < file_age :
+                                if verbose == True :
+                                    print("*"*10)
+                                    print(f"The file is younger than {file_age} days...\n{fpath.name}")
                                 pass
+
                             else :
+                                if verbose == True :
+                                    print("*"*10)
+                                    print(f"The file is older than {file_age} days...\nTry gagin {fpath.name}")      
+                                File_Num = 80
+                                if len(df_light_filt["file"]) > File_Num :
+                                    combine_lst = df_light_filt["file"].tolist()[:File_Num]
+                                else : 
+                                    combine_lst = df_light_filt["file"].tolist()
                                 try : 
                                     ccd = yfu.imcombine(
                                                         combine_lst, 
@@ -278,9 +352,39 @@ for DOINGDIR in DOINGDIRs[:] :
                                                         verbose=verbose,
                                                         memlimit = 2.e+11,
                                                         )
-                                ccd.write(sMASTERDIR / f"nightskyflat-{filt}_norm.fits", overwrite=True)
-                                if verbose == True :
-                                    print (f"Create Create nightskyflat-{filt}_norm.fits +++...")
+                                ccd.write(sMASTERDIR / f"nightskyflat-{filt}.fits", overwrite=True)
+                                print (f"nightskyflat-{filt}.fits is created +++...")
+                        else : 
+                            File_Num = 80
+                            if len(df_light_filt["file"]) > File_Num :
+                                combine_lst = df_light_filt["file"].tolist()[:File_Num]
+                            else : 
+                                combine_lst = df_light_filt["file"].tolist()
+                            try : 
+                                ccd = yfu.imcombine(
+                                                combine_lst, 
+                                                combine="med",
+                                                scale="avg", 
+                                                scale_to_0th=False, #norm
+                                                reject="sc", 
+                                                sigma=2.5,
+                                                verbose=verbose,
+                                                memlimit = 2.e+11,
+                                                )
+                            except :
+                                ccd = yfu.imcombine(
+                                                combine_lst, 
+                                                combine="med",
+                                                scale="avg", 
+                                                scale_to_0th=False, #norm
+                                                reject="sc", 
+                                                # sigma=2.5,
+                                                verbose=verbose,
+                                                memlimit = 2.e+11,
+                                                )
+                        ccd.write(sMASTERDIR / f"nightskyflat-{filt}.fits", overwrite=True)
+                        if verbose == True :
+                            print (f"nightskyflat-{filt}.fits is created +++...")
 
             for _, row in df_light.iterrows():
                 fpath = Path(row["file"])
@@ -288,15 +392,38 @@ for DOINGDIR in DOINGDIRs[:] :
                 filt = row["FILTER"]
                 if (REDUCNSKYDIR / fpath.name).exists() and tryagain == False:
                     if verbose == True :
-                        print(f"Nightsky reduction file already exists...\n{fpath.name}")
-                    pass
+                        print(f"Nightsky reduction file already exists...\n{fpath}")
+                    fpath_age = _Python_utilities.get_file_age(REDUCNSKYDIR / fpath.name)
+                    if tryagain == False or fpath_age.days < file_age:
+                        if verbose == True :
+                            print("*"*10)
+                            print(f"The file is younger than {file_age} days...\n{fpath}")
+                    else :
+                        if verbose == True :
+                            print("*"*10)
+                            print(f"The file is older than {file_age} days...\nTry gagin {fpath.name}")   
+                        try:    
+                            ccd = yfu.ccdred(
+                                            ccd, 
+                                            mflatpath = sMASTERDIR / f"nightskyflat-{filt}.fits",
+                                            output = REDUCNSKYDIR / fpath.name,
+                                            # flat_norm_value=1,  # 1 = skip normalization, None = normalize by mean
+                                        )
+                        except Exception as err: 
+                            if verbose == True :
+                                print("X"*60)
+                            _Python_utilities.write_log(err_log_file, str(err), verbose=verbose)
+                            pass
                 else :
                     try:    
                         ccd = yfu.ccdred(
                                         ccd, 
-                                        mflatpath = sMASTERDIR / f"nightskyflat-{filt}_norm.fits",
-                                        output = REDUCNSKYDIR / fpath.name
+                                        mflatpath = sMASTERDIR / f"nightskyflat-{filt}.fits",
+                                        output = REDUCNSKYDIR / fpath.name,
+                                        # flat_norm_value=1,  # 1 = skip normalization, None = normalize by mean
                                     )
-                    except : 
-                        # _Python_utilities.write_log(err_log_file, "FileNotFoundError") 
+                    except Exception as err: 
+                        if verbose == True :
+                            print("X"*60)
+                        _Python_utilities.write_log(err_log_file, str(err), verbose=verbose)
                         pass

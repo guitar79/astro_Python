@@ -184,7 +184,7 @@ Mag_High = 15
 
 Mag_target = 12.5
 Mag_delta = 2
-ERR_Max = 0.5
+ERR_Minimum = 0.5
 
 ### TT-ARI
 # Mag_Low = 10
@@ -192,7 +192,7 @@ ERR_Max = 0.5
 
 # Mag_target = 11
 # Mag_delta = 2
-# ERR_Max = 0.5
+# ERR_Minimum = 0.5
 #######################################################
 
 #%%
@@ -415,7 +415,7 @@ def p(fpath,
             df_phot_stars_na = df_phot_stars.dropna()
             print(len(df_phot_stars_na))
 
-            df_phot_stars_na = df_phot_stars[df_phot_stars["merr"] < ERR_Max]
+            df_phot_stars_na = df_phot_stars[df_phot_stars["merr"] < ERR_Minimum]
             # phot_stars_na = phot_stars_na.set_index('id', drop=True)
             df_phot_stars_na = df_phot_stars_na.reset_index(drop=True)
             print(len(df_phot_stars_na))
@@ -711,7 +711,7 @@ def p(fpath,
             
             df_apphot_sub = df_apphot.dropna()
             print(len(df_apphot_sub))
-            df_apphot_sub = df_apphot_sub.loc[(df_apphot_sub["merr_ann"] < ERR_Max)]
+            df_apphot_sub = df_apphot_sub.loc[(df_apphot_sub["merr_ann"] < ERR_Minimum)]
             df_apphot_sub
 
             #%%

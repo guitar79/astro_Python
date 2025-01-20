@@ -1,0 +1,57 @@
+{
+    "user_info": {
+            "Directory with FITS files": "/mnt/Rdata/ASTRO_data/C3-EXO/EXOTIC_sampledata-1.0.0/HatP32Dec202017",
+            "Directory to Save Plots": "/mnt/Rdata/ASTRO_data/C3-EXO/EXOTIC_sampledata-1.0.0/",
+            "Directory of Flats": null,
+            "Directory of Darks": null,
+            "Directory of Biases": null,
+
+            "AAVSO Observer Code (N/A if none)": "RTZ",
+            "Secondary Observer Codes (N/A if none)": "N/A",
+
+            "Observation date": "December 17, 2017",
+            "Obs. Latitude": "+31.68",
+            "Obs. Longitude": "-110.88",
+            "Obs. Elevation (meters)": "101",
+            "Camera Type (CCD or DSLR)": "CCD",
+            "Pixel Binning": "1x1",
+            "Filter Name (aavso.org/filters)": "V",
+            "Observing Notes": "Weather, seeing was nice.",
+
+            "Plate Solution? (y/n)": "n",
+
+            "Target Star X & Y Pixel": null,
+            "Comparison Star(s) X & Y Pixel": null
+    },
+    "planetary_parameters": {
+            "Target Star RA": "02:04:10",
+            "Target Star Dec": "+46:41:23",
+            "Planet Name": "HAT-P-32 b",
+            "Host Star Name": "HAT-P-32",
+            "Orbital Period (days)": 2.1500082,
+            "Orbital Period Uncertainty": 1.3e-07,
+            "Published Mid-Transit Time (BJD-UTC)": 2455867.402743,
+            "Mid-Transit Time Uncertainty": 4.9e-05,
+            "Ratio of Planet to Stellar Radius (Rp/Rs)": 0.14856104152345367,
+            "Ratio of Planet to Stellar Radius (Rp/Rs) Uncertainty": 0.004688608636917226,
+            "Ratio of Distance to Stellar Radius (a/Rs)": 5.344,
+            "Ratio of Distance to Stellar Radius (a/Rs) Uncertainty": 0.04,
+            "Orbital Inclination (deg)": 88.98,
+            "Orbital Inclination (deg) Uncertainity": 0.68,
+            "Orbital Eccentricity (0 if null)": 0.159,
+            "Star Effective Temperature (K)": 6001.0,
+            "Star Effective Temperature (+) Uncertainty": 88.0,
+            "Star Effective Temperature (-) Uncertainty": -88.0,
+            "Star Metallicity ([FE/H])": -0.16,
+            "Star Metallicity (+) Uncertainty": 0.08,
+            "Star Metallicity (-) Uncertainty": -0.08,
+            "Star Surface Gravity (log(g))": 4.22,
+            "Star Surface Gravity (+) Uncertainty": 0.04,
+            "Star Surface Gravity (-) Uncertainty": -0.04
+    },
+    "optional_info": {
+            "Pixel Scale (Ex: 5.21 arcsecs/pixel)": null,
+            "Filter Minimum Wavelength (nm)": null,
+            "Filter Maximum Wavelength (nm)": null
+    }
+}
