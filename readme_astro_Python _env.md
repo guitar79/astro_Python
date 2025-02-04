@@ -15,7 +15,7 @@ conda activate astro_Python_env
 conda deactivate
 
 ## install module
-pip install exotic
+<!-- pip install exotic -->
 conda install -c conda-forge jupyter-book pyppeteer
 pip install photutils==1.12 
 pip install ysfitsutilpy ysphotutilpy 

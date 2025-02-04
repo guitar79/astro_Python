@@ -77,29 +77,12 @@ GSHS = EarthLocation(lon=127.005 * u.deg, lat=37.308889 * u.deg, height=101 * u.
 #######################################################
 
 #CCDNAME, PIXSIZE, GAIN, RENOISE    
-CCDDIC = {"ST-8300M": {"PIXSIZE":5.4, 
-                        "GAIN":0.37,
-                        "RDNOISE":9.3}, 
-        "STF-8300M": {"PIXSIZE":5.4, 
-                        "GAIN":0.37,
-                        "RDNOISE":9.3,
-                "RESOLUTION":(3352, 2532)}, 
-        "QSI683ws": {"PIXSIZE":5.4, 
-                        "GAIN":0.13,
-                        "RDNOISE":8.0,
-                "RESOLUTION":(3326, 2504)},
-        "STL-11000M": {"PIXSIZE":9.0, 
-                        "GAIN":0.8,
-                        "RDNOISE":9.6,
-                "RESOLUTION":(4008, 2672)},
-        "STX-16803": {"PIXSIZE":9.0, 
-                        "GAIN":1.27,
-                        "RDNOISE":9.0,
-                "RESOLUTION":(4096, 4096)},
-        "QHY8": {"PIXSIZE":5.4, 
-                "GAIN": "-",
-                "RDNOISE":"-",
-                "RESOLUTION":(3032, 2016)},
+CCDDIC = {  "ST-8300M"    : {"PIXSIZE":5.4,  "GAIN":0.37,    "RDNOISE":9.3}, 
+            "STF-8300M"   : {"PIXSIZE":5.4,  "GAIN":0.37,    "RDNOISE":9.3,  "RESOLUTION":(3352, 2532)}, 
+            "QSI683ws"    : {"PIXSIZE":5.4,  "GAIN":0.13,    "RDNOISE":8.0,  "RESOLUTION":(3326, 2504)},
+            "STL-11000M"  : {"PIXSIZE":9.0,  "GAIN":0.8,     "RDNOISE":9.6,  "RESOLUTION":(4008, 2672)},
+            "STX-16803"   : {"PIXSIZE":9.0,  "GAIN":1.27,    "RDNOISE":9.0,  "RESOLUTION":(4096, 4096)},
+            "QHY8"        : {"PIXSIZE":5.4,  "GAIN": "-",    "RDNOISE":"-",  "RESOLUTION":(3032, 2016)},
         "ATR3CMOS26000KPA": {"PIXSIZE":3.76, 
                 "GAIN": "-",
                 "RDNOISE":"-",
@@ -415,7 +398,7 @@ def KevinFitsNewFname(
 def KevinFitsUpdater(
     fpath,
     checkKEYs = ["OBJECT", "TELESCOP", "OPTIC", "CCDNAME", 'FILTER',
-                #"GAIN", "EGAIN", "RDNOISE", 
+                "GAIN", "EGAIN", "RDNOISE", 
                 "PIXSCALE", "FOCALLEN", "APATURE", "CCD-TEMP",
                 'XPIXSZ', 'YPIXSZ',
                 "XBINNING", "YBINNING", "FLIPSTAT", "EXPTIME", "EXPOSURE"],
@@ -621,9 +604,9 @@ def KevinFitsUpdater(
                 hdul[0].header["PIXSCALE"] = calPixScale(hdul[0].header['FOCALLEN'], 
                                                             hdul[0].header['XPIXSZ'],
                                                             hdul[0].header['XBINNING'],)
-            hdul[0].header["PIXSCALE"] = calPixScale(hdul[0].header['FOCALLEN'], 
-                                                            hdul[0].header['XPIXSZ'],
-                                                            hdul[0].header['XBINNING'],)
+            # hdul[0].header["PIXSCALE"] = calPixScale(hdul[0].header['FOCALLEN'], 
+            #                                                 hdul[0].header['XPIXSZ'],
+            #                                                 hdul[0].header['XBINNING'],)
         
         ##########################
         if (not 'TELESCOP' in hdul[0].header):
@@ -665,15 +648,17 @@ def KevinFitsUpdater(
             if verbose == True :
                 print(f"The 'XPIXSZ' and 'YPIXSZ' are set {9 * hdul[0].header['XBINNING']} \
                     and {9 * hdul[0].header['YBINNING']}...")
-        #hdul[0].header['GAIN'] = GAINDIC[CCDNAME]
-        #hdul[0].header['GAIN'] = CCDDIC[hdul[0].header['CCDNAME']]['GAIN']
-        #print(f"The 'GAIN' is set {hdul[0].header['GAIN']}...")
+        if not 'GAIN' in hdul[0].header :
+            hdul[0].header['GAIN'] = CCDDIC[hdul[0].header['CCDNAME']]['GAIN']
+            if verbose == True :
+                print(f"The 'GAIN' is set {hdul[0].header['GAIN']}...")
         #hdul[0].header['EGAIN'] = GAINDIC[CCDNAME]
         #hdul[0].header['EGAIN'] = CCDDIC[hdul[0].header['CCDNAME']]['GAIN']
         #print(f"The 'EGAIN' is set {hdul[0].header['EGAIN']}...")
-        #hdul[0].header['RDNOISE'] = RDNOISEDIC[CCDNAME]
-        #hdul[0].header['RDNOISE'] = CCDDIC[hdul[0].header['CCDNAME']]['RDNOISE']
-        #print(f"The 'RDNOISE' is set {hdul[0].header['RDNOISE']}...")
+        if not 'RDNOISE' in hdul[0].header :
+            hdul[0].header['RDNOISE'] = CCDDIC[hdul[0].header['CCDNAME']]['RDNOISE']
+            if verbose == True :
+                print(f"The 'RDNOISE' is set {hdul[0].header['RDNOISE']}...")
         
         ###########################
         ####     
@@ -730,8 +715,9 @@ def fits_newpath(
         delimiter='_',
         fillnan="",
         fileext='.fit',
+        verbose = False,
         **kwargs
-):
+    ):
     ''' Gives the new path of the FITS file from header.
     Parameters
     ----------
